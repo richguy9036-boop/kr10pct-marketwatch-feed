@@ -1,0 +1,662 @@
+<!doctype html><html><head><!-- frame-runtime --><script>window.__FRAME_PREAMBLE={"v":1,"capabilities":{"artifact":"artifact.B_zN8nKT.js","assets":"assets.8Gk803W0.js","comments":"comments.hEoja5zd.js","db":"db.DoKNwgX8.js","downloads":"downloads.th1YuAIk.js","embed":"embed.eqL6deQM.js","endpoints":"endpoints.CooJFPzL.js","mcp":"mcp.Ch3NPscy.js","network":"network.B5UA9Su4.js","permissions":"permissions.BNySkLV5.js","room":"room.Dc3WDo3b.js","sample":"sample.C2869FGz.js","self":"artifact.B_zN8nKT.js","user":"user.BpKav-Rf.js"},"transforms":"_transforms.Cil6ankx.js","comments":"_comments.e5-ml_Nr.js","translate":"_translate.5HCW4BJh.js","ldx":"_ldx.DycbNc-Q.js"}</script><script>(function(){"use strict";var fe=["light","dark","system"],de=/^[A-Za-z0-9_-]{1,64}$/,te=/^[a-zA-Z_:][a-zA-Z0-9_:.-]{0,127}$/,pe=new Set(["class","hidden","value","checked","style","title","alt","placeholder","lang","dir","role","tabindex","disabled","readonly","contenteditable","open","colspan","rowspan"]);function me(e){const t=e.toLowerCase();return t.startsWith("data-")||t.startsWith("aria-")||pe.has(t)}var $e="http://www.w3.org/1999/xhtml",he="http://www.w3.org/2000/svg",_e=new Set(["script","style","iframe","noscript","noframes","noembed","xmp","plaintext","template","title","textarea","object","embed"]),ve=new Set(["script","style"]);function ye(e){const t=e.localName.toLowerCase();return e.namespaceURI==="http://www.w3.org/1999/xhtml"?!_e.has(t):e.namespaceURI===he?!ve.has(t):!1}function x(e,t){return e===t||(e===160||e===32)&&(t===160||t===32)}function we(e,t){const r=e.length,n=t.length;let a=0;for(;a<r&&a<n&&x(e.charCodeAt(a),t.charCodeAt(a));)a++;let o=0;for(;o<r-a&&o<n-a&&x(e.charCodeAt(r-1-o),t.charCodeAt(n-1-o));)o++;return{p:a,s:o}}function Ee(e,t){const r=e.firstChild;if(e.childNodes.length!==1||r===null||r.nodeType!==Node.TEXT_NODE){e.textContent=t;return}const n=r.data,a=n.length,o=t.length,{p:c,s:i}=we(n,t);c===a&&i===0&&a===o||r.replaceData(c,a-c-i,t.slice(c,o-i));const m=r.data,f=e.ownerDocument.getSelection?.()??null,y=f!==null&&f.rangeCount>0&&(f.anchorNode===r||f.focusNode===r)?{anchor:f.anchorNode,anchorOffset:f.anchorOffset,focus:f.focusNode,focusOffset:f.focusOffset}:null;let d=-1,E=-1;for(let v=0;v<m.length&&v<t.length;v++){const A=m.charCodeAt(v),k=t.charCodeAt(v);A!==k&&x(A,k)&&(d<0&&(d=v),E=v)}const b=d>=0;if(b&&r.replaceData(d,E-d+1,t.slice(d,E+1)),b&&y!==null&&y.anchor!==null&&y.focus!==null)try{f.setBaseAndExtent(y.anchor,y.anchorOffset,y.focus,y.focusOffset)}catch{}}var be=new Set(["html","head","body","frameset"]);function ge(e){return e.namespaceURI==="http://www.w3.org/1999/xhtml"&&be.has(e.localName)}function Ae(e){if(e===null||typeof e!="object")return!1;const t=e;if(typeof t.target!="string"||!de.test(t.target)||t.text!==void 0&&typeof t.text!="string")return!1;if(t.attrsSet!==void 0){if(t.attrsSet===null||typeof t.attrsSet!="object")return!1;for(const[r,n]of Object.entries(t.attrsSet))if(!te.test(r)||typeof n!="string")return!1}if(t.attrsRemoved!==void 0){if(!Array.isArray(t.attrsRemoved))return!1;for(const r of t.attrsRemoved)if(typeof r!="string"||!te.test(r))return!1}return!0}function Le(e,t){if(e===null||typeof e!="object")return!1;const{seq:r,elements:n}=e;if(typeof r!="number"||!Number.isSafeInteger(r)||!Array.isArray(n)||n.length===0||n.length>64)return!1;for(let a=0;a<n.length;a++)if(!t(n[a]))return!1;return!0}function Te(e){return e===null||typeof e!="object"?!1:Le(e.__frame_patch,Ae)}function Se(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_init;return t!==null&&typeof t=="object"}function Re(e){return e!==null&&typeof e=="object"&&e.__frame_size_poke===!0}function ke(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_theme;if(t===null||typeof t!="object")return!1;const r=t.theme;return typeof r=="string"&&fe.includes(r)}var O=/^[\w.-]+\.js$/;function Pe(e,t,r){return r?"inert":typeof t=="string"&&O.test(t)?e?[t]:"inert":e?"inert":"framed"}var Ye="frame_ldx_runtime",Oe="frame_ldx_build",Ge="script#an-form";function Ce(){return{post(e,t){parent.postMessage(e,t)},on(e){const t=r=>{r.source===parent&&e(r.data,r.origin,r.isTrusted)};return addEventListener("message",t),()=>removeEventListener("message",t)}}}function Me(){return{post:()=>{},on:()=>()=>{}}}var F="__frame_scroll",je=150,Ne=310,De=160,Be=3e4;function Ie(){let e=0,t=!1,r=!1,n=!1,a=0,o=null;const c=u=>{try{sessionStorage.setItem(F,JSON.stringify({y:u}))}catch{}},i=()=>{if(clearTimeout(e),o===null)return;const u=o;o=null,c(u)},m=()=>{if(t){t=!1;return}r=!0,o=scrollY,clearTimeout(e),e=setTimeout(i,je)};try{addEventListener("scroll",m,{passive:!0}),addEventListener("pagehide",i)}catch{}const f=()=>{let u;try{u=sessionStorage.getItem(F)}catch{return null}if(u===null)return null;let g;try{g=JSON.parse(u)}catch{g=null}const w=g?.y;if(!(typeof w=="number"&&Number.isFinite(w)&&w>=0)){try{sessionStorage.removeItem(F)}catch{}return null}return w};let y=!1;const d=u=>{try{const g=scrollY;scrollTo({top:u,left:0,behavior:"instant"}),a=u,n=!0,clearTimeout(e),o=null,c(u);const w=scrollY;w!==g&&(t=!0),w!==u&&!y&&(y=!0,addEventListener("load",()=>{try{if(scrollY===w){const M=f();d(M!==null?M:a)}}catch{}},{once:!0}))}catch{}},E=()=>{try{return!!location.hash}catch{return!0}};let b=!1;const v=()=>{try{if(b||innerWidth>Ne||innerHeight>De)return;b=!0;const u=Date.now(),g=()=>{try{removeEventListener("resize",g)}catch{}if(Date.now()-u>Be||r||E())return;const w=f();d(w!==null?w:a)};addEventListener("resize",g)}catch{}};let A=!1,k=!1;return{restore(){if(A||(A=!0,E()))return;const u=f();u!==null&&(d(u),v())},promoted(){if(k||(k=!0,E()))return;const u=f();u!==null?(d(u),v()):n&&d(a)}}}function Ue(e,t,r,n){let a=null;try{a=window.trustedTypes?.createPolicy("frame-runtime",{createScriptURL:m=>m})??null}catch{}const o=window.Worker,c=o?.prototype,i=Object.freeze({Worker:o,workerOn:c?.addEventListener,workerPost:c?.postMessage,workerTerminate:c?.terminate,fetch:window.fetch.bind(window),preventDefault:Event.prototype.preventDefault,policy:a,origins:t});r(e).then(m=>m?.bootTopLevel?m.bootTopLevel(i,n):n.settle()).catch(()=>n.settle())}var Ve="modulepreload",Ze=function(e){return"/"+e},Je={},xe=function(t,r,n){let a=Promise.resolve();function o(c){const i=new Event("vite:preloadError",{cancelable:!0});if(i.payload=c,window.dispatchEvent(i),!i.defaultPrevented)throw c}return a.then(c=>{for(const i of c||[])i.status==="rejected"&&o(i.reason);return t().catch(o)})},Fe=window===top,re=Object.getOwnPropertyDescriptor(window,"claude"),j=Pe(Fe,window.__FRAME_PREAMBLE?.topLevel,re?.writable===!1),H=typeof j=="object"&&j[0],_=H?Me():Ce();(function(){const e=Object.defineProperty,t=globalThis,r=["RTCPeerConnection","webkitRTCPeerConnection","RTCDataChannel","RTCIceCandidate","RTCSessionDescription","RTCRtpSender","RTCRtpReceiver"];let n=0;for(let a=0;a<r.length;a++){const o=r[a];try{e(t,o,{value:void 0,writable:!1,configurable:!1})}catch{try{delete t[o]}catch{}try{e(t,o,{value:void 0,writable:!1,configurable:!0})}catch{}}typeof t[o]=="function"&&n++}if(n&&j==="framed")try{_.post({__frame_rtc_lockdown_failed:n},"*")}catch{}})();var He=1e4,ze=2e3,We=2e3,ne=Object.freeze([...window.__FRAME_PREAMBLE?.origins??["https://claude.ai","https://preview.claude.ai"]]);function oe(e){for(const t of ne)if(t.endsWith(":*"))try{const r=new URL(e);if(`${r.protocol}//${r.hostname}:*`===t)return!0}catch{}else if(e===t)return!0;return!1}var N=Object.freeze({...window.__FRAME_PREAMBLE?.capabilities}),z=window.__FRAME_PREAMBLE?.transforms,W=window.__FRAME_PREAMBLE?.comments,q=window.__FRAME_PREAMBLE?.translate,K=window.__FRAME_PREAMBLE?.ldx;function C(e){return xe(()=>import("/_runtime/"+e),void 0)}function se(e,t){return{contract:e.contract,changes:new Set(e.changes??[]),flags:new Set(e.flags??[]),capabilities:e.capabilities??{},capBudgets:e.capBudgets??{},transforms:new Map,shellOrigin:t,mount:Y,hooks:B,pipe:()=>({wrap:(r,n)=>(...a)=>{try{return n(...a)}catch(o){return Promise.reject(o)}}})}}var D=null,S=null;function ae(e,t,r){try{Object.defineProperty(e,t,{value:r,writable:!1,configurable:!1,enumerable:!0})}catch{try{Object.defineProperty(e,t,{value:r,writable:!1,configurable:!0,enumerable:!0})}catch{}}}var X=!1,B={editBefore:null,edit:null};function qe(e,t,r=!1){const n=[];let a;if(r)try{B.editBefore?.(e)}catch{}for(const o of e.elements){const c=document.querySelector(`[data-id="${o.target}"]`);if(!c){a=o.target;break}if([...Object.keys(o.attrsSet??{}),...o.attrsRemoved??[]].some(i=>!me(i))){a=o.target;break}if(o.text!==void 0&&(!ye(c)||ge(c))){a=o.target;break}for(const[i,m]of Object.entries(o.attrsSet??{}))if(!ce(c,i)){try{c.setAttribute(i,m)}catch{}ie(c,i,m)}for(const i of o.attrsRemoved??[])ce(c,i)||(c.removeAttribute(i),ie(c,i,null));typeof o.text=="string"&&Ee(c,o.text),n.push(o.target)}if(r)try{B.edit?.(e.seq,n,a)}catch{}if(a!==void 0){_.post({__frame_patch_miss:{seq:e.seq}},t);return}try{document.dispatchEvent(new CustomEvent("claude:edit",{detail:{seq:e.seq,targets:n}}))}catch{}}function ie(e,t,r){if(!(e instanceof HTMLInputElement))return;const n=t.toLowerCase();n==="checked"?e.checked=r!==null:n==="value"&&e.type!=="file"&&(e.value=r??"")}function ce(e,t){const r=t.toLowerCase(),n=e;return r==="data-id"||(r==="value"||r==="checked")&&(n.__artifactSecret===!0||/^(password|hidden|file)$/.test(n.type??"")||/(^|\s)(cc-|one-time-code|current-password|new-password)/i.test(`${e.getAttribute("autocomplete")??""} ${n.autocomplete??""}`))}function le(e){const t=document.documentElement;e==="light"||e==="dark"?(t.dataset.theme=e,t.style.colorScheme=e,X=!0):X&&(delete t.dataset.theme,t.style.colorScheme="",X=!1)}var I=new Map;function Ke(){let e;const t={u:new Promise(r=>{e=r}),r:r=>{t.done=!0,e(r)},done:!1,nulled:!1};return t}function $(){for(const e of I.values())e.done||(e.nulled=!0,e.r(null))}var Xe=Object.freeze(Object.assign(Object.create(null),{call:Function.prototype.call,apply:Function.prototype.apply,bind:Function.prototype.bind})),Y=(e,t)=>{const r=I.get(e);if(!r||r.done){r?.nulled&&S&&_.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:e}},S);return}const n=typeof t=="function"?Object.setPrototypeOf(t,Xe):Object.assign(Object.create(null),t);typeof n.then=="function"&&delete n.then,r.r(Object.freeze(n))};function ue(){const e=re?.value??{};ae(window,"claude",e);for(const t of Object.keys(N)){if(e[t]!==void 0){ae(e,t,e[t]);continue}I.set(t,Ke())}if(e.use===void 0){const t=r=>{if(typeof r!="string"||!Object.hasOwn(N,r))return Promise.resolve(null);const n=I.get(r);return n?n.u:Promise.resolve(e[r]??null)};try{Object.defineProperty(e,"use",{value:t,writable:!0,configurable:!0,enumerable:!1})}catch{}}}if(j==="framed"){const e=z&&O.test(z)?C(z).catch(()=>{}):Promise.resolve(void 0),t=s=>{if(s.type==="auxclick"&&s.button!==1)return;const h=s.target,p=h&&h.closest?h.closest("a[href],area[href]"):null;if(!p)return;const P=p.getAttribute("href");if(!P)return;let L;try{L=new URL(P,document.baseURI)}catch{return}if((L.protocol==="http:"||L.protocol==="https:")&&L.origin!==location.origin){s.preventDefault();const R=(p.getAttribute("target")??"").toLowerCase(),T=s.type==="auxclick"||s.metaKey||s.ctrlKey||s.shiftKey||s.altKey||!["","_self","_top","_parent"].includes(R);_.post({__frame_nav:!0,url:L.href,newTab:T},"*")}};addEventListener("click",t,!0),addEventListener("auxclick",t,!0);const r={},n=s=>{s.isTrusted&&(r.pointer=!0)},a=s=>{s.isTrusted&&(r.click=!0)};addEventListener("pointermove",n,{capture:!0,passive:!0}),addEventListener("click",a,{capture:!0,passive:!0});const o={cb:null};addEventListener("keydown",s=>o.cb?.(s),!0),e.then(s=>s?.installEscapeForward?.(o,h=>{S&&_.post(h,S)})),e.then(s=>{s?.wireNav&&(s.wireNav(),removeEventListener("click",t,!0),removeEventListener("auxclick",t,!0),removeEventListener("pointermove",n,!0),removeEventListener("click",a,!0),s.wireEngagement?.(r))});let c=null;try{c=Ie()}catch{}ue();let i=null,m=null,f=0;const y=_.on((s,h)=>{oe(h)&&Se(s)&&(i=s.__frame_init,S=h,y(),clearTimeout(f),m?.())});_.post({__frame_connect:!0},"*");const d=setTimeout,E=clearTimeout;let b=0;const v=()=>{try{_.post({__frame_alive:!0},"*")}catch{}b=d(v,ze)},A=()=>E(b);v(),addEventListener("load",A,{once:!0});const k=new Promise(s=>{m=s,f=setTimeout(()=>{y(),s()},He)}),u=document.readyState==="loading"?new Promise(s=>document.addEventListener("DOMContentLoaded",()=>s(),{once:!0})):Promise.resolve(),g=new WeakSet;addEventListener("error",s=>{s.target&&g.add(s.target)},!0);const w=()=>{let s=[];try{s=[...document.querySelectorAll("link[rel~=stylesheet]:not([rel~=alternate])")].filter(p=>!p.sheet&&!p.disabled&&!g.has(p)&&p.getAttribute("href")&&URL.canParse(p.href)&&(!p.media||matchMedia(p.media).matches))}catch{}let h=s.length;return h===0?Promise.resolve():new Promise(p=>{try{const P=d(p,We),L=()=>{--h===0&&(E(P),p())};for(const R of s)R.addEventListener("load",L,{once:!0}),R.addEventListener("error",L,{once:!0})}catch{p()}})};u.then(()=>{try{c?.restore()}catch{}});const M={cb:null};_.on((s,h)=>{if(oe(h)&&Re(s)){try{c?.promoted()}catch{}M.cb?.()}}),k.then(async()=>{if(!i||!S){$();return}le(i.theme);const s=S;let h=!1,p=!1;_.on((l,Z,U)=>{if(Z!==s)return;ke(l)&&le(l.__frame_theme.theme),Te(l)&&qe(l.__frame_patch,s,U);const J=l?.__fc_mode;J&&typeof J=="object"&&!h&&W&&O.test(W)&&(h=!0,C(W).then(ee=>ee.install?.(s,J.on===!0)).catch(()=>{}));const Q=l?.__ft_cmd;Q&&typeof Q=="object"&&!p&&q&&O.test(q)&&(p=!0,C(q).then(ee=>ee.install?.(s,Q)).catch(()=>{}))});const P=Object.keys(i.capabilities??{}).filter(l=>Object.hasOwn(N,l)).map(l=>[l,N[l]]).filter(l=>typeof l[1]=="string"&&O.test(l[1])),L=await Promise.allSettled(P.map(([,l])=>C(l))),R=await e,T=S;if(R?.buildBoot||_.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:"_transforms"}},T),R?.buildBoot)try{D=R.buildBoot(i,R.TRANSFORMS??{},{shellOrigin:T,mount:Y,hooks:B},l=>_.post({__frame_cap_telemetry:l},T))}catch{_.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:"_transforms"}},T),D=se(i,T)}else D=se(i,T);const G=l=>_.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:l}},T),V=D;L.forEach((l,Z)=>{const U=P[Z][0];if(l.status!=="fulfilled"){G(U);return}try{l.value?.install?.(V)}catch{G(U)}}),$(),await u,await w(),A(),_.post({__frame_ready:!0},S),e.then(l=>l?.installSizeReporter?.(T,M)),V.flags.has("frame_ldx_runtime")&&K&&O.test(K)&&document.querySelector("script#an-form")&&C(K).then(l=>l?.boot?.({shellOrigin:s,build:V.flags.has(Oe)})).catch(()=>!1).then(l=>{l!==!0&&G("_ldx")})})}else H&&(ue(),Ue(H,ne,C,{settle:$,mount:Y}))})();</script><!-- /frame-runtime --><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>브레이크아웃 워치</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="돌파워치">
+<meta name="application-name" content="돌파워치">
+<meta name="theme-color" content="#0a0c10">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAE90lEQVR4nO3dPY4jRRyHYc+KCBGQcxEiAsQR+h7kBAQE5NzDR0AERFyEfIOVU5BX8mpm3HZ3dVfXx7+eR0JCq8X2Su/8qG57dl5OlX39zbf/1X4N5HP59PHlVFHxJxfwWC6FAy/yZCKmVNyHPoGQKR32IQ8sZGqFnfUBhUztsLM8kJBpJewPex9AzOSSo6VdQYuZ3PY2tWnihUyrR5DkhRYzpWxpLSloMVNaanOrgxYztaS0typoMVPb2gZ337aDliwGbZ1pxZoWnwYtZlqz1OTDoMVMq5616QxNKLNBW2da96hRC00od0FbZ3ox16qFJpQ3QVtnevO+WQtNKF+Cts706nW7FppQBE28oB036N2tYQtNKIImFEETyovzM5FYaEIRNKEImlAETSiCJhRBE4qgCUXQhCJoQvmq9gugb//+8OPdr33391+nWrz1TbaQWwjbkYNDYk75fTkJmiSpkZaOWtAcHmfJqAVNKIKmyMqWWmlBE4qgCUXQhCJonpr+/OfzP73wTiGz5iL+47dfTluVetfQQnOnp0V+z0KTFPKWlS75mQ5Bc0pd5JSoS39AyZFjcNOG48XPv/6+6vfV+LSdhR7UtOOcfP7p+y//7vPQdBvz+VXIrfIdKwOZMq1yywQ9gGmAkG8EHdwU+HgxR9ABTTvfGOk15itBBzMNdLyYI+hApsGOF3O8sTK4c6CYryz0oOt8DhbyjYUe0DlozFeCHmydz4FjvhI0oQi6c9b5LUETiqA7Zp3vCZpQBN0p6zxP0IQi6A5Z58cE3Zme/86MEgQd2Hmwdb4SdEes8zJBB3UecJ2vBN0JF4LrCJpQBN0B67yeoAlF0I2zzmkETSiCbph1TidoQhF0o6zzNoJukLe4txN056zzW4JujHXeR9Ads873BN0QF4L7CZpQBN0I65yHoAlF0A2wzvn4C88fRCWcPlnoBwtZ6n6wdc5L0AuxeaOjL0P/rO/a61j7+SMadqFTlzf3Wlv+Ywx3Ubg3pNt/X3IxrfN6Qy107oXd+njW+TjDBH1UREfHaZ3ThL8oLLmGa+JzIXis0Au9JeY9EbnNV1/Ihc71Q9z3xDn3hWGdjxfuLkfOVb79+pbHrHE3hEALnWuVj3iOVL4IBj9Db13l1HCE1r7uF7r0hd+e513DF82gZ+gSR4w1j+OuRlu6XOhaq/xIrqit82ALXXuVlx7fWtfXzUK3tspRXms0Xdzl6C2QLXdQGGChWz1i5P4ztPR6e9ds0L2t8hLfhDto0BFWmYHvcuy9MyBkmrkoFDNhFjr3RzOh2kKLmaHvQ9+ImeYvCtcQMmEWWsyEChqaD3rt6lpnulnopVjFTHdHjqXvtobuP8sBe7goJBRBE4qgCUXQhCJoQhE0oQiaUARNKIImFEETiqAJRdCEImhC+XD59PGl9ouAHK4tW2hCETShCJp4QTtH07tbwxaaUARNzKAdO+jV63YtNKG8CdpK05v3zVpoQrkL2krTi7lWLTShzAZtpWndo0YtNKE8DNpK06pnbT5daFHTmqUmF48coqYVa1p0hiaUVUFbaWpb2+DqhRY1taS0l3TkEDWlpTaXfIYWNaVsaW1XnH7gEEfYM5q77nJYa3Lb29Tu23aiJpccLWWN0RGE2qN4yLoKm1r/dz/0uCBsSh9Ti5x/hU2p663iF3TiHsul8E2D6ncoBB7LpfJdr/8Bx8jlXe0SAfMAAAAASUVORK5CYII=">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAE90lEQVR4nO3dPY4jRRyHYc+KCBGQcxEiAsQR+h7kBAQE5NzDR0AERFyEfIOVU5BX8mpm3HZ3dVfXx7+eR0JCq8X2Su/8qG57dl5OlX39zbf/1X4N5HP59PHlVFHxJxfwWC6FAy/yZCKmVNyHPoGQKR32IQ8sZGqFnfUBhUztsLM8kJBpJewPex9AzOSSo6VdQYuZ3PY2tWnihUyrR5DkhRYzpWxpLSloMVNaanOrgxYztaS0typoMVPb2gZ337aDliwGbZ1pxZoWnwYtZlqz1OTDoMVMq5616QxNKLNBW2da96hRC00od0FbZ3ox16qFJpQ3QVtnevO+WQtNKF+Cts706nW7FppQBE28oB036N2tYQtNKIImFEETyovzM5FYaEIRNKEImlAETSiCJhRBE4qgCUXQhCJoQvmq9gugb//+8OPdr33391+nWrz1TbaQWwjbkYNDYk75fTkJmiSpkZaOWtAcHmfJqAVNKIKmyMqWWmlBE4qgCUXQhCJonpr+/OfzP73wTiGz5iL+47dfTluVetfQQnOnp0V+z0KTFPKWlS75mQ5Bc0pd5JSoS39AyZFjcNOG48XPv/6+6vfV+LSdhR7UtOOcfP7p+y//7vPQdBvz+VXIrfIdKwOZMq1yywQ9gGmAkG8EHdwU+HgxR9ABTTvfGOk15itBBzMNdLyYI+hApsGOF3O8sTK4c6CYryz0oOt8DhbyjYUe0DlozFeCHmydz4FjvhI0oQi6c9b5LUETiqA7Zp3vCZpQBN0p6zxP0IQi6A5Z58cE3Zme/86MEgQd2Hmwdb4SdEes8zJBB3UecJ2vBN0JF4LrCJpQBN0B67yeoAlF0I2zzmkETSiCbph1TidoQhF0o6zzNoJukLe4txN056zzW4JujHXeR9Ads873BN0QF4L7CZpQBN0I65yHoAlF0A2wzvn4C88fRCWcPlnoBwtZ6n6wdc5L0AuxeaOjL0P/rO/a61j7+SMadqFTlzf3Wlv+Ywx3Ubg3pNt/X3IxrfN6Qy107oXd+njW+TjDBH1UREfHaZ3ThL8oLLmGa+JzIXis0Au9JeY9EbnNV1/Ihc71Q9z3xDn3hWGdjxfuLkfOVb79+pbHrHE3hEALnWuVj3iOVL4IBj9Db13l1HCE1r7uF7r0hd+e513DF82gZ+gSR4w1j+OuRlu6XOhaq/xIrqit82ALXXuVlx7fWtfXzUK3tspRXms0Xdzl6C2QLXdQGGChWz1i5P4ztPR6e9ds0L2t8hLfhDto0BFWmYHvcuy9MyBkmrkoFDNhFjr3RzOh2kKLmaHvQ9+ImeYvCtcQMmEWWsyEChqaD3rt6lpnulnopVjFTHdHjqXvtobuP8sBe7goJBRBE4qgCUXQhCJoQhE0oQiaUARNKIImFEETiqAJRdCEImhC+XD59PGl9ouAHK4tW2hCETShCJp4QTtH07tbwxaaUARNzKAdO+jV63YtNKG8CdpK05v3zVpoQrkL2krTi7lWLTShzAZtpWndo0YtNKE8DNpK06pnbT5daFHTmqUmF48coqYVa1p0hiaUVUFbaWpb2+DqhRY1taS0l3TkEDWlpTaXfIYWNaVsaW1XnH7gEEfYM5q77nJYa3Lb29Tu23aiJpccLWWN0RGE2qN4yLoKm1r/dz/0uCBsSh9Ti5x/hU2p663iF3TiHsul8E2D6ncoBB7LpfJdr/8Bx8jlXe0SAfMAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --surface-2: #f0eee9;
+    --border: #e2ddd3;
+    --text: #1b1d22;
+    --text-dim: #6b6f7a;
+    --red: #c8333b;
+    --blue: #2f6fd6;
+    --amber: #a8701a;
+    --green: #1f8f5f;
+    --accent: #167d8f;
+    --shadow: 0 1px 2px rgba(20,20,20,.04), 0 1px 1px rgba(20,20,20,.03);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a0c10;
+      --surface: #12151b;
+      --surface-2: #171b22;
+      --border: #262c37;
+      --text: #e7eaf0;
+      --text-dim: #8a93a6;
+      --red: #ef4a52;
+      --blue: #5b96f5;
+      --amber: #e0ac4c;
+      --green: #4ad991;
+      --accent: #5ec8d8;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a0c10;
+    --surface: #12151b;
+    --surface-2: #171b22;
+    --border: #262c37;
+    --text: #e7eaf0;
+    --text-dim: #8a93a6;
+    --red: #ef4a52;
+    --blue: #5b96f5;
+    --amber: #e0ac4c;
+    --green: #4ad991;
+    --accent: #5ec8d8;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans KR", -apple-system, "Apple SD Gothic Neo", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 48px;
+  }
+  .num { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px 12px;
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .brand .mark {
+    width: 9px; height: 9px; border-radius: 2px;
+    background: var(--accent);
+    display: inline-block;
+    transform: translateY(-1px);
+  }
+  h1 {
+    font-size: 17px; font-weight: 700; letter-spacing: -0.01em; margin: 0;
+  }
+  .meta-line {
+    margin-top: 4px; font-size: 12px; color: var(--text-dim);
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+  .kpi-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 8px; text-align: center; box-shadow: var(--shadow);
+  }
+  .kpi .v { font-family: "IBM Plex Mono", monospace; font-size: 20px; font-weight: 600; line-height: 1.1; }
+  .kpi .l { font-size: 10.5px; color: var(--text-dim); margin-top: 4px; letter-spacing: .01em; }
+  .kpi.k-match3 .v { color: var(--red); }
+  .kpi.k-match2 .v { color: var(--amber); }
+  .kpi.k-risk .v { color: var(--blue); }
+  .kpi.k-imminent .v { color: var(--green); }
+  .kpi-clickable { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: box-shadow .15s, transform .1s; }
+  .kpi-clickable:active { transform: scale(0.96); }
+  .kpi-clickable.active { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+
+  section { margin-bottom: 26px; }
+  .sec-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 9px; padding: 0 2px;
+  }
+  .sec-head h2 { font-size: 13px; font-weight: 600; margin: 0; letter-spacing: .01em; }
+  .sec-head .count { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--text-dim); }
+  .sec-desc { font-size: 11.5px; color: var(--text-dim); margin: -5px 0 10px; padding: 0 2px; line-height: 1.5; }
+
+  .divider {
+    border: none; border-top: 1px solid var(--border); margin: 28px 0 22px;
+  }
+  .section-title-big {
+    font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: .04em;
+    text-transform: uppercase; margin: 0 0 4px; padding: 0 2px;
+  }
+
+  .empty-row {
+    border: 1px dashed var(--border); border-radius: 10px; padding: 16px;
+    font-size: 12.5px; color: var(--text-dim); text-align: center;
+  }
+
+  .row {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 13px; margin-bottom: 7px; box-shadow: var(--shadow);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .row .bar { width: 3px; align-self: stretch; border-radius: 3px; flex-shrink: 0; }
+  .tier-3 .bar { background: var(--red); }
+  .tier-2 .bar { background: var(--amber); }
+  .tier-1 .bar { background: var(--border); }
+  .tier-risk .bar { background: var(--blue); }
+  .tier-imminent .bar { background: var(--green); }
+  .tier-imminent.bar-red .bar { background: var(--red); }
+  .tier-imminent.bar-amber .bar { background: var(--amber); }
+  .tier-imminent.bar-green .bar { background: var(--green); }
+
+  .row .body { flex: 1; min-width: 0; }
+  .row .top-line { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+  .row .name { font-weight: 600; font-size: 14.5px; }
+  .row .code { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--text-dim); }
+  .row .market {
+    font-size: 9.5px; font-family: "IBM Plex Mono", monospace; padding: 1px 5px; border-radius: 4px;
+    border: 1px solid var(--border); color: var(--text-dim); letter-spacing: .02em;
+  }
+  .chips { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+  .chip {
+    font-size: 10.5px; padding: 2px 7px; border-radius: 20px;
+    font-family: "IBM Plex Mono", monospace; border: 1px solid var(--border);
+    color: var(--text-dim); background: var(--surface-2);
+  }
+  .chip.on-red { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, var(--border)); }
+  .chip.on-blue { color: var(--blue); border-color: color-mix(in srgb, var(--blue) 40%, var(--border)); }
+  .chip.on-amber { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 40%, var(--border)); }
+  .chip.on-green { color: var(--green); border-color: color-mix(in srgb, var(--green) 40%, var(--border)); }
+
+  .price-col { text-align: right; flex-shrink: 0; }
+  .price { font-family: "IBM Plex Mono", monospace; font-size: 13px; white-space: nowrap; }
+  .dist { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--green); margin-top: 3px; }
+
+  .risk-note {
+    font-size: 11px; color: var(--blue); margin-top: 4px;
+  }
+
+  .disclaimer {
+    margin-top: 30px; padding: 13px 15px; border-radius: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    font-size: 11.5px; color: var(--text-dim); line-height: 1.7;
+  }
+  .disclaimer b { color: var(--text); }
+  .disclaimer + .disclaimer { margin-top: 12px; }
+
+  .install-hint {
+    margin-top: 12px; padding: 12px 15px; border-radius: 10px;
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+    font-size: 11.5px; color: var(--text-dim); line-height: 1.7;
+  }
+  .install-hint b { color: var(--accent); }
+
+  .row { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .row:active { background: var(--surface-2); }
+  .chart-panel {
+    display: none; background: var(--surface); border: 1px solid var(--border);
+    border-top: none; border-radius: 0 0 10px 10px; margin: -7px 0 7px;
+    padding: 10px 10px 12px; box-shadow: var(--shadow);
+  }
+  .chart-panel.open { display: block; }
+  .chart-panel canvas { width: 100%; display: block; touch-action: pan-y; }
+  .chart-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; padding: 0 2px; }
+  .chart-legend span { font-size: 10px; font-family: "IBM Plex Mono", monospace; display: flex; align-items: center; gap: 4px; }
+  .chart-legend .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .chart-empty { font-size: 11.5px; color: var(--text-dim); text-align: center; padding: 20px 0; }
+
+  .tabbar {
+    display: flex; gap: 6px; padding: 10px 16px 0; max-width: 640px; margin: 0 auto;
+  }
+  .tab-btn {
+    flex: 1; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-dim); font-size: 12.5px; font-weight: 600;
+    font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+
+<header>
+  <div class="brand"><span class="mark"></span><h1>브레이크아웃 워치</h1></div>
+  <div class="meta-line" id="meta-line">기준일 2026-09-08 · 코스피·코스닥 전종목 스캔 · 오늘 돌파 18개</div>
+</header>
+
+<div class="tabbar">
+  <button class="tab-btn active" id="tab-btn-breakout" onclick="switchTab('breakout')">브레이크아웃 워치</button>
+  <button class="tab-btn" id="tab-btn-imminent" onclick="switchTab('imminent')">임박 스캐너</button>
+  <button class="tab-btn" id="tab-btn-volatility" onclick="switchTab('volatility')">변동성 패턴</button>
+</div>
+
+<main>
+  <div class="tab-panel active" id="tab-breakout">
+  <div class="kpi-strip">
+    <div class="kpi"><div class="v num" id="kpi-total">18</div><div class="l">오늘 돌파</div></div>
+    <div class="kpi k-match3"><div class="v num" id="kpi-3">0</div><div class="l">3/3 충족</div></div>
+    <div class="kpi k-match2"><div class="v num" id="kpi-2">7</div><div class="l">2/3 충족</div></div>
+    <div class="kpi k-risk"><div class="v num" id="kpi-risk">1</div><div class="l">음봉 위험</div></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>3/3 충족 — 완전 부합</h2><span class="count num" id="count-3"></span></div>
+    <div class="sec-desc">240일선 하락중 + 바닥권 거래량 횡보 + 단기이평 미정배열, 3개 조건 모두 충족.</div>
+    <div id="list-3"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>2/3 충족</h2><span class="count num" id="count-2"></span></div>
+    <div class="sec-desc">3개 조건 중 2개만 충족. 참고용 관찰 대상.</div>
+    <div id="list-2"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>음봉 돌파 — 위험 신호</h2><span class="count num" id="count-risk"></span></div>
+    <div class="sec-desc">장중 240일선을 넘었지만 종가는 밀려 마감. 돌파 확신이 약함.</div>
+    <div id="list-risk"></div>
+  </section>
+
+  <div class="disclaimer">
+    <b>검증 결과 요약</b>: 이 3요소 조합의 과거 전수 검증 승률은 52.6%, 중앙값 수익률 +0.96%였고, 최근 4개월 구간에서는
+    재현되지 않았습니다(승률 25~30%대로 하락). 외국인·기관 수급 방향은 검증 결과 유의미한 차별 요소가 아니었습니다.
+    <b>장기추세 필터(2026-09-10 추가)</b>: 240일선을 막 돌파했어도 최근 180거래일 등락률이 -30% 이하인
+    "급격한 우하향" 종목은 후보에서 아예 제외합니다 — 장기 하락 중 잠깐 반등한 것과, 우상향/장기횡보 중인
+    진짜 돌파를 구분하기 위함입니다. <b>가짜 돌파(분출/분배) 필터(2026-09-10 추가)</b>: 거래량 급증을 동반한
+    장대양봉(단기 급등) 이후 장대음봉(긴 윗꼬리 음봉 포함)이 5개 이상 나온 종목은 제외합니다 — 급등 후 계속
+    분출/분배 중인 흐름은 진짜 추세 전환이 아니라고 판단합니다(예: 컴투스 사례). <b>바닥반전패턴 배지(2026-09-10
+    추가)</b>: 쌍바닥/원형바닥/역헤드앤숄더/V자반등처럼 바닥권에서 상승 전환하는 대표적인 캔들 패턴이 감지되면
+    "반전패턴" 칩을 표시합니다 — 후보 선정 자체를 좌우하지는 않는 참고용 배지이며, 정밀한 형태 인식이 아니라
+    단순 통계적 임계값 기반 근사 판정입니다. <b>이 페이지는 매매 추천이 아닌 관찰용 워치리스트이며, 투자 판단과
+    손익 책임은 본인에게 있습니다.</b>
+  </div>
+  </div><!-- /tab-breakout -->
+
+  <div class="tab-panel" id="tab-imminent">
+  <div class="kpi-strip">
+    <div class="kpi k-imminent kpi-clickable" data-filter="all"><div class="v num" id="kpi-imm-total">20</div><div class="l">통합 후보</div></div>
+    <div class="kpi k-match3 kpi-clickable" data-filter="pullback"><div class="v num" id="kpi-imm-3">0</div><div class="l">눌림목 확정</div></div>
+    <div class="kpi k-match2 kpi-clickable" data-filter="flow"><div class="v num" id="kpi-imm-2">0</div><div class="l">수급 확인</div></div>
+    <div class="kpi k-risk kpi-clickable" data-filter="semiconductor"><div class="v num" id="kpi-imm-total2">0</div><div class="l">반도체 업종</div></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>임박 스캐너 — 전면 개편(통합모델)</h2><span class="count num" id="count-imm"></span></div>
+    <div class="sec-desc">기존 지지형성/전저점회복/장기횡보 3패턴은 5년 검증 결과 무작위(4.9%)와 다를 바
+    없어 폐기했습니다. 지금은 <b>변동성확대(기술확신도, 나스닥·SOX 반영) + 재무건전성(흑자·부채비율) + 유동성
+    + 수급(외국인·기관) + 눌림목-지속상승 패턴 + 5년 개별종목 빈도</b>를 전부 결합한 점수로 상위 20종목을
+    선정합니다.</div>
+    <div id="list-imm"></div>
+  </section>
+
+  <div class="disclaimer">
+    <b>임박 스캐너 방법론(2026-09-10 갱신)</b>: ① 1차 후보(지지선·스프링·베이스 패턴)를 거래정지 종목 및
+    <b>가짜돌파(분출/분배 — 거래량급증 장대양봉 이후 장대음봉 5개 이상, 예: 컴투스)</b> 제외 후
+    → ② 21개 기술지표로 학습한 랜덤포레스트 확률(검증구간 상위1% 적중 35%) → ③ 전일 나스닥 등락률(상관계수
+    기반), 반도체 업종은 필라델피아반도체지수(SOX)까지 반영해 감점 → ④ DART 재무데이터로 흑자·부채비율 200%
+    미만만 통과 → ⑤ 20일평균거래량 10만주 이상만 통과 → ⑥ <b>5년 개별종목 급등빈도(hitRate, 가중치 0.5)</b>,
+    <b>오늘 소속 업종 평균등락률이 양수면 가점(핫섹터, 가중치 2.0)</b>, 외국인+기관 5일 순매수(+3),
+    눌림목(3%내외)-신고가 재갱신 패턴이 <b>최근 60일 이내에 확정된 경우만</b>(+3, 오래된 확정 이력은 제외)을
+    결합한 최종 점수로 순위를 매겼습니다. <b>거래량과 수급은 서로 무관한 지표라는 것도 확인했습니다(상관계수
+    0.01) — 각각 독립적으로 반영했습니다. 매매 추천이 아닌 통계적 관찰 결과이며, 투자 판단과 책임은 본인에게
+    있습니다.</b>
+  </div>
+  </div><!-- /tab-imminent -->
+
+  <div class="tab-panel" id="tab-volatility">
+  <div class="kpi-strip">
+    <div class="kpi k-imminent"><div class="v num" id="kpi-vol-total">10</div><div class="l">선정 종목</div></div>
+    <div class="kpi"><div class="v num" id="kpi-vol-scanned">2973</div><div class="l">스캔 종목</div></div>
+    <div class="kpi"><div class="v num" id="kpi-vol-hitrate">23~35%</div><div class="l">검증 적중률</div></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>변동성 확대 — 데이터 재발굴 패턴</h2><span class="count num" id="count-vol"></span></div>
+    <div class="sec-desc">21개 범용 기술지표로 5년 전종목 데이터를 학습해 찾은 "변동성 확대" 규칙 —
+    <b>어제도 오늘도 조건을 만족한(2일 이상 지속) 신호</b>이면서 <b>당일 양봉(상승)</b>인 종목만 걸러,
+    랜덤포레스트 확률 순으로 상위 10개를 뽑았습니다.</div>
+    <div id="list-vol"></div>
+  </section>
+
+  <div class="disclaimer">
+    <b>변동성 패턴 방법론(3차 개정, 2026-09-10)</b>: 21개 지표로 5년치(249만 거래일) 데이터를 학습(2022-08~2025-08)하고
+    최근 1년(2025-08~2026-08)에 검증. 변동성 확대 규칙 자체의 적중률은 21.7%. <b>어제까지는 미충족이다가 오늘 처음
+    뜬 "1일차" 신호는 18.5%로 오히려 낮고, 이미 2일 이상 지속된 신호가 25.1%로 더 높게 나와</b> — 통계적으로 더
+    신뢰도 높은 "2일 이상 지속" 기준으로 다시 걸렀습니다(사용자 요청, 2026-09-10). <b>가짜돌파(분출/분배) 필터
+    추가(2026-09-10)</b>: 브레이크아웃 워치·임박 스캐너와 같은 기준(거래량급증 장대양봉 이후 장대음봉 5개 이상)을
+    여기도 적용해, 이미 급등 후 여러 날째 분출/분배 중인 종목(예: 케이엠제약 — 2026-07-30 급등 이후 17거래일
+    장대음봉/급락)이 "변동성 확대"로 오인돼 뽑히는 것을 제외합니다. 오늘 막 시작된 급등은 이 필터에 걸리지
+    않습니다. <b>매매 추천이 아닌 통계적 관찰 결과이며, 나머지 75% 가까이는 기대만큼 안 오르거나 하락할 수
+    있습니다.</b>
+  </div>
+  </div><!-- /tab-volatility -->
+
+  <div class="install-hint">
+    <b>홈 화면에 추가하기</b>: 아이폰은 Safari 공유 버튼 → "홈 화면에 추가", 안드로이드는 Chrome 메뉴 → "홈 화면에 추가"를
+    누르면 앱 아이콘처럼 바로 열 수 있습니다.
+  </div>
+</main>
+
+<script>
+const DATA = /*__PLACEHOLDER_DATA__*/;
+
+const DATA_IMMINENT = /*__PLACEHOLDER_DATA_IMMINENT__*/;
+const DATA_VOLATILITY = /*__PLACEHOLDER_DATA_VOLATILITY__*/;
+
+function fmtPrice(n) {
+  return n.toLocaleString("ko-KR") + "원";
+}
+
+function chipHtml(label, cls) {
+  return `<span class="chip ${cls||''}">${label}</span>`;
+}
+
+function row(item, tierClass) {
+  const slopeCls = item.slope === "하락" ? "on-red" : (item.slope === "상승" ? "" : "on-amber");
+  const volCls = item.vol === "횡보" ? "on-amber" : "";
+  const alignedLabel = item.aligned ? "정배열" : "미정배열";
+  const alignedCls = item.aligned ? "" : "on-red";
+  return `
+  <div class="row ${tierClass}" onclick="toggleChart('${item.code}', this)">
+    <div class="bar"></div>
+    <div class="body">
+      <div class="top-line">
+        <span class="name">${item.name}</span>
+        <span class="code num">${item.code}</span>
+        <span class="market">${item.market}</span>
+      </div>
+      <div class="chips">
+        ${item.longTrend ? chipHtml("장기추세 " + item.longTrend, item.longTrend === "우상향" ? "on-green" : "") : ""}
+        ${item.bottomPattern ? chipHtml("반전패턴 " + item.bottomPattern, "on-green") : ""}
+        ${chipHtml("240일선 " + item.slope, slopeCls)}
+        ${chipHtml("거래량 " + item.vol, volCls)}
+        ${chipHtml(alignedLabel, alignedCls)}
+        ${chipHtml(item.candle)}
+        ${item.kiwoomVolumeSpike ? chipHtml("키움 거래량급증 확인", "on-green") : ""}
+      </div>
+    </div>
+    <div class="price num">${fmtPrice(item.close)}</div>
+  </div>
+  <div class="chart-panel" id="chart-${item.code}"></div>`;
+}
+
+function riskRow(item) {
+  return `
+  <div class="row tier-risk" onclick="toggleChart('${item.code}', this)">
+    <div class="bar"></div>
+    <div class="body">
+      <div class="top-line">
+        <span class="name">${item.name}</span>
+        <span class="code num">${item.code}</span>
+        <span class="market">${item.market}</span>
+      </div>
+      <div class="risk-note">종가 음봉 마감 — 돌파 신뢰도 낮음</div>
+    </div>
+    <div class="price num">${fmtPrice(item.close)}</div>
+  </div>
+  <div class="chart-panel" id="chart-${item.code}"></div>`;
+}
+
+function imminentRow(item) {
+  const scoreChip = chipHtml(`통합점수 ${item.score}`, "on-green");
+  const sectorChip = chipHtml(item.sector, item.sector === "반도체와반도체장비" ? "on-blue" : "");
+  const flowChip = item.flow ? chipHtml("외국인+기관 순매수", "on-amber") : "";
+  const pullbackChip = item.pullback === "확정" ? chipHtml("눌림목→신고가 확정", "on-red")
+                      : item.pullback === "관찰중" ? chipHtml("눌림목 관찰중", "on-amber") : "";
+  const hitRateChip = (item.hitRate != null) ? chipHtml(`5년빈도 ${item.hitRate}%`, "") : "";
+  const finHealthChip = (item.roe != null) ? chipHtml(`ROE ${item.roe}% 부채 ${item.debtRatio}%`, "on-green") : "";
+  const barCls = item.pullback === "확정" ? "bar-red" : (item.flow ? "bar-amber" : "bar-green");
+  return `
+  <div class="row tier-imminent ${barCls}" onclick="toggleChart('${item.code}', this)">
+    <div class="bar"></div>
+    <div class="body">
+      <div class="top-line">
+        <span class="name">${item.name}</span>
+        <span class="code num">${item.code}</span>
+        <span class="market">${item.market}</span>
+      </div>
+      <div class="chips">
+        ${scoreChip}
+        ${sectorChip}
+        ${flowChip}
+        ${pullbackChip}
+        ${hitRateChip}
+        ${finHealthChip}
+      </div>
+    </div>
+    <div class="price-col">
+      <div class="price num">${fmtPrice(item.close)}</div>
+      <div class="dist num">확신도 ${item.prob}%</div>
+    </div>
+  </div>
+  <div class="chart-panel" id="chart-${item.code}"></div>`;
+}
+
+function volatilityRow(item) {
+  const atrChip = chipHtml(`ATR ${item.atrPct}%`, "on-amber");
+  const rangeChip = chipHtml(`당일변동 ${item.rangePct}%`, "on-red");
+  const retChip = chipHtml(`전일比 ${item.ret1d > 0 ? "+" : ""}${item.ret1d}%`, item.ret1d >= 0 ? "on-green" : "");
+  const probChip = chipHtml(`확률 ${item.prob}%`, "on-green");
+  return `
+  <div class="row tier-imminent" onclick="toggleChart('${item.code}', this)">
+    <div class="bar"></div>
+    <div class="body">
+      <div class="top-line">
+        <span class="name">${item.name}</span>
+        <span class="code num">${item.code}</span>
+        <span class="market">${item.market}</span>
+      </div>
+      <div class="chips">
+        ${atrChip}
+        ${rangeChip}
+        ${retChip}
+        ${probChip}
+      </div>
+    </div>
+    <div class="price-col">
+      <div class="price num">${fmtPrice(item.close)}</div>
+    </div>
+  </div>
+  <div class="chart-panel" id="chart-${item.code}"></div>`;
+}
+
+function fillSection(listId, countId, items, emptyMsg, renderFn, tierClass) {
+  document.getElementById(countId).textContent = items.length ? `${items.length}개` : "";
+  const target = document.getElementById(listId);
+  target.innerHTML = items.length
+    ? items.map(x => renderFn(x, tierClass)).join("")
+    : `<div class="empty-row">${emptyMsg}</div>`;
+}
+
+document.getElementById("meta-line").textContent = `기준일 ${DATA.date} · 코스피·코스닥 전종목 스캔 · 오늘 돌파 ${DATA.total}개`;
+document.getElementById("kpi-total").textContent = DATA.total;
+document.getElementById("kpi-3").textContent = DATA.tier3.length;
+document.getElementById("kpi-2").textContent = DATA.tier2.length;
+document.getElementById("kpi-risk").textContent = DATA.risk.length;
+fillSection("list-3", "count-3", DATA.tier3, "오늘은 3개 조건을 모두 만족한 종목이 없습니다.", row, "tier-3");
+fillSection("list-2", "count-2", DATA.tier2, "오늘은 2개 조건을 충족한 종목이 없습니다.", row, "tier-2");
+fillSection("list-risk", "count-risk", DATA.risk, "오늘은 음봉 돌파 종목이 없습니다.", riskRow);
+
+const immItems = DATA_IMMINENT.items;
+document.getElementById("kpi-imm-total").textContent = immItems.length;
+document.getElementById("kpi-imm-3").textContent = immItems.filter(x => x.pullback === "확정").length;
+document.getElementById("kpi-imm-2").textContent = immItems.filter(x => x.flow === true).length;
+document.getElementById("kpi-imm-total2").textContent = immItems.filter(x => x.sector === "반도체와반도체장비").length;
+
+let immFilterMode = "all";
+const immFilterPreds = {
+  all: () => true,
+  pullback: x => x.pullback === "확정",
+  flow: x => x.flow === true,
+  semiconductor: x => x.sector === "반도체와반도체장비",
+};
+const immEmptyMsgs = {
+  all: "오늘은 임박 후보가 없습니다.",
+  pullback: "눌림목 확정 종목이 없습니다.",
+  flow: "수급 확인(외국인+기관 순매수) 종목이 없습니다.",
+  semiconductor: "반도체 업종 종목이 없습니다.",
+};
+function renderImminent() {
+  const filtered = immItems.filter(immFilterPreds[immFilterMode]);
+  fillSection("list-imm", "count-imm", filtered, immEmptyMsgs[immFilterMode], imminentRow);
+  document.querySelectorAll("#tab-imminent .kpi[data-filter]").forEach(el => {
+    el.classList.toggle("active", el.dataset.filter === immFilterMode);
+  });
+}
+document.querySelectorAll("#tab-imminent .kpi[data-filter]").forEach(el => {
+  el.addEventListener("click", () => {
+    const f = el.dataset.filter;
+    immFilterMode = (immFilterMode === f) ? "all" : f;
+    renderImminent();
+  });
+});
+renderImminent();
+
+const volItems = DATA_VOLATILITY.items;
+fillSection("list-vol", "count-vol", volItems, "오늘은 선정된 종목이 없습니다.", volatilityRow);
+
+const CHART_DATA = /*__PLACEHOLDER_CHART_DATA__*/;
+
+const openCharts = {};
+
+function switchTab(name) {
+  document.getElementById('tab-breakout').classList.toggle('active', name === 'breakout');
+  document.getElementById('tab-imminent').classList.toggle('active', name === 'imminent');
+  document.getElementById('tab-volatility').classList.toggle('active', name === 'volatility');
+  document.getElementById('tab-btn-breakout').classList.toggle('active', name === 'breakout');
+  document.getElementById('tab-btn-imminent').classList.toggle('active', name === 'imminent');
+  document.getElementById('tab-btn-volatility').classList.toggle('active', name === 'volatility');
+}
+
+function toggleChart(ticker, rowEl) {
+  const panel = document.getElementById('chart-' + ticker);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) {
+    panel.classList.remove('open');
+    openCharts[ticker] = false;
+    return;
+  }
+  panel.classList.add('open');
+  openCharts[ticker] = true;
+  if (!panel.dataset.rendered) {
+    renderChartPanel(ticker, panel);
+    panel.dataset.rendered = '1';
+  }
+}
+
+function renderChartPanel(ticker, panel) {
+  const candles = CHART_DATA[ticker];
+  if (!candles || !candles.length) {
+    panel.innerHTML = '<div class="chart-empty">차트 데이터 없음</div>';
+    return;
+  }
+  panel.innerHTML = `
+    <div class="chart-legend">
+      <span><i class="dot" style="background:var(--red)"></i>양봉</span>
+      <span><i class="dot" style="background:var(--blue)"></i>음봉</span>
+      <span><i class="dot" style="background:#e0ac4c"></i>MA5</span>
+      <span><i class="dot" style="background:#167d8f"></i>MA10</span>
+      <span><i class="dot" style="background:#5b96f5"></i>MA20</span>
+      <span><i class="dot" style="background:var(--text)"></i>MA240</span>
+    </div>
+    <canvas id="cv-${ticker}"></canvas>
+  `;
+  drawCandles(document.getElementById('cv-' + ticker), candles);
+}
+
+function drawCandles(canvas, candles) {
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.parentElement.clientWidth;
+  const priceH = 170, volH = 46, gap = 6, padTop = 6, padBottom = 4;
+  const cssH = priceH + gap + volH + padTop + padBottom;
+  canvas.style.height = cssH + 'px';
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const cs = getComputedStyle(document.documentElement);
+  const colBorder = cs.getPropertyValue('--border').trim() || '#e2ddd3';
+  const colDim = cs.getPropertyValue('--text-dim').trim() || '#6b6f7a';
+  const colRed = cs.getPropertyValue('--red').trim() || '#c8333b';
+  const colBlue = cs.getPropertyValue('--blue').trim() || '#2f6fd6';
+  const colText = cs.getPropertyValue('--text').trim() || '#1b1d22';
+
+  const n = candles.length;
+  const slot = cssW / n;
+  const bodyW = Math.max(1, slot * 0.62);
+
+  let lo = Infinity, hi = -Infinity;
+  for (const c of candles) {
+    lo = Math.min(lo, c.l); hi = Math.max(hi, c.h);
+    for (const k of ['m5','m10','m20','m240']) {
+      if (c[k] != null) { lo = Math.min(lo, c[k]); hi = Math.max(hi, c[k]); }
+    }
+  }
+  const padPrice = (hi - lo) * 0.06 || 1;
+  lo -= padPrice; hi += padPrice;
+  const priceY = v => padTop + priceH - ((v - lo) / (hi - lo)) * priceH;
+
+  let volMax = 0;
+  for (const c of candles) volMax = Math.max(volMax, c.v);
+  volMax = volMax || 1;
+  const volTop = padTop + priceH + gap;
+  const volY = v => volTop + volH - (v / volMax) * volH;
+
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  ctx.strokeStyle = colBorder; ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = padTop + (priceH / 3) * i;
+    ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(cssW, y + 0.5); ctx.stroke();
+  }
+
+  function maLine(key, color, width) {
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath();
+    let started = false;
+    candles.forEach((c, i) => {
+      if (c[key] == null) return;
+      const x = i * slot + slot / 2, y = priceY(c[key]);
+      if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+    });
+    ctx.stroke();
+  }
+  maLine('m20', '#5b96f5', 2);
+  maLine('m10', '#167d8f', 2);
+  maLine('m5', '#e0ac4c', 2);
+  maLine('m240', colText, 3);
+
+  candles.forEach((c, i) => {
+    const x = i * slot + slot / 2;
+    const up = c.c >= c.o;
+    ctx.strokeStyle = ctx.fillStyle = up ? colRed : colBlue;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, priceY(c.h)); ctx.lineTo(x, priceY(c.l)); ctx.stroke();
+    const yO = priceY(c.o), yC = priceY(c.c);
+    const bodyTop = Math.min(yO, yC), bodyH = Math.max(1, Math.abs(yC - yO));
+    ctx.fillRect(x - bodyW / 2, bodyTop, bodyW, bodyH);
+
+    ctx.globalAlpha = 0.55;
+    ctx.fillRect(x - bodyW / 2, volY(c.v), bodyW, volTop + volH - volY(c.v));
+    ctx.globalAlpha = 1;
+  });
+
+  ctx.fillStyle = colDim;
+  ctx.font = '9px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(candles[0].d, 2, cssH - 2);
+  ctx.textAlign = 'right';
+  ctx.fillText(candles[n - 1].d, cssW - 2, cssH - 2);
+  ctx.textAlign = 'left';
+  ctx.fillText(hi.toLocaleString('ko-KR'), 2, padTop + 9);
+  ctx.fillText(lo.toLocaleString('ko-KR'), 2, padTop + priceH - 2);
+}
+</script>
+
+
+
+
+
+</body></html>
