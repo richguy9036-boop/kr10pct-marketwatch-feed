@@ -279,7 +279,9 @@
     필터를 통과한 종목을, <b>5년치 실제 이벤트로 학습한 로지스틱 회귀</b>가 계산한 "3거래일 내
     10%+ 급등 확률"(score) 순으로 정렬하되, <b>영업이익률이 직전 분기 대비 상승한 종목을 그 안에서 우선
     배치</b>합니다. 아래 점수(prob)는 회귀 확률 그 자체입니다. DART 재무 필터(흑자·부채비율)는
-    없습니다 — ROE·부채비율은 참고 정보 칩으로만 표시됩니다.</div>
+    없습니다 — ROE·부채비율·업종·소속테마(인포스탁 0659 화면과 동일한 네이버 테마 분류, 오늘자
+    등락률이 가장 높은 테마 하나만 표시)는 전부 참고 정보 칩입니다(테마 거래량신호는 백테스트로
+    검증했지만 실제 후보군 표본에서 예측력이 확인되지 않아 점수에는 반영하지 않았습니다).</div>
     <div id="list-imm"></div>
   </section>
 
@@ -439,6 +441,7 @@ function imminentRow(item) {
   const hitRateChip = (item.hitRate != null) ? chipHtml(`5년빈도 ${item.hitRate}%`, "") : "";
   const finHealthChip = (item.roe != null) ? chipHtml(`ROE ${item.roe}%${item.debtRatio != null ? ` 부채 ${item.debtRatio}%` : ""}`, "on-green") : "";
   const marginRisingChip = item.marginRising ? chipHtml("영업이익률 분기상승", "on-red") : "";
+  const themeChip = item.theme ? chipHtml(`테마 ${item.theme} ${item.themeChangePct != null ? (item.themeChangePct >= 0 ? "+" : "") + item.themeChangePct + "%" : ""}`, "on-amber") : "";
   const barCls = item.pullback === "확정" ? "bar-red" : (item.flow ? "bar-amber" : "bar-green");
   return `
   <div class="row tier-imminent ${barCls}" onclick="toggleChart('${item.code}', this)">
@@ -457,6 +460,7 @@ function imminentRow(item) {
         ${hitRateChip}
         ${finHealthChip}
         ${marginRisingChip}
+        ${themeChip}
       </div>
     </div>
     <div class="price-col">
