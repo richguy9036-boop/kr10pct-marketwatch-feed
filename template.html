@@ -275,9 +275,10 @@
 
   <section>
     <div class="sec-head"><h2>임박 스캐너 — 전면 개편(통합모델)</h2><span class="count num" id="count-imm"></span></div>
-    <div class="sec-desc">셋업 패턴(지지선·전저점회복·장기횡보) + 거래정지·가짜돌파 제외 + 재무건전성·유동성
-    필터를 통과한 종목을, <b>5년치 실제 이벤트 70,243건으로 학습한 로지스틱 회귀</b>가 계산한 "3거래일 내
-    10%+ 급등 확률"순으로 정렬합니다. 아래 점수(prob)는 이 확률 그 자체입니다.</div>
+    <div class="sec-desc">셋업 패턴(지지선·전저점회복·장기횡보·240일선 돌파) + 거래정지·가짜돌파 제외 + 재무건전성(흑자)·유동성
+    필터를 통과한 종목을, <b>5년치 실제 이벤트로 학습한 로지스틱 회귀</b>가 계산한 "3거래일 내
+    10%+ 급등 확률"(score) 순으로 정렬하되, <b>영업이익률이 직전 분기 대비 상승한 종목을 그 안에서 우선
+    배치</b>합니다. 아래 점수(prob)는 회귀 확률 그 자체입니다.</div>
     <div id="list-imm"></div>
   </section>
 
@@ -314,8 +315,20 @@
     거래량이 터진 종목은 오히려 향후 3일 지속상승 확률이 낮다"는 결과가 나와 케이스스터디 관찰과
     일치했고, 이를 신규 변수로 추가해 <b>홀드아웃 AUC 0.747 → 0.753으로 재개선</b>했습니다. 12개 종목의
     상승 직전 5거래일 기관·외국인 수급도 직접 조회했는데 <b>12개 중 11개가 순매도</b>였습니다 — 수급이
-    선행지표가 아니라는 기존 결론(v2)을 다른 표본에서도 재확인, 계속 점수에서 제외합니다. <b>매매
-    추천이 아닌 통계적 관찰 결과이며, 투자 판단과 책임은 본인에게 있습니다.</b>
+    선행지표가 아니라는 기존 결론(v2)을 다른 표본에서도 재확인, 계속 점수에서 제외합니다.
+    <b>v4 업데이트(2026-09-10, 셋업4 추가 + DART 필터 개편)</b>: 4번째 셋업 패턴(240일선
+    근접·돌파준비·돌파 1일 이내 + 거래량 증가)을 추가하기 전에, 이번에도 임의 기준으로
+    끝내지 않고 5년 전종목 패널로 먼저 백테스트했습니다 — 처음 시도한 "±5% 근접 +
+    거래량 1.2배"만으로는 적중률이 오히려 베이스레이트보다 낮았습니다(2.98% vs 3.89%,
+    lift 0.76배). 여기에 <b>52주 신고가 대비 -30% 이상 눌린 상태</b>(이 세션 앞부분
+    12종목 케이스스터디의 "깊은 눌림 후 반등" 시그니처와 동일) 조건을 추가하자 lift
+    1.97배까지 개선됐습니다(band -5%~+2%, 거래량 2.0배, n=10,716) — 이 조합으로
+    셋업4를 확정했습니다. 재무건전성 필터는 <b>부채비율 기준을 제거</b>하고 흑자
+    요건만 유지했으며, 대신 <b>직전 분기 대비 영업이익률이 상승한 종목을 정렬
+    우선순위로 앞세웁니다</b>(2026년 1분기→2분기 비교, DART 공시 기준 — score 계산식
+    자체에는 섞지 않고 별도 정렬키로만 반영해 검증되지 않은 가중치가 확률에 끼어들지
+    않게 했습니다). <b>매매 추천이 아닌 통계적 관찰 결과이며, 투자 판단과 책임은
+    본인에게 있습니다.</b>
   </div>
   </div><!-- /tab-imminent -->
 
@@ -422,7 +435,8 @@ function imminentRow(item) {
   const pullbackChip = item.pullback === "확정" ? chipHtml("눌림목→신고가 확정", "on-red")
                       : item.pullback === "관찰중" ? chipHtml("눌림목 관찰중", "on-amber") : "";
   const hitRateChip = (item.hitRate != null) ? chipHtml(`5년빈도 ${item.hitRate}%`, "") : "";
-  const finHealthChip = (item.roe != null) ? chipHtml(`ROE ${item.roe}% 부채 ${item.debtRatio}%`, "on-green") : "";
+  const finHealthChip = (item.roe != null) ? chipHtml(`ROE ${item.roe}%${item.debtRatio != null ? ` 부채 ${item.debtRatio}%` : ""}`, "on-green") : "";
+  const marginRisingChip = item.marginRising ? chipHtml("영업이익률 분기상승", "on-red") : "";
   const barCls = item.pullback === "확정" ? "bar-red" : (item.flow ? "bar-amber" : "bar-green");
   return `
   <div class="row tier-imminent ${barCls}" onclick="toggleChart('${item.code}', this)">
@@ -440,6 +454,7 @@ function imminentRow(item) {
         ${pullbackChip}
         ${hitRateChip}
         ${finHealthChip}
+        ${marginRisingChip}
       </div>
     </div>
     <div class="price-col">
