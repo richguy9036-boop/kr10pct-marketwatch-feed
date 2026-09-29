@@ -650,6 +650,7 @@ document.querySelectorAll("#tab-imminent .kpi[data-filter]").forEach(el => {
 renderImminent();
 
 const volItems = DATA_VOLATILITY.items;
+document.getElementById("kpi-vol-total").textContent = volItems.length;
 fillSection("list-vol", "count-vol", volItems, "오늘은 선정된 종목이 없습니다.", volatilityRow);
 
 document.getElementById("count-hot").textContent = DATA_HOT_SECTORS.items.length ? `테마 ${DATA_HOT_SECTORS.items.length}개` : "";
