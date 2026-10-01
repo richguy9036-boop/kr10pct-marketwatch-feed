@@ -387,9 +387,9 @@
     <b>오늘의 종목이란</b>: 브레이크아웃 워치·임박 스캐너·변동성 패턴 3개 탭은 전부 과거 데이터로 검증한
     셋업/확률 기반 신호인 반면, 이 탭은 "오늘 실제로 어떤 업종·종목이 가장 강하게 움직였는가"를 그대로
     보여주는 순수 정보 탭입니다. 이미 많이 오른 종목을 뒤늦게 쫓아가는 추격매수는 일반적으로 검증된
-    우위가 없는 위험한 진입 방식이라는 점에 유의하시기 바랍니다. <b>갱신 주기</b>: 장 시작 후 09:05에 첫
-    호출, 이후 매시 정각 5분(10:05~15:05)마다 갱신되고, 정규장 마감 후 15:40에 마지막으로 호출해 그날의
-    최종("마감종목") 결과로 고정됩니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
+    우위가 없는 위험한 진입 방식이라는 점에 유의하시기 바랍니다. <b>갱신 주기</b>: 평일 08:00부터 12:00까지 10분마다
+    갱신되고, 12:00 결과가 그날의 마지막 화면으로 남습니다. 08:00~09:00(정규장 시작 전)에는 "장전"으로
+    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
     있습니다.</b>
   </div>
   </div><!-- /tab-hot -->
@@ -659,7 +659,9 @@ document.getElementById("list-hot").innerHTML = DATA_HOT_SECTORS.items.length
   : `<div class="empty-row">오늘은 데이터가 없습니다.</div>`;
 document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "마감"
   ? `${DATA_HOT_SECTORS.date} 마감종목 · ${DATA_HOT_SECTORS.asOfTime} 기준`
-  : `${DATA_HOT_SECTORS.date} 장중 · ${DATA_HOT_SECTORS.asOfTime} 기준(1시간마다 갱신)`;
+  : DATA_HOT_SECTORS.session === "장전"
+  ? `${DATA_HOT_SECTORS.date} 장전 · ${DATA_HOT_SECTORS.asOfTime} 기준(정규장 시작 전 — 전일 기준 값일 수 있음)`
+  : `${DATA_HOT_SECTORS.date} 장중 · ${DATA_HOT_SECTORS.asOfTime} 기준(08:00~12:00 10분마다 갱신)`;
 
 const CHART_DATA = /*__PLACEHOLDER_CHART_DATA__*/;
 
