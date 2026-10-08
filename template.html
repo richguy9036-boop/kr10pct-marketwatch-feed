@@ -401,6 +401,7 @@
     "평소 대비"는 장중 누적값이라 시간이 갈수록 커집니다 — 같은 시각 테마끼리 비교하는 용도입니다.
     "상승"은 테마 안에서 오른 종목 수로, 한두 종목만 튄 건지 테마 전체가 움직이는지 보여줍니다.
     종목은 테마 안에서 거래대금이 가장 큰 2개이며, 앞 순위와 겹치면 그 테마는 건너뜁니다.</div>
+    <div class="money-stats" id="money-asof"></div>
     <div id="list-money"></div>
     <div class="sec-head" style="margin-top:22px"><h2>외국인·기관 순매수 업종</h2></div>
     <div class="sec-desc">키움 업종별 투자자 순매수(코스피·코스닥 업종, 단위 억원, 오늘 장중 누적).</div>
@@ -421,7 +422,7 @@
     보여주는 순수 정보 탭입니다. 이미 많이 오른 종목을 뒤늦게 쫓아가는 추격매수는 일반적으로 검증된
     우위가 없는 위험한 진입 방식이라는 점에 유의하시기 바랍니다. <b>갱신 주기</b>: 평일 08:00부터 12:00까지 10분마다
     갱신되고, 12:00 결과가 그날의 마지막 화면으로 남습니다. 08:00~09:00(정규장 시작 전)에는 "장전"으로
-    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>돈 몰리는 곳</b>은 09:00 이후 갱신분부터 집계되며, 거래대금이 몰렸다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
+    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>돈 몰리는 곳</b>은 09:00~10:30 사이 5분마다 집계되고 10:30 결과가 그날 최종으로 남으며, 거래대금이 몰렸다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
     있습니다.</b>
   </div>
   </div><!-- /tab-hot -->
@@ -745,6 +746,11 @@ document.getElementById("list-hot").innerHTML = DATA_HOT_SECTORS.items.length
     flows.innerHTML = "";
     return;
   }
+  const asof = m.asOfTime || DATA_HOT_SECTORS.asOfTime;
+  const [hh, mm] = asof.split(":").map(Number);
+  document.getElementById("money-asof").textContent = (hh * 60 + mm >= 630)
+    ? `${asof} 기준 · 오늘 최종(09:00~10:30 5분마다 갱신, 10:30 이후 고정)`
+    : `${asof} 기준 · 09:00~10:30 5분마다 갱신`;
   document.getElementById("count-money").textContent = m.items.length ? `테마 ${m.items.length}개` : "";
   list.innerHTML = m.items.length ? m.items.map(moneyThemeGroup).join("") : `<div class="empty-row">조건에 맞는 테마가 없습니다.</div>`;
   flows.innerHTML =
