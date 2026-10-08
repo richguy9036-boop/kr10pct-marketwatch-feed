@@ -223,6 +223,21 @@
   .hot-theme-head:first-child { margin-top: 0; }
   .hot-theme-name { font-size: 13.5px; font-weight: 700; }
   .hot-theme-count { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+  .seg { display: flex; gap: 6px; margin: 0 0 14px; }
+  .seg button {
+    flex: 1; padding: 8px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-dim); font-size: 12px; font-weight: 600; font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .seg button.active { border-color: var(--accent); color: var(--accent); }
+  .money-stats { font-size: 11px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
+  .money-stats b { color: var(--text); font-weight: 600; }
+  .flow-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 4px 0 6px; }
+  .flow-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; text-align: right; padding: 5px 4px; border-bottom: 1px solid var(--border); }
+  .flow-table th:first-child, .flow-table td:first-child { text-align: left; }
+  .flow-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
+  .flow-table td:first-child { font-family: "IBM Plex Sans KR", sans-serif; }
+  .flow-table .up { color: var(--red); } .flow-table .dn { color: var(--blue); }
 </style>
 
 <header>
@@ -374,8 +389,25 @@
 
   <div class="tab-panel" id="tab-hot">
   <div class="hot-meta" id="hot-meta"></div>
+  <div class="seg">
+    <button id="seg-chg" class="active" onclick="switchHotView('chg')">등락률 순위</button>
+    <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 곳</button>
+  </div>
 
-  <section>
+  <section id="hot-view-money" style="display:none">
+    <div class="sec-head"><h2>돈 몰리는 곳 — 평소보다 거래대금이 몰린 테마</h2><span class="count num" id="count-money"></span></div>
+    <div class="sec-desc">테마 구성종목의 <b>오늘 누적 거래대금</b>을 최근 20거래일 평균 하루 거래대금과 비교해,
+    평소보다 돈이 많이 들어온 순서로 보여줍니다(테마 등락률이 플러스인 테마만, 오늘 거래대금 300억원 이상).
+    "평소 대비"는 장중 누적값이라 시간이 갈수록 커집니다 — 같은 시각 테마끼리 비교하는 용도입니다.
+    "상승"은 테마 안에서 오른 종목 수로, 한두 종목만 튄 건지 테마 전체가 움직이는지 보여줍니다.
+    종목은 테마 안에서 거래대금이 가장 큰 2개이며, 앞 순위와 겹치면 그 테마는 건너뜁니다.</div>
+    <div id="list-money"></div>
+    <div class="sec-head" style="margin-top:22px"><h2>외국인·기관 순매수 업종</h2></div>
+    <div class="sec-desc">키움 업종별 투자자 순매수(코스피·코스닥 업종, 단위 억원, 오늘 장중 누적).</div>
+    <div id="list-flows"></div>
+  </section>
+
+  <section id="hot-view-chg">
     <div class="sec-head"><h2>오늘의 종목 — 테마 등락률 상위</h2><span class="count num" id="count-hot"></span></div>
     <div class="sec-desc">키움 0659 화면과 같은 데이터(테마그룹별 등락률 랭킹)로 오늘 가장 강하게 움직인
     테마 10개를 뽑고, 각 테마에서 등락률이 가장 높은 상위 2종목씩을 보여줍니다. 예측/셋업 기반인 다른
@@ -389,7 +421,7 @@
     보여주는 순수 정보 탭입니다. 이미 많이 오른 종목을 뒤늦게 쫓아가는 추격매수는 일반적으로 검증된
     우위가 없는 위험한 진입 방식이라는 점에 유의하시기 바랍니다. <b>갱신 주기</b>: 평일 08:00부터 12:00까지 10분마다
     갱신되고, 12:00 결과가 그날의 마지막 화면으로 남습니다. 08:00~09:00(정규장 시작 전)에는 "장전"으로
-    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
+    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>돈 몰리는 곳</b>은 09:00 이후 갱신분부터 집계되며, 거래대금이 몰렸다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
     있습니다.</b>
   </div>
   </div><!-- /tab-hot -->
@@ -560,6 +592,50 @@ function hotThemeGroup(t) {
 }
 
 
+function moneyThemeGroup(t) {
+  const chgCls = t.themeChangePct >= 0 ? "on-red" : "on-blue";
+  const stocksHtml = t.stocks.map(s => {
+    const sChgCls = s.changePct >= 0 ? "on-red" : "on-blue";
+    return `
+  <div class="row" onclick="toggleChart('${s.code}', this)">
+    <div class="bar" style="background:${s.changePct >= 0 ? 'var(--red)' : 'var(--blue)'}"></div>
+    <div class="body">
+      <div class="top-line">
+        <span class="name">${s.name}</span>
+        <span class="code num">${s.code}</span>
+      </div>
+      <div class="chips">
+        ${chipHtml(`${s.changePct > 0 ? "+" : ""}${s.changePct}%`, sChgCls)}
+        ${chipHtml(`거래대금 ${s.valueEok.toLocaleString("ko-KR")}억`)}
+      </div>
+    </div>
+    <div class="price num">${fmtPrice(s.close)}</div>
+  </div>
+  <div class="chart-panel" id="chart-${s.code}"></div>`;
+  }).join("");
+  return `
+  <div class="hot-theme-head">
+    <span class="hot-theme-name">${t.theme}</span>
+    ${chipHtml(`${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%`, chgCls)}
+    <span class="hot-theme-count num">상승 ${t.rising}/${t.stockCount}</span>
+  </div>
+  <div class="money-stats">오늘 거래대금 <b>${t.valueEok.toLocaleString("ko-KR")}억</b> · 평소 하루의 <b>${t.vsUsualPct}%</b></div>
+  ${stocksHtml}`;
+}
+
+function flowTable(rows) {
+  const f = v => `<span class="${v > 0 ? "up" : v < 0 ? "dn" : ""}">${v > 0 ? "+" : ""}${v.toLocaleString("ko-KR")}</span>`;
+  return `<table class="flow-table"><tr><th>업종</th><th>외국인</th><th>기관</th><th>합계</th></tr>${
+    rows.map(r => `<tr><td>${r.sector}</td><td>${f(r.foreign)}</td><td>${f(r.inst)}</td><td>${f(r.sum)}</td></tr>`).join("")}</table>`;
+}
+
+function switchHotView(v) {
+  document.getElementById("hot-view-chg").style.display = v === "chg" ? "" : "none";
+  document.getElementById("hot-view-money").style.display = v === "money" ? "" : "none";
+  document.getElementById("seg-chg").classList.toggle("active", v === "chg");
+  document.getElementById("seg-money").classList.toggle("active", v === "money");
+}
+
 function fillSection(listId, countId, items, emptyMsg, renderFn, tierClass) {
   document.getElementById(countId).textContent = items.length ? `${items.length}개` : "";
   const target = document.getElementById(listId);
@@ -657,6 +733,24 @@ document.getElementById("count-hot").textContent = DATA_HOT_SECTORS.items.length
 document.getElementById("list-hot").innerHTML = DATA_HOT_SECTORS.items.length
   ? DATA_HOT_SECTORS.items.map(hotThemeGroup).join("")
   : `<div class="empty-row">오늘은 데이터가 없습니다.</div>`;
+(function renderMoney() {
+  const m = DATA_HOT_SECTORS.money;
+  const list = document.getElementById("list-money");
+  const flows = document.getElementById("list-flows");
+  if (!m) {
+    const msg = DATA_HOT_SECTORS.session === "장전"
+      ? "정규장 시작(09:00) 전이라 거래대금 집계가 없습니다. 09:00 이후 갱신분부터 표시됩니다."
+      : "이번 갱신에서는 거래대금 집계를 가져오지 못했습니다. 다음 갱신 때 다시 시도합니다.";
+    list.innerHTML = `<div class="empty-row">${msg}</div>`;
+    flows.innerHTML = "";
+    return;
+  }
+  document.getElementById("count-money").textContent = m.items.length ? `테마 ${m.items.length}개` : "";
+  list.innerHTML = m.items.length ? m.items.map(moneyThemeGroup).join("") : `<div class="empty-row">조건에 맞는 테마가 없습니다.</div>`;
+  flows.innerHTML =
+    (m.sectorBuy.length ? `<div class="money-stats"><b>순매수 상위</b></div>${flowTable(m.sectorBuy)}` : "") +
+    (m.sectorSell.length ? `<div class="money-stats" style="margin-top:10px"><b>순매도 상위</b></div>${flowTable(m.sectorSell)}` : "");
+})();
 document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "마감"
   ? `${DATA_HOT_SECTORS.date} 마감종목 · ${DATA_HOT_SECTORS.asOfTime} 기준`
   : DATA_HOT_SECTORS.session === "장전"
