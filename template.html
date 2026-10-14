@@ -254,6 +254,21 @@
 
 <main>
   <div class="tab-panel active" id="tab-breakout">
+  <div class="seg">
+    <button id="seg-bo-daily" class="active" onclick="switchBoView('daily')">오늘 돌파(일봉 240일선)</button>
+    <button id="seg-bo-weekly" onclick="switchBoView('weekly')">이번주 종목(주봉 240주선)</button>
+  </div>
+  <section id="bo-view-weekly" style="display:none">
+    <div class="sec-head"><h2>이번주 종목 — 주봉 240주선 돌파</h2><span class="count num" id="count-weekly"></span></div>
+    <div class="sec-desc">주봉 종가가 <b>240주 이동평균선</b>(약 4.6년 평균)을 이번 주에 돌파한 종목입니다 — 지난주 주봉 종가는
+    240주선 아래, 이번 주(진행 중, 종가 = 기준일 종가)는 위. 관리종목·정리매매·거래정지·기준일 거래량 20만주 이하 종목은
+    제외하고, 상장 4.6년 미만으로 240주선이 계산되지 않는 종목도 빠집니다. 이번 주 주간 등락률 순으로 정렬하며, 종목을
+    누르면 최근 2년 주봉 차트(5주·20주·240주선)가 열립니다. 주 중에는 이번 주 봉이 아직 완성되지 않았으므로 금요일 종가까지
+    돌파가 유지되는지 확인이 필요합니다.</div>
+    <div class="money-stats" id="weekly-meta"></div>
+    <div id="list-weekly"></div>
+  </section>
+  <div id="bo-view-daily">
   <div class="kpi-strip">
     <div class="kpi k-imminent kpi-clickable" data-filter="all"><div class="v num" id="kpi-total">18</div><div class="l">오늘 돌파</div></div>
     <div class="kpi k-match3 kpi-clickable" data-filter="tier3"><div class="v num" id="kpi-3">0</div><div class="l">3/3 충족</div></div>
@@ -267,6 +282,7 @@
     좁혀볼 수 있고, 다시 누르면 전체보기로 돌아갑니다.</div>
     <div id="list-breakout"></div>
   </section>
+  </div><!-- /bo-view-daily -->
 
   <div class="disclaimer">
     <b>검증 결과 요약</b>: 이 3요소 조합의 과거 전수 검증 승률은 52.6%, 중앙값 수익률 +0.96%였고, 최근 4개월 구간에서는
@@ -632,6 +648,68 @@ function flowTable(rows) {
   return `<table class="flow-table"><tr><th>업종</th><th>외국인</th><th>기관</th><th>합계</th></tr>${
     rows.map(r => `<tr><td>${r.sector}</td><td>${f(r.foreign)}</td><td>${f(r.inst)}</td><td>${f(r.sum)}</td></tr>`).join("")}</table>`;
 }
+
+function switchBoView(v) {
+  document.getElementById("bo-view-daily").style.display = v === "daily" ? "" : "none";
+  document.getElementById("bo-view-weekly").style.display = v === "weekly" ? "" : "none";
+  document.getElementById("seg-bo-daily").classList.toggle("active", v === "daily");
+  document.getElementById("seg-bo-weekly").classList.toggle("active", v === "weekly");
+}
+
+function weeklyRow(x) {
+  const up = x.weekChgPct >= 0;
+  return `
+  <div class="row" onclick="toggleWeeklyChart('${x.code}')">
+    <div class="bar" style="background:${up ? 'var(--red)' : 'var(--blue)'}"></div>
+    <div class="body">
+      <div class="top-line">
+        <span class="name">${x.name}</span>
+        <span class="code num">${x.code}</span>
+        <span class="market">${x.market}</span>
+      </div>
+      <div class="chips">
+        ${chipHtml(`주간 ${up ? "+" : ""}${x.weekChgPct}%`, up ? "on-red" : "on-blue")}
+        ${chipHtml(`240주선 대비 +${x.distPct}%`, "on-amber")}
+        ${chipHtml(`240주선 ${Math.round(x.ma240w).toLocaleString("ko-KR")}`)}
+        ${chipHtml(`거래량 ${x.volume.toLocaleString("ko-KR")}`)}
+      </div>
+    </div>
+    <div class="price num">${fmtPrice(x.close)}</div>
+  </div>
+  <div class="chart-panel" id="wchart-${x.code}"></div>`;
+}
+
+function toggleWeeklyChart(code) {
+  const panel = document.getElementById('wchart-' + code);
+  if (!panel) return;
+  if (panel.classList.contains('open')) { panel.classList.remove('open'); return; }
+  panel.classList.add('open');
+  if (panel.dataset.rendered) return;
+  const bars = ((DATA.weekly || {}).charts || {})[code];
+  if (!bars || !bars.length) { panel.innerHTML = '<div class="chart-empty">주봉 데이터 없음</div>'; return; }
+  panel.innerHTML = `
+    <div class="chart-legend">
+      <span><i class="dot" style="background:var(--red)"></i>양봉</span>
+      <span><i class="dot" style="background:var(--blue)"></i>음봉</span>
+      <span><i class="dot" style="background:#e0ac4c"></i>5주</span>
+      <span><i class="dot" style="background:#5b96f5"></i>20주</span>
+      <span><i class="dot" style="background:var(--text)"></i>240주</span>
+      <span style="margin-left:auto">주봉 · 최근 ${bars.length}주</span>
+    </div>
+    <canvas id="wcv-${code}"></canvas>`;
+  drawCandles(document.getElementById('wcv-' + code), bars);
+  panel.dataset.rendered = '1';
+}
+
+(function renderWeekly() {
+  const w = DATA.weekly;
+  const list = document.getElementById("list-weekly");
+  if (!w) { list.innerHTML = `<div class="empty-row">이번주 종목 집계가 없습니다.</div>`; return; }
+  document.getElementById("weekly-meta").textContent = `기준일 ${w.date} · 이번 주 ${w.weekStart} 시작 주봉(진행 중)`;
+  document.getElementById("count-weekly").textContent = w.items.length ? `${w.items.length}개` : "";
+  list.innerHTML = w.items.length ? w.items.map(weeklyRow).join("")
+    : `<div class="empty-row">이번 주 240주선을 돌파한 종목이 없습니다.</div>`;
+})();
 
 function switchHotView(v) {
   document.getElementById("hot-view-chg").style.display = v === "chg" ? "" : "none";
