@@ -304,6 +304,7 @@
     없습니다 — ROE·부채비율·업종·소속테마(인포스탁 0659 화면과 동일한 네이버 테마 분류, 오늘자
     등락률이 가장 높은 테마 하나만 표시)는 전부 참고 정보 칩입니다(테마 거래량신호는 백테스트로
     검증했지만 실제 후보군 표본에서 예측력이 확인되지 않아 점수에는 반영하지 않았습니다).</div>
+    <div class="money-stats">'수급 확인' = 최근 5거래일 외국인·기관이 모두 순매수이고 두 주체 순매수 금액 합계가 100억원 이상(2026-10-14 금액 기준으로 변경)</div>
     <div id="list-imm"></div>
   </section>
 
@@ -500,7 +501,7 @@ function riskRow(item) {
 function imminentRow(item) {
   const scoreChip = chipHtml(`통합점수 ${item.score}`, "on-green");
   const sectorChip = chipHtml(item.sector, item.sector === "반도체와반도체장비" ? "on-blue" : "");
-  const flowChip = item.flow ? chipHtml("외국인+기관 순매수", "on-amber") : "";
+  const flowChip = item.flow ? chipHtml(`외국인+기관 5일 순매수 ${item.flowEok != null ? item.flowEok.toLocaleString("ko-KR") + "억" : ""}`, "on-amber") : "";
   const pullbackChip = item.pullback === "확정" ? chipHtml("눌림목→신고가 확정", "on-red")
                       : item.pullback === "관찰중" ? chipHtml("눌림목 관찰중", "on-amber") : "";
   const hitRateChip = (item.hitRate != null) ? chipHtml(`5년빈도 ${item.hitRate}%`, "") : "";
@@ -709,7 +710,7 @@ const immFilterPreds = {
 const immEmptyMsgs = {
   all: "오늘은 임박 후보가 없습니다.",
   pullback: "눌림목 확정 종목이 없습니다.",
-  flow: "수급 확인(외국인+기관 순매수) 종목이 없습니다.",
+  flow: "수급 확인(최근 5거래일 외국인·기관 모두 순매수, 합계 100억원 이상) 종목이 없습니다.",
   semiconductor: "반도체 업종 종목이 없습니다.",
 };
 function renderImminent() {
