@@ -256,7 +256,7 @@
   <div class="tab-panel active" id="tab-breakout">
   <div class="seg">
     <button id="seg-bo-daily" class="active" onclick="switchBoView('daily')">오늘 돌파(일봉 240일선)</button>
-    <button id="seg-bo-weekly" onclick="switchBoView('weekly')">이번주 종목(주봉 240주선, 금요일 종가)</button>
+    <button id="seg-bo-weekly" onclick="switchBoView('weekly')">이번주 종목(주봉 240주선·급등확률)</button>
   </div>
   <section id="bo-view-weekly" style="display:none">
     <div class="sec-head"><h2>이번주 종목 — 주봉 240주선 돌파</h2><span class="count num" id="count-weekly"></span></div>
@@ -264,7 +264,13 @@
     <b>240주 이동평균선</b>(약 4.6년 평균)을 돌파한 종목입니다 — 전주 주봉 종가는 240주선 아래, 해당 주 종가는 위.
     월요일 아침에 지난주 결과로 갱신되고 그 주 내내 같은 목록이 유지됩니다. 관리종목·정리매매·거래정지·기준일 거래량
     20만주 이하 종목은 제외하고, 상장 4.6년 미만으로 240주선이 계산되지 않는 종목도 빠집니다. 주간 등락률 순으로 정렬하며,
-    종목을 누르면 최근 2년 주봉 차트(5주·20주·240주선)가 열립니다.</div>
+    종목을 누르면 최근 2년 주봉 차트(5주·20주·240주선)가 열립니다.
+    <b>급등확률</b>: 최근 10년 주봉 240주선 돌파 16,677건 중 다음 1주 고가가 +20% 이상 오른 경우(8.6%)를 분석한 10가지 특성
+    (돌파주 +16%↑, 240선 +7.8%↑ 위, 거래량 20주평균 4.6배↑, 52주 신고가, 주간거래대금 732억↑, 28주↑ 240선 아래, 240선 하락중,
+    52주 재돌파 없음, 주가 6,450원↓, 코스닥)을, 국내외 지표 14개(코스피·코스닥·S&amp;P500·반도체·미 금리·기준금리·환율·유가·VIX)로 찾은
+    <b>현재와 가장 유사한 과거 시장국면</b>의 돌파 사례로 학습해 계산합니다. 고가 기준이라 종가까지 유지되는 경우는 더 적고,
+    통계적 경향일 뿐 매수 추천이 아닙니다. 바닥모양·거래량 칩은 2026-08 주봉 연구(돌파 전 26주 바닥모양×거래량추세, 26주 후 성과)의 해당 조합 결과입니다.
+    매주 월요일 08:00 전에 지난주 결과로 갱신됩니다.</div>
     <div class="money-stats" id="weekly-meta"></div>
     <div id="list-weekly"></div>
   </section>
@@ -668,11 +674,15 @@ function weeklyRow(x) {
         <span class="market">${x.market}</span>
       </div>
       <div class="chips">
+        ${x.surgeProb != null ? chipHtml(`다음주 +20% 급등확률 ${x.surgeProb}%`, x.surgeProb >= 15 ? "on-red" : "") : ""}
+        ${x.nCond != null ? chipHtml(`급등특성 ${x.nCond}/10`, x.nCond >= 6 ? "on-amber" : "") : ""}
+        ${x.shape26 ? chipHtml(`${x.shape26}·${x.volTrend}${x.res26 ? ` → 26주 승률 ${x.res26.win}%·평균 +${x.res26.avg}%` : ""}`) : ""}
         ${chipHtml(`주간 ${up ? "+" : ""}${x.weekChgPct}%`, up ? "on-red" : "on-blue")}
         ${chipHtml(`240주선 대비 +${x.distPct}%`, "on-amber")}
         ${chipHtml(`240주선 ${Math.round(x.ma240w).toLocaleString("ko-KR")}`)}
         ${chipHtml(`거래량 ${x.volume.toLocaleString("ko-KR")}`)}
       </div>
+      ${x.conds && x.conds.length ? `<div class="risk-note" style="color:var(--text-dim)">충족: ${x.conds.join(" · ")}</div>` : ""}
     </div>
     <div class="price num">${fmtPrice(x.close)}</div>
   </div>
@@ -705,7 +715,9 @@ function toggleWeeklyChart(code) {
   const w = DATA.weekly;
   const list = document.getElementById("list-weekly");
   if (!w) { list.innerHTML = `<div class="empty-row">이번주 종목 집계가 없습니다.</div>`; return; }
-  document.getElementById("weekly-meta").textContent = `기준 ${w.date} 종가(${w.weekStart} 주 마지막 영업일) · 완성된 주봉`;
+  const rg = w.regime;
+  document.getElementById("weekly-meta").textContent = `기준 ${w.date} 종가(${w.weekStart} 주 마지막 영업일) · 완성된 주봉`
+    + (rg ? ` · 현재와 유사한 시장국면 ${rg.similar.join(", ")} (그 시기 돌파 ${rg.simEvents.toLocaleString("ko-KR")}건 중 다음주 +20% 급등 ${rg.simSurgeRate}%) · 급등확률 높은 순` : "");
   document.getElementById("count-weekly").textContent = w.items.length ? `${w.items.length}개` : "";
   list.innerHTML = w.items.length ? w.items.map(weeklyRow).join("")
     : `<div class="empty-row">해당 주에 240주선을 돌파한 종목이 없습니다.</div>`;
