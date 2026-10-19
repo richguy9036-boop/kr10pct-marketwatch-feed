@@ -419,12 +419,11 @@
   </div>
 
   <section id="hot-view-money" style="display:none">
-    <div class="sec-head"><h2>돈 몰리는 곳 — 평소보다 거래대금이 몰린 테마</h2><span class="count num" id="count-money"></span></div>
-    <div class="sec-desc">테마 구성종목의 <b>오늘 누적 거래대금</b>을 최근 20거래일 평균 하루 거래대금과 비교해,
-    평소보다 돈이 많이 들어온 순서로 보여줍니다(테마 등락률이 플러스인 테마만, 오늘 거래대금 300억원 이상 — 장 초반에는 경과 시간에 비례해 기준을 낮춤, 09:00 30억원 → 10:30 300억원).
-    "평소 대비"는 장중 누적값이라 시간이 갈수록 커집니다 — 같은 시각 테마끼리 비교하는 용도입니다.
-    "상승"은 테마 안에서 오른 종목 수로, 한두 종목만 튄 건지 테마 전체가 움직이는지 보여줍니다.
-    종목은 테마 안에서 거래대금이 가장 큰 2개이며(관리종목·정리매매·거래량 50만주 미만 종목 제외), 앞 순위와 겹치면 그 테마는 건너뜁니다.</div>
+    <div class="sec-head"><h2>돈 몰리는 곳 — 거래량이 급증한 테마</h2><span class="count num" id="count-money"></span></div>
+    <div class="sec-desc">테마 구성종목마다 <b>오늘 누적 거래량 ÷ 최근 20거래일 평균 하루 거래량</b>을 구하고, 그 <b>중앙값</b>이 높은 순서로
+    보여줍니다 — 한두 종목만 튄 테마가 아니라 테마 전체의 거래량이 실제로 늘어난 곳이 위로 옵니다(테마 등락률이 플러스인 테마만, 오늘 거래대금 300억원 이상 — 장 초반에는 경과 시간에 비례해 기준을 낮춤, 09:00 30억원 → 10:30 300억원).
+    "평소의 N%"는 장중 누적값이라 시간이 갈수록 커집니다 — 같은 시각 테마끼리 비교하는 용도입니다. "상승"은 테마 안에서 오른 종목 수입니다.
+    종목은 테마 안에서 <b>거래량 증가율 1·2위</b>만 표시합니다(관리종목·정리매매·하락 종목·거래량 50만주 미만 제외 — 09:30 전까지는 전일 거래량 기준). 앞 순위와 겹치면 그 테마는 건너뜁니다.</div>
     <div class="money-stats" id="money-asof"></div>
     <div id="list-money"></div>
     <div class="sec-head" style="margin-top:22px"><h2>외국인·기관 순매수 업종</h2></div>
@@ -448,7 +447,7 @@
     보여주는 순수 정보 탭입니다. 이미 많이 오른 종목을 뒤늦게 쫓아가는 추격매수는 일반적으로 검증된
     우위가 없는 위험한 진입 방식이라는 점에 유의하시기 바랍니다. <b>갱신 주기</b>: 평일 08:00부터 12:00까지 10분마다
     갱신되고, 12:00 결과가 그날의 마지막 화면으로 남습니다. 08:00~09:00(정규장 시작 전)에는 "장전"으로
-    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>돈 몰리는 곳</b>은 09:00~10:30 사이 5분마다 집계(앱 반영은 약 10분마다)되고 10:30 결과가 그날 최종으로 남으며, 거래대금이 몰렸다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
+    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>돈 몰리는 곳</b>은 09:00~10:30 사이 5분마다 집계(앱 반영은 약 10분마다)되고 10:30 결과가 그날 최종으로 남으며, 거래량이 늘었다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
     있습니다.</b>
   </div>
   </div><!-- /tab-hot -->
@@ -634,6 +633,7 @@ function moneyThemeGroup(t) {
       </div>
       <div class="chips">
         ${chipHtml(`${s.changePct > 0 ? "+" : ""}${s.changePct}%`, sChgCls)}
+        ${s.volRatioPct != null ? chipHtml(`거래량 평소의 ${s.volRatioPct.toLocaleString("ko-KR")}%`, "on-red") : ""}
         ${chipHtml(`거래대금 ${s.valueEok.toLocaleString("ko-KR")}억`)}
       </div>
     </div>
@@ -647,7 +647,9 @@ function moneyThemeGroup(t) {
     ${chipHtml(`${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%`, chgCls)}
     <span class="hot-theme-count num">상승 ${t.rising}/${t.stockCount}</span>
   </div>
-  <div class="money-stats">오늘 거래대금 <b>${t.valueEok.toLocaleString("ko-KR")}억</b> · 평소 하루의 <b>${t.vsUsualPct}%</b></div>
+  <div class="money-stats">${t.volRatioPct != null
+    ? `거래량 <b>평소 하루의 ${t.volRatioPct}%</b>(구성종목 중앙값) · 오늘 거래대금 ${t.valueEok.toLocaleString("ko-KR")}억`
+    : `오늘 거래대금 <b>${t.valueEok.toLocaleString("ko-KR")}억</b> · 평소 하루의 <b>${t.vsUsualPct}%</b>`}</div>
   ${stocksHtml}`;
 }
 
