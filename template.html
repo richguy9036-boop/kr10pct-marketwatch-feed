@@ -232,6 +232,13 @@
   .seg button.active { border-color: var(--accent); color: var(--accent); }
   .money-stats { font-size: 11px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
+  .open-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0 14px; }
+  .open-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
+  .open-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; vertical-align: middle; }
+  .open-table th:nth-child(-n+2), .open-table td.ot-l { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
+  .open-table td.ot-theme { font-size: 12px; font-weight: 600; }
+  .open-table td.ot-theme span { display: block; color: var(--red); font-weight: 500; font-family: "IBM Plex Mono", monospace; }
+  .open-table td.ot-up { color: var(--red); font-weight: 600; }
   .limit-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
   .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
   .limit-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
@@ -405,6 +412,8 @@
 
   <section id="hot-view-limit" style="display:none">
     <div class="sec-head"><h2>상한가 후보 — 오늘 장중 상한가 진입 확률 상위</h2><span class="count num" id="count-limit"></span></div>
+    <div class="money-stats" id="open-meta"></div>
+    <div id="list-open"></div>
     <div class="money-stats" id="limit-meta"></div>
     <div id="limit-review"></div>
     <div id="list-limit"></div>
@@ -739,6 +748,14 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
         R.hits.length ? ": " + R.hits.map(h => `${h.name}${h.closedAtLimit ? "(상한가 마감)" : "(진입 후 이탈)"}`).join(", ") : ""}</div>`
     : "";
   list.innerHTML = limitTable(L.items);
+  const O = L.open;
+  if (O && O.items && O.items.length && O.date === DATA_HOT_SECTORS.date) {
+    document.getElementById("open-meta").innerHTML = `<b>장 시작 강한 테마 ${O.items.length}개 × 2종목</b> · ${O.asOfTime} 기준(0659 등락률순) · 종목 = 오늘 등락률 + 진입확률(${md(O.probDate)} 마감 모델)`;
+    document.getElementById("list-open").innerHTML = `<table class="open-table"><tr><th>테마</th><th>종목</th><th>오늘</th><th>진입확률</th></tr>${
+      O.items.map(t => t.stocks.map((x, j) => `<tr>${j === 0 ? `<td class="ot-l ot-theme" rowspan="${t.stocks.length}">${t.theme}<span>${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%</span></td>` : ""}<td class="ot-l">${x.name}<span class="lt-code">${x.code}</span></td><td class="ot-up">+${x.changePct}%</td><td>${x.prob}%</td></tr>`).join("")).join("")}</table>`;
+  } else {
+    document.getElementById("open-meta").innerHTML = `<b>장 시작 강한 테마</b> · 평일 09:10에 선정됩니다.`;
+  }
 }, 0);
 
 function fillSection(listId, countId, items, emptyMsg, renderFn, tierClass) {
