@@ -232,6 +232,13 @@
   .seg button.active { border-color: var(--accent); color: var(--accent); }
   .money-stats { font-size: 11px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
+  .limit-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
+  .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
+  .limit-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
+  .limit-table th:nth-child(1), .limit-table td:nth-child(1) { text-align: center; width: 2.4em; color: var(--text-dim); }
+  .limit-table th:nth-child(2), .limit-table td:nth-child(2) { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
+  .limit-table td .lt-code { color: var(--text-dim); font-size: 11px; margin-left: 4px; font-family: "IBM Plex Mono", monospace; }
+  .limit-table td.lt-p { color: var(--red); font-weight: 600; }
   .flow-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 4px 0 6px; }
   .flow-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; text-align: right; padding: 5px 4px; border-bottom: 1px solid var(--border); }
   .flow-table th:first-child, .flow-table td:first-child { text-align: left; }
@@ -747,28 +754,9 @@ function switchHotView(v) {
   }
 }
 
-function limitRow(x, i) {
-  const since = x.daysSinceLimit == null ? "상한가 이력 없음" : `직전 1년 상한가 ${x.priorLimit}회 · ${x.daysSinceLimit === 0 ? "기준일 상한가 진입" : `마지막 ${x.daysSinceLimit}거래일 전`}`;
-  const hasChart = CHART_DATA[x.code];
-  return `
-  <div class="row"${hasChart ? ` onclick="toggleChart('${x.code}', this)"` : ""}>
-    <div class="bar" style="background:var(--red)"></div>
-    <div class="body">
-      <div class="top-line">
-        <span class="name">${i + 1}. ${x.name}</span>
-        <span class="code num">${x.code} · ${x.market}</span>
-      </div>
-      <div class="chips">
-        ${chipHtml(`진입확률 ${x.prob}%`, "on-red")}
-        ${chipHtml(since)}
-        ${chipHtml(`20일 변동성 ${x.volatility}%`)}
-        ${chipHtml(`5일 ${x.ret5d > 0 ? "+" : ""}${x.ret5d}%`)}
-        ${chipHtml(`거래량 5일/60일 ${x.volRatio}배`)}
-        ${chipHtml(`시총 ${x.mcapEok.toLocaleString("ko-KR")}억`)}
-      </div>
-    </div>
-    <div class="price num">${fmtPrice(x.close)}</div>
-  </div>${hasChart ? `\n  <div class="chart-panel" id="chart-${x.code}"></div>` : ""}`;
+function limitTable(items) {
+  return `<table class="limit-table"><tr><th>순위</th><th>종목</th><th>진입확률</th><th>종가</th></tr>${
+    items.map((x, i) => `<tr><td>${i + 1}</td><td>${x.name}<span class="lt-code">${x.code}</span></td><td class="lt-p">${x.prob}%</td><td>${fmtPrice(x.close)}</td></tr>`).join("")}</table>`;
 }
 
 setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이후 실행
@@ -787,7 +775,7 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
     ? `<div class="money-stats">어제 후보(${md(R.pickDate)} 마감 기준) 채점 — ${md(R.checkDate)} 장중 상한가 진입 <b>${R.hits.length}/${R.n}종목</b>${
         R.hits.length ? ": " + R.hits.map(h => `${h.name}${h.closedAtLimit ? "(상한가 마감)" : "(진입 후 이탈)"}`).join(", ") : ""}</div>`
     : "";
-  list.innerHTML = L.items.map(limitRow).join("");
+  list.innerHTML = limitTable(L.items);
 }, 0);
 
 function fillSection(listId, countId, items, emptyMsg, renderFn, tierClass) {
