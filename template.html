@@ -239,6 +239,13 @@
   .open-table td.ot-theme { font-size: 12px; font-weight: 600; }
   .open-table td.ot-theme span { display: block; color: var(--red); font-weight: 500; font-family: "IBM Plex Mono", monospace; }
   .open-table td.ot-up { color: var(--red); font-weight: 600; }
+  .pair-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0; table-layout: fixed; }
+  .pair-table th { font-weight: 600; color: var(--text-dim); font-size: 10.5px; padding: 6px 3px; border-bottom: 1px solid var(--border); }
+  .pair-table td { padding: 8px 3px; border-bottom: 1px solid var(--border); font-family: "IBM Plex Mono", monospace; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pair-table td.pt-n { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
+  .pair-table td.pt-r { text-align: center; color: var(--text-dim); }
+  .pair-table td.up { color: var(--red); font-weight: 600; } .pair-table td.dn { color: var(--blue); font-weight: 600; }
+  .pair-table td.pt-sep { border-left: 1px solid var(--border); }
   .limit-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
   .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
   .limit-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
@@ -747,7 +754,30 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
     ? `<div class="money-stats">어제 후보(${md(R.pickDate)} 마감 기준) 채점 — ${md(R.checkDate)} 장중 상한가 진입 <b>${R.hits.length}/${R.n}종목</b>${
         R.hits.length ? ": " + R.hits.map(h => `${h.name}${h.closedAtLimit ? "(상한가 마감)" : "(진입 후 이탈)"}`).join(", ") : ""}</div>`
     : "";
-  list.innerHTML = limitTable(L.items);
+  const RS = L.result;
+  const pct = v => v == null ? "" : `<td class="${v > 0 ? "up" : v < 0 ? "dn" : ""}">${v > 0 ? "+" : ""}${v}%</td>`;
+  const BT = L.backtest;
+  const btLine = BT ? `<div class="money-stats">백테스트(최근 ${BT.days}거래일, 날짜별 상위 20 · 시가 매수→종가): 평균 <b>${BT.ocMean > 0 ? "+" : ""}${BT.ocMean}%</b> · 플러스 종목 ${BT.winPct}% · 플러스 날 ${BT.dayWinPct}%</div>` : "";
+  if (RS && RS.items && RS.items.length) {
+    const S = RS.summary;
+    const n = Math.max(RS.items.length, L.items.length);
+    let rows = "";
+    for (let i = 0; i < n; i++) {
+      const a = RS.items[i], b = L.items[i];
+      rows += `<tr><td class="pt-r">${i + 1}</td>${a ? `<td class="pt-n">${a.name}</td>${pct(a.ocPct)}` : "<td></td><td></td>"}${
+        b ? `<td class="pt-n pt-sep">${b.name}</td><td>${b.prob}%</td>` : `<td class="pt-sep"></td><td></td>`}</tr>`;
+    }
+    list.innerHTML = `<div class="money-stats"><b>${md(RS.date)} 후보 결과</b>(시가 매수→종가) 평균 <b>${S.ocMean > 0 ? "+" : ""}${S.ocMean}%</b> · 플러스 ${S.win}/${S.n}종목 &nbsp;|&nbsp; <b>${md(L.date)} 마감 기준 다음 거래일 후보</b></div>
+      <table class="pair-table"><colgroup><col style="width:2.2em"><col><col style="width:4.6em"><col><col style="width:3.8em"></colgroup>
+      <tr><th>순위</th><th>${md(RS.date)} 후보</th><th>시가→종가</th><th>다음 후보</th><th>확률</th></tr>${rows}</table>` + btLine;
+    if (RS.open && RS.open.length) {
+      const OS = RS.openSummary;
+      list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 09:10 강한 테마 종목 결과</b>(시가 매수→종가) 평균 ${OS.ocMean > 0 ? "+" : ""}${OS.ocMean}% · 플러스 ${OS.win}/${OS.n}</div>
+        <table class="pair-table"><tr><th>테마</th><th>종목</th><th>시가→종가</th></tr>${RS.open.map(x => `<tr><td class="pt-n">${x.theme}</td><td class="pt-n">${x.name}</td>${pct(x.ocPct)}</tr>`).join("")}</table>`;
+    }
+  } else {
+    list.innerHTML = limitTable(L.items) + btLine;
+  }
   const O = L.open;
   if (O && O.items && O.items.length && O.date === DATA_HOT_SECTORS.date) {
     document.getElementById("open-meta").innerHTML = `<b>장 시작 강한 테마 ${O.items.length}개 × 2종목</b> · ${O.asOfTime} 기준(0659 등락률순) · 종목 = 오늘 등락률 + 진입확률(${md(O.probDate)} 마감 모델)`;
