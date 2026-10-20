@@ -421,6 +421,8 @@
     <div class="sec-head"><h2>상한가 후보 — 오늘 장중 상한가 진입 확률 상위</h2><span class="count num" id="count-limit"></span></div>
     <div class="money-stats" id="open-meta"></div>
     <div id="list-open"></div>
+    <div class="money-stats" id="openall-meta"></div>
+    <div id="list-openall"></div>
     <div class="money-stats" id="limit-meta"></div>
     <div id="limit-review"></div>
     <div id="list-limit"></div>
@@ -757,7 +759,15 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
   const RS = L.result;
   const pct = v => v == null ? "" : `<td class="${v > 0 ? "up" : v < 0 ? "dn" : ""}">${v > 0 ? "+" : ""}${v}%</td>`;
   const BT = L.backtest;
-  const btLine = BT ? `<div class="money-stats">백테스트(최근 ${BT.days}거래일, 날짜별 상위 20 · 시가 매수→종가): 평균 <b>${BT.ocMean > 0 ? "+" : ""}${BT.ocMean}%</b> · 플러스 종목 ${BT.winPct}% · 플러스 날 ${BT.dayWinPct}%</div>` : "";
+  const btLine = BT ? (BT.ohMean != null
+    ? `<div class="money-stats">백테스트(최근 ${BT.days}거래일, 날짜별 상위 20 · <b>시가 매수→당일 고가 매도</b>): 평균 <b>+${BT.ohMean}%</b> · 중앙값 +${BT.ohMedian}% · +5% 이상 ${BT.ohGe5}% · +10% 이상 ${BT.ohGe10}% <span style="color:var(--text-dim)">(고가 매도는 최선 시점 가정)</span></div>`
+    : `<div class="money-stats">백테스트(최근 ${BT.days}거래일, 날짜별 상위 20 · 시가 매수→종가): 평균 <b>${BT.ocMean > 0 ? "+" : ""}${BT.ocMean}%</b> · 플러스 종목 ${BT.winPct}% · 플러스 날 ${BT.dayWinPct}%</div>`) : "";
+  const A = L.openAll;
+  if (A && A.items && A.items.length && A.date === DATA_HOT_SECTORS.date) {
+    document.getElementById("openall-meta").innerHTML = `<b>장 시작 전체 상위 ${A.items.length}</b> · ${A.asOfTime} 기준 · 아침 특성 + 테마 열기 + 시초가(전체 ${A.n}종목, 상한가 출발 제외)`;
+    document.getElementById("list-openall").innerHTML = `<table class="limit-table"><tr><th>순위</th><th>종목</th><th>시초가</th><th>확률</th></tr>${
+      A.items.map((x, i) => `<tr><td>${i + 1}</td><td>${x.name}${x.hotTheme ? '<span class="lt-code">핫테마</span>' : ""}</td><td class="lt-p">${x.gapPct > 0 ? "+" : ""}${x.gapPct}%</td><td>${x.prob}%</td></tr>`).join("")}</table>`;
+  }
   if (RS && RS.items && RS.items.length) {
     const S = RS.summary;
     const n = Math.max(RS.items.length, L.items.length);
@@ -770,6 +780,11 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
     list.innerHTML = `<div class="money-stats"><b>${md(RS.date)} 후보 결과</b>(시가 매수→종가) 평균 <b>${S.ocMean > 0 ? "+" : ""}${S.ocMean}%</b> · 플러스 ${S.win}/${S.n}종목 &nbsp;|&nbsp; <b>${md(L.date)} 마감 기준 다음 거래일 후보</b></div>
       <table class="pair-table"><colgroup><col style="width:2.2em"><col><col style="width:4.6em"><col><col style="width:3.8em"></colgroup>
       <tr><th>순위</th><th>${md(RS.date)} 후보</th><th>시가→종가</th><th>다음 후보</th><th>확률</th></tr>${rows}</table>` + btLine;
+    if (RS.openAll && RS.openAll.length) {
+      const AS = RS.openAllSummary;
+      list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 장 시작 전체 상위 결과</b>(시가 매수→종가) 평균 ${AS.ocMean > 0 ? "+" : ""}${AS.ocMean}% · 플러스 ${AS.win}/${AS.n}</div>
+        <table class="pair-table"><tr><th style="width:2.2em">순위</th><th>종목</th><th>시가→종가</th></tr>${RS.openAll.map((x, i) => `<tr><td class="pt-r">${i + 1}</td><td class="pt-n">${x.name}</td>${pct(x.ocPct)}</tr>`).join("")}</table>`;
+    }
     if (RS.open && RS.open.length) {
       const OS = RS.openSummary;
       list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 09:10 강한 테마 종목 결과</b>(시가 매수→종가) 평균 ${OS.ocMean > 0 ? "+" : ""}${OS.ocMean}% · 플러스 ${OS.win}/${OS.n}</div>
