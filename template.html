@@ -230,6 +230,8 @@
     -webkit-tap-highlight-color: transparent;
   }
   .seg button.active { border-color: var(--accent); color: var(--accent); }
+  .seg button { padding: 8px 3px; word-break: keep-all; }
+  #list-vi .limit-table th:nth-child(1), #list-vi .limit-table td:nth-child(1) { width: 3.6em; font-size: 12px; }
   .money-stats { font-size: 11px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
   .open-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0 14px; }
@@ -415,7 +417,14 @@
     <button id="seg-chg" class="active" onclick="switchHotView('chg')">등락률 순위</button>
     <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 곳</button>
     <button id="seg-limit" onclick="switchHotView('limit')">상한가 후보</button>
+    <button id="seg-vi" onclick="switchHotView('vi')">상승 VI</button>
   </div>
+
+  <section id="hot-view-vi" style="display:none">
+    <div class="sec-head"><h2>상승 VI — 오늘 정적 VI(+10%) 발동 종목</h2><span class="count num" id="count-vi"></span></div>
+    <div class="money-stats" id="vi-meta"></div>
+    <div id="list-vi"></div>
+  </section>
 
   <section id="hot-view-limit" style="display:none">
     <div class="sec-head"><h2>상한가 후보 — 오늘 장중 상한가 진입 확률 상위</h2><span class="count num" id="count-limit"></span></div>
@@ -729,11 +738,27 @@ function toggleWeeklyChart(code) {
 })();
 
 function switchHotView(v) {
-  for (const k of ["chg", "money", "limit"]) {
+  for (const k of ["chg", "money", "limit", "vi"]) {
     document.getElementById("hot-view-" + k).style.display = v === k ? "" : "none";
     document.getElementById("seg-" + k).classList.toggle("active", v === k);
   }
 }
+
+// 2026-10-20: 장중 상승 정적 VI 종목(vi_today.py → DATA.viToday). 최근 발동 순.
+(function renderVi() {
+  const V = DATA.viToday;
+  const list = document.getElementById("list-vi");
+  const pct = v => v == null ? "-" : `${v > 0 ? "+" : ""}${v.toFixed(1)}%`;
+  if (!V || !V.items || !V.items.length) {
+    list.innerHTML = `<div class="empty-row">아직 오늘 상승 VI 발동 종목이 없습니다.</div>`;
+    return;
+  }
+  document.getElementById("count-vi").textContent = `${V.items.length}종목`;
+  document.getElementById("vi-meta").textContent =
+    `${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 보통주만(ETF·스팩 제외) · 첫 발동 시각, 그때 전일 대비, 현재 전일 대비 · 앱은 발행 시각에만 갱신`;
+  list.innerHTML = `<table class="limit-table"><tr><th>첫 발동</th><th>종목</th><th>발동 시</th><th>현재</th><th>횟수</th></tr>${
+    V.items.map(x => `<tr><td>${x.time}</td><td>${x.name}<span class="lt-code">${x.code}</span></td><td>${pct(x.viPct)}</td><td style="font-weight:600;color:${x.nowPct > 0 ? "var(--red)" : x.nowPct < 0 ? "var(--blue)" : "inherit"}">${pct(x.nowPct)}</td><td>${x.count}${x.count > 1 ? `<span class="lt-code">${x.lastTime}</span>` : ""}</td></tr>`).join("")}</table>`;
+})();
 
 function limitTable(items) {
   return `<table class="limit-table"><tr><th>순위</th><th>종목</th><th>진입확률</th><th>종가</th></tr>${
