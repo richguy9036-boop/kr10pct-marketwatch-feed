@@ -757,7 +757,7 @@ function switchHotView(v) {
   document.getElementById("vi-meta").textContent =
     `${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 보통주만(ETF·스팩 제외) · 첫 발동 시각, 그때 전일 대비, 현재 전일 대비 · `
     + `빨간 굵은 글씨 = 오늘 강세업종(등락률 순위 테마) 종목 ${V.items.filter(x => x.hotTheme).length}개(강한 업종 순으로 위에), 나머지는 최근 발동 순`
-    + (V.dropped && V.dropped.length ? ` · 마지막 VI 발동가 대비 −${V.droppedPct}% 이상 밀린 ${V.dropped.length}종목 제외` : "")
+    + (V.dropped && V.dropped.length ? ` · 첫 VI 발동가 대비 −${V.droppedPct}% 이상 밀린 ${V.dropped.length}종목 제외` : "")
     + ` · 앱은 발행 시각에만 갱신`;
   list.innerHTML = `<table class="limit-table"><tr><th>첫 발동</th><th>종목</th><th>발동 시</th><th>현재</th><th>횟수</th></tr>${
     V.items.map(x => `<tr><td>${x.time}</td><td>${x.hotTheme
