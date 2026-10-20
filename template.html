@@ -811,7 +811,12 @@ function fillSection(listId, countId, items, emptyMsg, renderFn, tierClass) {
     : `<div class="empty-row">${emptyMsg}</div>`;
 }
 
-document.getElementById("meta-line").textContent = `기준일 ${DATA.date} · 코스피·코스닥 전종목 스캔 · 오늘 돌파 ${DATA.total}개`;
+// 2026-10-20: 돌파 다음 날 장중 음봉 + 240일선 아래로 내려간 종목은 자동 제외(breakout_live_filter.py)
+const _bl = DATA.breakoutLive;
+const _blNote = _bl && _bl.removed && _bl.removed.length
+  ? ` · ${_bl.final ? "종가" : _bl.asOf} 기준 240일선 이탈 음봉 ${_bl.removed.length}개 제외(${_bl.removed.map(x => x.name).join(", ")})`
+  : "";
+document.getElementById("meta-line").textContent = `기준일 ${DATA.date} · 코스피·코스닥 전종목 스캔 · 오늘 돌파 ${DATA.total}개${_blNote}`;
 document.getElementById("kpi-total").textContent = DATA.total;
 document.getElementById("kpi-3").textContent = DATA.tier3.length;
 document.getElementById("kpi-2").textContent = DATA.tier2.length;
