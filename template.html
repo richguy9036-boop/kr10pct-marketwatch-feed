@@ -250,6 +250,7 @@
   .pair-table td.up { color: var(--red); font-weight: 600; } .pair-table td.dn { color: var(--blue); font-weight: 600; }
   .pair-table td.pt-sep { border-left: 1px solid var(--border); }
   .pair-table td:not(.pt-n):not(.pt-r) { font-size: 13.75px; padding-left: 1px; padding-right: 1px; }
+  .pair-table .pt-ohlc i, .pair-table .pt-ohlc em { font-style: normal; }
   .pair-table .pt-ohlc { display: block; font-family: "IBM Plex Mono", monospace; font-size: 13.125px; color: var(--text-dim); white-space: normal; }
   .limit-table { width: 100%; border-collapse: collapse; font-size: 17.5px; margin: 6px 0; }
   .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 13.75px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
@@ -264,6 +265,17 @@
   .flow-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
   .flow-table td:first-child { font-family: "IBM Plex Sans KR", sans-serif; }
   .flow-table .up { color: var(--red); } .flow-table .dn { color: var(--blue); }
+  /* (규칙 우선순위 때문에 스타일 맨 끝에 둠) 2026-10-22 사용자 요청: 폰에서도 전체가 잘 보이게 — 좁은 화면은 전체 배율 축소(글씨 ×1.25 → 폰 약 ×1.06, 표 공간도 넓어짐) */
+  @media (max-width: 520px) {
+    body { zoom: 0.85; }
+    /* 상한가 후보 결과 표(6열)는 폰에서 종목명 칸이 사라지지 않게 표만 글씨·열 폭 축소 */
+    .pair-table { font-size: 12.5px; }
+    .pair-table td:not(.pt-n):not(.pt-r) { font-size: 11.5px; }
+    .pair-table .pt-ohlc { font-size: 11px; }
+    .pair-table th { font-size: 11px; }
+    .pair-table td.pt-n { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
+    .pair-table .pt-ohlc i { display: block; } .pair-table .pt-ohlc em { display: none; }
+  }
 </style>
 
 <header>
@@ -809,7 +821,7 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
     // 2026-10-22 사용자 요청: 기존 결과 표 안에 당일 시가·고가·종가(종목명 아래 줄) + 시가→고가 열 추가
     const num = n => Number(n).toLocaleString("ko-KR");
     const nm = x => `${x.touched ? `<b>${x.name}</b><span class="lt-code">상</span>` : x.name}${x.high != null
-      ? `<span class="pt-ohlc">시 ${num(x.open)} · 고 ${num(x.high)} · 종 ${num(x.close)}</span>` : ""}`;
+      ? `<span class="pt-ohlc"><i>시 ${num(x.open)}</i><em> · </em><i>고 ${num(x.high)}</i><em> · </em><i>종 ${num(x.close)}</i></span>` : ""}`;
     const sg = v => v == null ? "–" : `${v > 0 ? "+" : ""}${v}%`;
     const S = RS.summary;
     const n = Math.max(RS.items.length, L.items.length);
