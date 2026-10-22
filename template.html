@@ -248,6 +248,8 @@
   .pair-table td.pt-r { text-align: center; color: var(--text-dim); }
   .pair-table td.up { color: var(--red); font-weight: 600; } .pair-table td.dn { color: var(--blue); font-weight: 600; }
   .pair-table td.pt-sep { border-left: 1px solid var(--border); }
+  .res-table { font-size: 12px; table-layout: auto; } .res-table td { padding: 7px 2px; } .res-table th { padding: 6px 2px; }
+  .res-table td.pt-n { white-space: normal; word-break: keep-all; } .res-table td:first-child.pt-n { font-size: 11px; color: var(--text-dim); max-width: 5.5em; overflow-wrap: anywhere; }
   .limit-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
   .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 11px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
   .limit-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
@@ -803,27 +805,25 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
       A.items.map((x, i) => `<tr><td>${i + 1}</td><td>${x.name}${x.hotTheme ? '<span class="lt-code">핫테마</span>' : ""}</td><td class="lt-p">${x.gapPct > 0 ? "+" : ""}${x.gapPct}%</td><td>${x.prob}%</td></tr>`).join("")}</table>`;
   }
   if (RS && RS.items && RS.items.length) {
-    const S = RS.summary;
-    const n = Math.max(RS.items.length, L.items.length);
-    let rows = "";
-    for (let i = 0; i < n; i++) {
-      const a = RS.items[i], b = L.items[i];
-      rows += `<tr><td class="pt-r">${i + 1}</td>${a ? `<td class="pt-n">${a.name}</td>${pct(a.ocPct)}` : "<td></td><td></td>"}${
-        b ? `<td class="pt-n pt-sep">${b.name}</td><td>${b.prob}%</td>` : `<td class="pt-sep"></td><td></td>`}</tr>`;
-    }
-    list.innerHTML = `<div class="money-stats"><b>${md(RS.date)} 후보 결과</b>(시가 매수→종가) 평균 <b>${S.ocMean > 0 ? "+" : ""}${S.ocMean}%</b> · 플러스 ${S.win}/${S.n}종목 &nbsp;|&nbsp; <b>${md(L.date)} 마감 기준 다음 거래일 후보</b></div>
-      <table class="pair-table"><colgroup><col style="width:2.2em"><col><col style="width:4.6em"><col><col style="width:3.8em"></colgroup>
-      <tr><th>순위</th><th>${md(RS.date)} 후보</th><th>시가→종가</th><th>다음 후보</th><th>확률</th></tr>${rows}</table>` + btLine;
+    // 2026-10-22 사용자 요청: 후보별 당일 시가·고가·종가 + 시가→고가 수익률 표
+    const sg = v => v == null ? "–" : `${v > 0 ? "+" : ""}${v}%`;
+    const head = S => S ? `평균 시가→고가 <b>${sg(S.ohMean)}</b> · 시가→종가 ${sg(S.ocMean)} · 종가 플러스 ${S.win}/${S.n} · 상한가 터치 ${S.touched}` : "";
+    const num = n => Number(n).toLocaleString("ko-KR");
+    const resTable = (rows, firstTh, firstTd) => `<table class="pair-table res-table">
+      <tr><th>${firstTh}</th><th>종목</th><th>시가</th><th>고가</th><th>종가</th><th>시가→<br>고가</th></tr>${
+      rows.map((x, i) => `<tr><td class="${firstTh === "순위" ? "pt-r" : "pt-n"}">${firstTd(x, i)}</td><td class="pt-n">${x.touched ? `<b>${x.name}</b><span class="lt-code">상</span>` : x.name}</td><td>${num(x.open)}</td><td>${x.high != null ? num(x.high) : "–"}</td><td>${num(x.close)}</td>${x.ohPct == null ? "<td>–</td>" : pct(x.ohPct)}</tr>`).join("")}</table>`;
+    list.innerHTML = `<div class="money-stats"><b>${md(RS.date)} 결과 · ${md(RS.pickDate)} 마감 기준 후보 ${RS.items.length}</b> — ${head(RS.summary)}</div>`
+      + resTable(RS.items, "순위", (x, i) => i + 1);
     if (RS.openAll && RS.openAll.length) {
-      const AS = RS.openAllSummary;
-      list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 장 시작 전체 상위 결과</b>(시가 매수→종가) 평균 ${AS.ocMean > 0 ? "+" : ""}${AS.ocMean}% · 플러스 ${AS.win}/${AS.n}</div>
-        <table class="pair-table"><tr><th style="width:2.2em">순위</th><th>종목</th><th>시가→종가</th></tr>${RS.openAll.map((x, i) => `<tr><td class="pt-r">${i + 1}</td><td class="pt-n">${x.name}</td>${pct(x.ocPct)}</tr>`).join("")}</table>`;
+      list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 장 시작 전체 상위 결과</b> — ${head(RS.openAllSummary)}</div>`
+        + resTable(RS.openAll, "순위", (x, i) => i + 1);
     }
     if (RS.open && RS.open.length) {
-      const OS = RS.openSummary;
-      list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 09:10 강한 테마 종목 결과</b>(시가 매수→종가) 평균 ${OS.ocMean > 0 ? "+" : ""}${OS.ocMean}% · 플러스 ${OS.win}/${OS.n}</div>
-        <table class="pair-table"><tr><th>테마</th><th>종목</th><th>시가→종가</th></tr>${RS.open.map(x => `<tr><td class="pt-n">${x.theme}</td><td class="pt-n">${x.name}</td>${pct(x.ocPct)}</tr>`).join("")}</table>`;
+      list.innerHTML += `<div class="money-stats" style="margin-top:12px"><b>${md(RS.date)} 09:10 강한 테마 종목 결과</b> — ${head(RS.openSummary)}</div>`
+        + resTable(RS.open, "테마", x => x.theme);
     }
+    list.innerHTML += `<div class="money-stats" style="color:var(--text-dim)">시가 = 09:00 시초가 · 확정 일봉 기준 · 굵은 글씨 '상' = 장중 상한가 터치 · 시가→고가는 최고점 매도 가정</div>`
+      + `<div class="money-stats" style="margin-top:14px"><b>${md(L.date)} 마감 기준 다음 거래일 후보</b></div>` + limitTable(L.items) + btLine;
   } else {
     list.innerHTML = limitTable(L.items) + btLine;
   }
