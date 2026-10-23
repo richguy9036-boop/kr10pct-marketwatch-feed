@@ -789,10 +789,14 @@ function switchHotView(v) {
   const col = v => v == null ? "" : v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
   const closed = V.items.some(x => x.closed);
   // 2026-10-22 사용자 요청: 1차 VI 종목의 그날 2차 VI 확률(평균의 2배 이상이면 빨간 굵게)
+  // 2026-10-23 사용자 요청: 2차 VI 뒤 어느 가격에서 사야 수익인가(research_vi2_dip.py, 3분봉 1,151건) — 본전권 = 2차가 −15%
+  const tickOf = p => p < 2000 ? 1 : p < 5000 ? 5 : p < 20000 ? 10 : p < 50000 ? 50 : p < 200000 ? 100 : p < 500000 ? 500 : 1000;
+  const fl = p => Math.floor(p / tickOf(p)) * tickOf(p);
+  const beP = x => x.open ? fl(x.open * 1.2 * 0.85) : null;
   const vi2Cell = x => x.vi2Prob != null
     ? `<td><span style="font-weight:700;${x.vi2Prob >= 2 * (x.vi2Base || 1) ? "color:var(--red)" : ""}">${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%</span></td>`
     : x.vi2Stage === "2차 도달" ? (x.limitProb != null  // 2026-10-23 사용자 요청: 2차 VI 뒤 상한가 확률(train_vi2_limit_model.py)
-        ? `<td><span style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}</span><span style="display:block;font-weight:700;${x.limitProb >= 2 * (x.limitBase || 1) ? "color:var(--red)" : ""}">상한가 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage} · 평균 ${x.limitBase}%${x.limitPattern ? " · 패턴" : ""}</span></td>`
+        ? `<td><span style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}</span><span style="display:block;font-weight:700;${x.limitProb >= 2 * (x.limitBase || 1) ? "color:var(--red)" : ""}">상한가 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage} · 평균 ${x.limitBase}%${x.limitPattern ? " · 패턴" : ""}</span>${beP(x) ? `<span class="vt-sub">본전권 ${beP(x).toLocaleString("ko-KR")}원(2차가 −15%)</span>` : ""}</td>`
         : `<td style="color:var(--red);font-weight:700">2차 도달${
         x.limitStage === "상한가 도달" ? `<span class="vt-sub" style="color:var(--red);font-weight:700">상한가 도달</span>`
         : x.limitStage === "상한가 패턴" ? `<span class="vt-sub" style="color:var(--red)">상한가 패턴 · 과거 ${x.limitRate}%</span>`
@@ -838,10 +842,11 @@ function switchHotView(v) {
     const hit = two.filter(x => x.limitStage === "상한가 도달");
     const base = (pr[0] || {}).limitBase;
     document.getElementById("vi-lp").innerHTML = `<div class="lp-box"><div class="lp-t">2차 VI 뒤 상한가 확률${base ? ` <span style="font-weight:400;color:var(--text-dim);font-size:13px">(평균 ${base}%)</span>` : ""}</div>${
-      pr.length ? pr.map(x => `<span class="lp-chip"><b>${x.name}</b> <b style="${x.limitProb >= 2 * (x.limitBase || 1) ? "color:var(--red)" : ""}">${x.limitProb}%</b> <span style="color:var(--text-dim);font-size:12px">${x.limitStage}</span></span>`).join("")
+      pr.length ? pr.map(x => `<span class="lp-chip"><b>${x.name}</b> <b style="${x.limitProb >= 2 * (x.limitBase || 1) ? "color:var(--red)" : ""}">${x.limitProb}%</b> <span style="color:var(--text-dim);font-size:12px">${x.limitStage}${beP(x) ? ` · 본전권 ${beP(x).toLocaleString("ko-KR")}원` : ""}</span></span>`).join("")
         : `<span style="color:var(--text-dim)">${closed ? "장 마감 — " : ""}확률 계산 중인 2차 도달 종목 없음</span>`}${
       hit.length ? `<div style="margin-top:4px;font-size:13px">상한가 도달: ${hit.map(x => x.name).join(", ")}</div>` : ""}
-      <div class="vi-note" style="margin-top:4px">2차 VI(시가+20%) 봉이 끝난 시점 3분봉 특성으로 계산한 그날 상한가 터치 확률 · 이후 안 닿은 시간만큼 낮아짐 · 과거 1,153건 전진 검증 AUC 0.75, 확률 30~50% 구간 실제 54% · 2차 가격 매수는 평균 손실(매수 신호 아님) · 참고용</div></div>`;
+      <div class="vi-note" style="margin-top:4px">2차 VI(시가+20%) 봉이 끝난 시점 3분봉 특성으로 계산한 그날 상한가 터치 확률 · 이후 안 닿은 시간만큼 낮아짐 · 과거 1,153건 전진 검증 AUC 0.75, 확률 30~50% 구간 실제 54% · 참고용</div>
+      <div class="vi-note" style="margin-top:4px"><b>2차 가격 대비 매수 위치별 과거 평균 수익</b>(3분봉 1,151건, 2차 봉 뒤 지정가 매수 → 상한가 닿으면 상한가·아니면 종가 매도, 비용 0.25% 포함, 괄호 = 체결률): 2차가 그대로 −3.5%(95%) · −4% 아래 −2.6%(78%) · −8% −2.0%(53%) · −12% −1.0%(30%) · <b>−15% −0.5%(15%)</b> · −18% 0.0%(7%) → 앞뒤 기간 모두 플러스인 매수 가격은 없음. <b>본전권 = 2차가 −15%</b>(시가 +2% 부근), 그보다 비싸게 사면 과거 평균 손실 · 상한가 패턴·확률 높은 종목도 안정적인 플러스 구간 없음 · 매수 신호 아님</div></div>`;
   })();
   draw();
 })();
