@@ -788,7 +788,10 @@ function switchHotView(v) {
   // 2026-10-22 사용자 요청: 1차 VI 종목의 그날 2차 VI 확률(평균의 2배 이상이면 빨간 굵게)
   const vi2Cell = x => x.vi2Prob != null
     ? `<td><span style="font-weight:700;${x.vi2Prob >= 2 * (x.vi2Base || 1) ? "color:var(--red)" : ""}">${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%</span></td>`
-    : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달</td>`
+    : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${  // 상한가 패턴(research_vi2_limit.py, 참고용)
+        x.limitStage === "상한가 도달" ? `<span class="vt-sub">상한가 도달</span>`
+        : x.limitStage === "상한가 패턴" ? `<span class="vt-sub" style="color:var(--red)">상한가 패턴 · 과거 ${x.limitRate}%</span>`
+        : x.limitStage ? `<span class="vt-sub" style="margin:0">상한가 과거 ${x.limitRate}% · 여유 ${x.limitRoom}%</span>` : ""}</td>`
     : `<td><span class="vt-sub" style="margin:0">${x.vi2Stage || "—"}</span></td>`;
   document.getElementById("count-vi").textContent = `${V.items.length}종목`;
   document.getElementById("vi-meta").innerHTML =
@@ -799,7 +802,7 @@ function switchHotView(v) {
        const bk = E.buckets.filter(x => x.n).map(x => `${x.label} ${x.n}종목 중 <b>${x.hit}</b>`).join(" · ");
        return `<div class="vi-note"><b>2차 VI 확률 적중 기록</b>(${E.from.slice(5).replace("-", "/")}~${E.to.slice(5).replace("-", "/")}, ${E.days}거래일 ${E.n}종목, 처음 표시된 확률 기준) · ${bk} 도달 · 확률대로라면 ${E.expected}종목, 실제 ${E.hit}종목${
          E.auc != null ? ` · 구분력(AUC) ${E.auc.toFixed(2)}` : ""}${E.alerts && E.alerts.n ? ` · 카톡 알림 ${E.alerts.n}건 중 ${E.alerts.hit}건 도달` : ""} · 매일 아침 전 거래일 결과 반영</div>`; })()}
-     <div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 보통주 상승 정적 VI(ETF·스팩 제외) · 2차 VI 확률 높은 순(그다음 2차 도달, 나머지는 시가 대비 ${closed ? "종가" : "현재가"} 높은 순) · 시가 대비 ${closed ? "종가" : "현재가"} 상위 10종목 빨간색 굵게 · ${closed ? "확정 일봉 종가" : "장중에는 현재가·현재가 수익률(발행 시각 기준)"} · 고가는 조회 시점까지 · 첫 VI 발동가 대비 −${V.droppedPct}% 이상 밀린 종목 숨김 · <b>2차 VI 확률</b> = 1차 VI(시가+10%) 종목이 그날 시가+20%(2차 VI)에 닿을 확률, 3분봉 거래량·VI 시각·눌림 등으로 계산(검증: 확률 상위 20%의 실제 도달률이 평균의 약 2~3배) · 1차 VI 뒤 30분부터는 시간이 갈수록 낮아짐 · 참고용 · 좁은 화면은 표를 좌우로 밀어 보세요.</div>`;
+     <div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 보통주 상승 정적 VI(ETF·스팩 제외) · 2차 VI 확률 높은 순(그다음 2차 도달, 나머지는 시가 대비 ${closed ? "종가" : "현재가"} 높은 순) · 시가 대비 ${closed ? "종가" : "현재가"} 상위 10종목 빨간색 굵게 · ${closed ? "확정 일봉 종가" : "장중에는 현재가·현재가 수익률(발행 시각 기준)"} · 고가는 조회 시점까지 · 첫 VI 발동가 대비 −${V.droppedPct}% 이상 밀린 종목 숨김 · <b>2차 VI 확률</b> = 1차 VI(시가+10%) 종목이 그날 시가+20%(2차 VI)에 닿을 확률, 3분봉 거래량·VI 시각·눌림 등으로 계산(검증: 확률 상위 20%의 실제 도달률이 평균의 약 2~3배) · 1차 VI 뒤 30분부터는 시간이 갈수록 낮아짐 · <b>2차 도달 종목의 '상한가 패턴'</b> = 2차 가격→상한가 여유 5% 이하 + 최근 1년 상한가 1회 이상(과거 3분봉 1,153건: 이후 상한가 터치 53~59%, 전체 24%) — 2차 가격에 사면 평균 손실이라 매수 신호 아님 · 참고용 · 좁은 화면은 표를 좌우로 밀어 보세요.</div>`;
   const q = document.getElementById("vi-q"), ty = document.getElementById("vi-type");
   function draw() {
     const k = q.value.trim().toLowerCase(), t = ty.value;
