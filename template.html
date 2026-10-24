@@ -860,8 +860,12 @@ function switchHotView(v) {
     <tr><th>체결률</th><td>95%</td><td>78%</td><td>53%</td><td>30%</td><td>15%</td><td>7%</td></tr></table></div>
     <div class="vi-note">앞뒤 기간 모두 플러스인 매수 가격은 없음 → <b>본전권 = 2차가 −15%</b>(시가 +2% 부근). 그보다 비싸게 사면 과거 평균 손실, 상한가 패턴·확률 높은 종목도 안정적인 플러스 구간 없음 · <b>매수 신호 아님, 참고용</b></div>`;
   const how = `<div class="vi-note"><b>상한가 확률</b> = 2차 VI(시가+20%) 봉이 끝난 시점 3분봉 특성(1·2차 시각·거래량·눌림·상한가까지 여유·1년 상한가 횟수 등)으로 계산한 그날 상한가 터치 확률. 이후 안 닿은 시간만큼 낮아짐(2차 뒤 터치까지 중앙 9분). 검증: 과거 1,153건 날짜순 전진 검증 AUC 0.75, 확률 상위 20%의 실제 터치 41%(평균 17%), 30~50% 구간 실제 54%. 평균의 2배 이상이면 빨간색 · '패턴' = 2차가→상한가 여유 5% 이하 + 최근 1년 상한가 1회 이상.</div>`;
+  const LE = DATA.vi2Eval && DATA.vi2Eval.limit;  // 상한가 확률 매일 채점(vi2_daily_eval.py, 2026-10-24~)
+  const rec = LE && LE.n ? `<div class="vi-note"><b>상한가 확률 적중 기록</b>(${LE.from.slice(5).replace("-", "/")}~${LE.to.slice(5).replace("-", "/")}, ${LE.days}거래일 ${LE.n}종목, 처음 표시된 확률 기준) · ${
+      LE.buckets.filter(x => x.n).map(x => `${x.label} ${x.n}종목 중 <b>${x.hit}</b>`).join(" · ")} 상한가 · 확률대로라면 ${LE.expected}종목, 실제 ${LE.hit}종목${
+      LE.auc != null ? ` · 구분력(AUC) ${LE.auc.toFixed(2)}` : ""}${LE.alerts && LE.alerts.n ? ` · 카톡 알림 ${LE.alerts.n}건 중 ${LE.alerts.hit}건 상한가` : ""} · 매일 아침 전 거래일 결과 반영</div>` : "";
   if (!two.length) {
-    list.innerHTML = `<div class="empty-row">아직 오늘 2차 VI(시가+20%)에 닿은 종목이 없습니다.</div>${how}${dip}`;
+    list.innerHTML = `<div class="empty-row">아직 오늘 2차 VI(시가+20%)에 닿은 종목이 없습니다.</div>${rec}${how}${dip}`;
     return;
   }
   const pr = two.filter(x => x.limitProb != null).sort((a, b) => b.limitProb - a.limitProb);
@@ -876,7 +880,7 @@ function switchHotView(v) {
       ${top ? `<div class="c"><b style="color:var(--red)">${top.limitProb}%</b><span>최고 · ${top.name}</span></div>` : ""}
       ${base ? `<div class="c"><b>${base}%</b><span>과거 평균</span></div>` : ""}
     </div>
-    <div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 상한가 확률 높은 순 → 상한가 도달 → 나머지</div>
+    ${rec}<div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 상한가 확률 높은 순 → 상한가 도달 → 나머지</div>
     <div class="vi-scroll"><table class="vi-table v2-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>2차 도달</th><th>시가</th><th>2차 가격</th><th>현재가</th><th>상한가(남은 %)</th><th>상한가 확률</th><th>본전권(2차가 −15%)</th></tr>${
     [...pr, ...hit, ...rest].map((x, i) => {
       const prev = x.nowPrice && x.nowPct != null ? x.nowPrice / (1 + x.nowPct / 100) : null;
