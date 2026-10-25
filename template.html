@@ -216,6 +216,7 @@
     background: var(--surface); color: var(--text-dim); font-size: 15.625px; font-weight: 600;
     font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
+  .tab-btn { word-break: keep-all; padding: 9px 4px; }  /* 2026-10-25: 탭 4개 한 줄 — 낱말 중간 줄바꿈 방지 */
   .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
@@ -248,6 +249,7 @@
   .v2-sum .c span { font-size: 12px; color: var(--text-dim); }
   .v2-table { min-width: 900px; }
   .v2-p { font-size: 20px; font-weight: 700; }
+  .v2-lim { display: block; font-size: 22px; font-weight: 800; color: var(--red); font-family: "IBM Plex Sans KR", sans-serif; }  /* 2026-10-25 사용자 요청: 상한가 확률 크고 굵게 빨강 */
   .v2-bar { display: block; height: 5px; border-radius: 3px; background: var(--border); margin: 4px 0 2px auto; width: 96px; overflow: hidden; }
   .v2-bar i { display: block; height: 100%; background: var(--red); }
   .v2-tag { display: inline-block; font-size: 11.5px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--red); color: var(--red); font-family: "IBM Plex Sans KR", sans-serif; margin-left: 4px; }
@@ -823,7 +825,11 @@ function switchHotView(v) {
   // 2026-10-22 사용자 요청: 1차 VI 종목의 그날 2차 VI 확률(평균의 2배 이상이면 빨간 굵게)
   const vi2Cell = x => x.vi2Prob != null
     ? `<td><span style="font-weight:700;${x.vi2Prob >= 2 * (x.vi2Base || 1) ? "color:var(--red)" : ""}">${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%</span></td>`
-    : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}<span class="vt-sub">${x.limitStage === "상한가 도달" ? "상한가 도달" : "상한가 확률 → 상승 VI2"}</span></td>`
+    // 2026-10-25 사용자 요청: 상한가 확률을 크고 굵게 빨간색으로
+    : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}${
+        x.limitStage === "상한가 도달" ? `<span class="v2-lim">상한가 도달</span>`
+        : x.limitProb != null ? `<span class="v2-lim">상한가 확률 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage || ""}</span>`
+        : `<span class="vt-sub">${x.limitStage || "상한가 확률 계산 대기"}</span>`}</td>`
     : `<td><span class="vt-sub" style="margin:0">${x.vi2Stage || "—"}</span></td>`;
   document.getElementById("count-vi").textContent = `${V.items.length}종목`;
   document.getElementById("vi-meta").innerHTML =
@@ -906,7 +912,7 @@ function switchHotView(v) {
       const room = lim && x.nowPrice ? (lim / x.nowPrice - 1) * 100 : null;
       const hot = x.limitProb != null && x.limitProb >= 2 * (x.limitBase || 1);
       const pc = x.limitProb != null
-        ? `<span class="v2-p" style="${hot ? "color:var(--red)" : ""}">${x.limitProb}%</span><span class="v2-bar"><i style="width:${Math.min(100, x.limitProb)}%"></i></span><span class="vt-sub">${x.limitStage}${x.limitPattern ? `<span class="v2-tag">패턴</span>` : ""}</span>`
+        ? `<span class="v2-p v2-lim" style="${hot ? "font-size:26px" : ""}">${x.limitProb}%</span><span class="v2-bar"><i style="width:${Math.min(100, x.limitProb)}%"></i></span><span class="vt-sub">${x.limitStage}${x.limitPattern ? `<span class="v2-tag">패턴</span>` : ""}</span>`
         : x.limitStage === "상한가 도달" ? `<span class="v2-done">상한가 도달</span>`
         : `<span class="vt-sub" style="margin:0">${x.limitStage || "계산 대기"}</span>`;
       return `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><b>${x.name}</b><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}</span></td>
