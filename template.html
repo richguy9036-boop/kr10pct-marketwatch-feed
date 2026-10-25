@@ -310,11 +310,12 @@
 </header>
 
 <div class="tabbar">
+  <!-- 2026-10-25 사용자 요청: '오늘의 종목'을 브레이크아웃 워치와 같은 줄, 맨 앞에 -->
+  <button class="tab-btn" id="tab-btn-hot" onclick="switchTab('hot')">오늘의 종목</button>
   <button class="tab-btn active" id="tab-btn-breakout" onclick="switchTab('breakout')">브레이크아웃 워치</button>
   <button class="tab-btn" id="tab-btn-imminent" onclick="switchTab('imminent')">임박 스캐너</button>
   <button class="tab-btn" id="tab-btn-volatility" onclick="switchTab('volatility')">변동성 패턴</button>
 </div>
-  <button class="tab-btn" id="tab-btn-hot" onclick="switchTab('hot')">오늘의 종목</button>
 
 <main>
   <div class="tab-panel active" id="tab-breakout">
@@ -455,11 +456,12 @@
   <div class="tab-panel" id="tab-hot">
   <div class="hot-meta" id="hot-meta"></div>
   <div class="seg">
+    <!-- 2026-10-25 사용자 요청: 상승 VI 맨 앞, 상승 VI2 둘째 -->
+    <button id="seg-vi" onclick="switchHotView('vi')">상승 VI</button>
+    <button id="seg-vi2" onclick="switchHotView('vi2')">상승 VI2</button>
     <button id="seg-chg" class="active" onclick="switchHotView('chg')">등락률 순위</button>
     <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 곳</button>
     <button id="seg-limit" onclick="switchHotView('limit')">상한가 후보</button>
-    <button id="seg-vi" onclick="switchHotView('vi')">상승 VI</button>
-    <button id="seg-vi2" onclick="switchHotView('vi2')">상승 VI2</button>
   </div>
 
   <section id="hot-view-vi" style="display:none">
