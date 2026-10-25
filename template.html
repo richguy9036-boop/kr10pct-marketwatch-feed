@@ -824,7 +824,8 @@ function switchHotView(v) {
   const closed = V.items.some(x => x.closed);
   // 2026-10-22 사용자 요청: 1차 VI 종목의 그날 2차 VI 확률(평균의 2배 이상이면 빨간 굵게)
   const vi2Cell = x => x.vi2Prob != null
-    ? `<td><span style="font-weight:700;${x.vi2Prob >= 2 * (x.vi2Base || 1) ? "color:var(--red)" : ""}">${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%</span></td>`
+    // 2026-10-25 사용자 요청: 2차 VI 확률도 상한가 확률처럼 크고 굵게 빨간색으로
+    ? `<td><span class="v2-lim">2차 VI 확률 ${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%</span></td>`
     // 2026-10-25 사용자 요청: 상한가 확률을 크고 굵게 빨간색으로
     : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}${
         x.limitStage === "상한가 도달" ? `<span class="v2-lim">상한가 도달</span>`
