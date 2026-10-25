@@ -217,6 +217,23 @@
     font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
   .tab-btn { word-break: keep-all; padding: 9px 4px; }  /* 2026-10-25: 탭 4개 한 줄 — 낱말 중간 줄바꿈 방지 */
+  .tab-btn { min-width: 0; font-size: 13.75px; padding: 9px 2px; }  /* 2026-10-25: 탭 5개(백테스트 추가) 한 줄 */
+  .bt-sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 12px; }
+  .bt-sum .c { border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; background: var(--surface); text-align: center; }
+  .bt-sum .c b { display: block; font-size: 20px; font-family: "IBM Plex Mono", monospace; }
+  .bt-sum .c .lb { display: block; font-size: 12px; color: var(--text-dim); }
+  .bt-week { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow); }
+  .bt-week summary { list-style: none; cursor: pointer; padding: 11px 13px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+  .bt-week summary::-webkit-details-marker { display: none; }
+  .bt-week summary .wk { font-weight: 700; font-size: 16.25px; }
+  .bt-week summary .st { font-family: "IBM Plex Mono", monospace; font-size: 14px; color: var(--text-dim); }
+  .bt-week summary .st b { color: var(--text); }
+  .bt-up { color: var(--red) !important; } .bt-dn { color: var(--blue) !important; }
+  .bt-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .bt-table th { font-size: 12.5px; font-weight: 600; color: var(--text-dim); padding: 6px 4px; border-top: 1px solid var(--border); text-align: right; white-space: nowrap; }
+  .bt-table td { padding: 8px 4px; border-top: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
+  .bt-table th:first-child, .bt-table td:first-child { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; padding-left: 13px; }
+  .bt-table td:last-child, .bt-table th:last-child { padding-right: 13px; }
   .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
@@ -317,6 +334,8 @@
   <button class="tab-btn active" id="tab-btn-breakout" onclick="switchTab('breakout')">브레이크아웃 워치</button>
   <button class="tab-btn" id="tab-btn-imminent" onclick="switchTab('imminent')">임박 스캐너</button>
   <button class="tab-btn" id="tab-btn-volatility" onclick="switchTab('volatility')">변동성 패턴</button>
+  <!-- 2026-10-25 사용자 요청: 탭1~3 주간 백테스트 — 다른 탭과 같은 줄·같은 크기 -->
+  <button class="tab-btn" id="tab-btn-backtest" onclick="switchTab('backtest')">백테스트</button>
 </div>
 
 <main>
@@ -452,6 +471,16 @@
     있습니다.</b>
   </div>
   </div><!-- /tab-volatility -->
+
+  <div class="tab-panel" id="tab-backtest">
+    <div class="sec-head"><h2>주간 백테스트 — 월요일 시가 매수 기준</h2><span class="count num" id="bt-count"></span></div>
+    <div class="seg" id="bt-seg">
+      <button id="bt-seg-breakout" class="active" onclick="switchBt('breakout')">브레이크아웃 워치</button>
+      <button id="bt-seg-imminent" onclick="switchBt('imminent')">임박 스캐너</button>
+      <button id="bt-seg-volatility" onclick="switchBt('volatility')">변동성 패턴</button>
+    </div>
+    <div id="bt-body"></div>
+  </div><!-- /tab-backtest -->
 
   <div class="install-hint">
 
@@ -1136,6 +1165,39 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
   ? `${DATA_HOT_SECTORS.date} 장전 · ${DATA_HOT_SECTORS.asOfTime} 기준(정규장 시작 전 — 전일 기준 값일 수 있음)`
   : `${DATA_HOT_SECTORS.date} 장중 · ${DATA_HOT_SECTORS.asOfTime} 기준(08:00~09:00 10분 · 09:00~15:30 5분마다 갱신)`;
 
+// 2026-10-25 사용자 요청: 탭1~3 주간 백테스트(backtest_weekly.py → out.json "backtest")
+// 기초가 = 그 주 첫 거래일 시가, 주중 고가, 금요일(마지막 거래일) 종가. 대상 = 월요일 아침에 보이던 목록.
+let btTab = "breakout";
+function switchBt(t) {
+  btTab = t;
+  ["breakout", "imminent", "volatility"].forEach(k => document.getElementById("bt-seg-" + k).classList.toggle("active", k === t));
+  renderBt();
+}
+function renderBt() {
+  const B = DATA.backtest, body = document.getElementById("bt-body");
+  const T = B && B.tabs && B.tabs[btTab];
+  if (!T || !T.weeks.length) { body.innerHTML = `<div class="empty-row">백테스트 집계가 아직 없습니다.</div>`; document.getElementById("bt-count").textContent = ""; return; }
+  const pc = v => `<span class="${v > 0 ? "bt-up" : v < 0 ? "bt-dn" : ""}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>`;
+  const md = d => d.slice(5).replace("-", "/");
+  const won = v => Math.round(v).toLocaleString();
+  const tot = T.total;
+  document.getElementById("bt-count").textContent = `${T.weeks.length}주`;
+  const sum = tot.n ? `<div class="bt-sum">
+      <div class="c"><b>${tot.n}</b><span class="lb">종목(완료 주)</span></div>
+      <div class="c"><b>${tot.win}%</b><span class="lb">승률(금 종가&gt;월 시가)</span></div>
+      <div class="c"><b>${pc(tot.avgClose)}</b><span class="lb">평균 금요일 종가</span></div>
+      <div class="c"><b>${pc(tot.avgHigh)}</b><span class="lb">평균 주중 고가</span></div></div>` : "";
+  const weeks = T.weeks.map((w, i) => `<details class="bt-week"${i === 0 ? " open" : ""}><summary>
+      <span class="wk">${md(w.firstDay)}~${md(w.lastDay)}${w.done ? "" : " (진행 중)"}</span>
+      <span class="st">${w.n}종목 · 승률 <b>${w.win}%</b> · 금 종가 <b>${pc(w.avgClose)}</b> · 주중 고가 <b>${pc(w.avgHigh)}</b> · +10% 터치 ${w.hit10}%</span></summary>
+      ${w.items ? `<div class="vi-scroll"><table class="bt-table"><tr><th>종목</th><th>월 시가</th><th>주중 고가</th><th>${w.done ? "금 종가" : "최근 종가"}</th></tr>${
+        w.items.map(x => `<tr><td>${x.name}</td><td>${won(x.open)}</td><td>${won(x.high)}<br>${pc(x.highPct)}</td><td>${won(x.close)}<br>${pc(x.closePct)}</td></tr>`).join("")
+      }</table></div>` : ""}</details>`).join("");
+  body.innerHTML = sum + weeks + `<div class="vi-note" style="margin-top:10px"><b>평가 방법</b> · 그 주 첫 거래일(보통 월요일) 아침 앱에 올라와 있던 종목을 그 날 <b>KRX 시가</b>에 샀다고 보고, 그 주 <b>최고가</b>와 마지막 거래일(보통 금요일) <b>종가</b>로 평가합니다. 주중에 새로 올라온 종목은 이미 오른 뒤라 제외합니다. 앱에 실제로 표시됐던 목록(발행 이력) 그대로이며, 시세는 네이버 확정 일봉입니다. 수수료·세금·슬리피지는 빼지 않았습니다. 평균은 종목별 같은 금액 투자 기준입니다. 시세 ${B.priceThrough}까지 · ${B.generatedAt} 계산.</div>
+    <div class="vi-note"><b>과거 성과는 미래 수익을 보장하지 않으며, 매매 추천이 아닙니다.</b></div>`;
+}
+renderBt();
+
 const CHART_DATA = /*__PLACEHOLDER_CHART_DATA__*/;
 
 const openCharts = {};
@@ -1149,6 +1211,8 @@ function switchTab(name) {
   document.getElementById('tab-btn-imminent').classList.toggle('active', name === 'imminent');
   document.getElementById('tab-btn-volatility').classList.toggle('active', name === 'volatility');
   document.getElementById('tab-btn-hot').classList.toggle('active', name === 'hot');
+  document.getElementById('tab-backtest').classList.toggle('active', name === 'backtest');
+  document.getElementById('tab-btn-backtest').classList.toggle('active', name === 'backtest');
 }
 
 function toggleChart(ticker, rowEl) {
