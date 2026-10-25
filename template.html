@@ -1191,7 +1191,7 @@ function renderBt() {
       <span class="wk">${md(w.firstDay)}~${md(w.lastDay)}${w.done ? "" : " (진행 중)"}</span>
       <span class="st">${w.n}종목 · 승률 <b>${w.win}%</b> · 금 종가 <b>${pc(w.avgClose)}</b> · 주중 고가 <b>${pc(w.avgHigh)}</b> · +10% 터치 ${w.hit10}%</span></summary>
       ${w.items ? `<div class="vi-scroll"><table class="bt-table"><tr><th>종목</th><th>월 시가</th><th>주중 고가</th><th>${w.done ? "금 종가" : "최근 종가"}</th></tr>${
-        w.items.map(x => `<tr><td>${x.name}</td><td>${won(x.open)}</td><td>${won(x.high)}<br>${pc(x.highPct)}</td><td>${won(x.close)}<br>${pc(x.closePct)}</td></tr>`).join("")
+        [...w.items].sort((a, b) => b.highPct - a.highPct).map(x => `<tr><td>${x.name}</td><td>${won(x.open)}</td><td>${won(x.high)}<br>${pc(x.highPct)}</td><td>${won(x.close)}<br>${pc(x.closePct)}</td></tr>`).join("")
       }</table></div>` : ""}</details>`).join("");
   body.innerHTML = sum + weeks + `<div class="vi-note" style="margin-top:10px"><b>평가 방법</b> · 그 주 첫 거래일(보통 월요일) 아침 앱에 올라와 있던 종목을 그 날 <b>KRX 시가</b>에 샀다고 보고, 그 주 <b>최고가</b>와 마지막 거래일(보통 금요일) <b>종가</b>로 평가합니다. 주중에 새로 올라온 종목은 이미 오른 뒤라 제외합니다. 앱에 실제로 표시됐던 목록(발행 이력) 그대로이며, 시세는 네이버 확정 일봉입니다. 수수료·세금·슬리피지는 빼지 않았습니다. 평균은 종목별 같은 금액 투자 기준입니다. 시세 ${B.priceThrough}까지 · ${B.generatedAt} 계산.</div>
     <div class="vi-note"><b>과거 성과는 미래 수익을 보장하지 않으며, 매매 추천이 아닙니다.</b></div>`;
