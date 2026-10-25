@@ -671,7 +671,21 @@ function hotThemeGroup(t) {
     ${chipHtml(`${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%`, chgCls)}
     <span class="hot-theme-count num">${t.stockCount}종목${t.risePct != null ? ` · 상승 ${t.risePct}%` : ""}</span>
   </div>
+  ${leaderLine(t)}
   ${stocksHtml}`;
+}
+
+// 2026-10-25 사용자 요청: 0659 순위 5위 이내 테마의 등락률 1위 종목 + 과거 1년 같은 상황 이후 상한가 터치율(참고)
+function leaderLine(t) {
+  const L = t.leader;
+  if (!L) return "";
+  const chg = `${L.changePct > 0 ? "+" : ""}${L.changePct}%`;
+  const tail = L.status === "상한가 도달" ? " · 오늘 상한가 도달"
+    : L.status === "14:30 이후" ? " · 14:30 이후라 참고값 없음"
+    : L.status ? ""
+    : L.limitRate != null ? ` → 과거 1년 같은 상황 이후 상한가 <b>${Math.round(L.limitRate)}%</b>(${L.n.toLocaleString("ko-KR")}건)`
+    : " · 이 구간은 과거 자료가 들쭉날쭉해 참고값 없음";
+  return `<div class="money-stats">0659 ${t.themeRank}위 테마 · 등락률 1위 <b>${L.name}</b> ${chg}${tail}</div>`;
 }
 
 
