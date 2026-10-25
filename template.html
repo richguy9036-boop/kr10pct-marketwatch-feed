@@ -475,7 +475,9 @@
   <div class="tab-panel" id="tab-backtest">
     <div class="sec-head"><h2>주간 백테스트 — 월요일 시가 매수 기준</h2><span class="count num" id="bt-count"></span></div>
     <div class="seg" id="bt-seg">
-      <button id="bt-seg-breakout" class="active" onclick="switchBt('breakout')">브레이크아웃 워치</button>
+      <!-- 2026-10-25 사용자 요청: 브레이크아웃 워치를 '오늘 돌파'와 '이번주 종목'으로 구분 -->
+      <button id="bt-seg-breakout" class="active" onclick="switchBt('breakout')">오늘 돌파</button>
+      <button id="bt-seg-weekly" onclick="switchBt('weekly')">이번주 종목</button>
       <button id="bt-seg-imminent" onclick="switchBt('imminent')">임박 스캐너</button>
       <button id="bt-seg-volatility" onclick="switchBt('volatility')">변동성 패턴</button>
     </div>
@@ -1170,7 +1172,7 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
 let btTab = "breakout";
 function switchBt(t) {
   btTab = t;
-  ["breakout", "imminent", "volatility"].forEach(k => document.getElementById("bt-seg-" + k).classList.toggle("active", k === t));
+  ["breakout", "weekly", "imminent", "volatility"].forEach(k => document.getElementById("bt-seg-" + k).classList.toggle("active", k === t));
   renderBt();
 }
 function renderBt() {
