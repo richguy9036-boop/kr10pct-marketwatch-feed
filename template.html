@@ -559,6 +559,12 @@ function fmtPrice(n) {
   return n.toLocaleString("ko-KR") + "원";
 }
 
+// 2026-10-26 사용자 지적(뉴로핏): '상한가 도달'은 장중 한 번 닿았다는 뜻 — 지금도 상한가인지 따로 표시
+function limTouchLabel(x) {
+  const held = x.limitPrice ? x.nowPrice >= x.limitPrice : (x.nowPct != null && x.nowPct >= 29.5);
+  return held ? (x.closed ? "상한가 마감" : "상한가 유지") : `상한가 터치 후 이탈${x.closed ? "(마감)" : ""}`;
+}
+
 function chipHtml(label, cls) {
   return `<span class="chip ${cls||''}">${label}</span>`;
 }
@@ -859,7 +865,7 @@ function switchHotView(v) {
     ? `<td><span class="v2-lim">2차 VI 확률 ${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%</span></td>`
     // 2026-10-25 사용자 요청: 상한가 확률을 크고 굵게 빨간색으로
     : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}${
-        x.limitStage === "상한가 도달" ? `<span class="v2-lim">상한가 도달</span>`
+        x.limitStage === "상한가 도달" ? `<span class="v2-lim">${limTouchLabel(x)}</span>`
         : x.limitProb != null ? `<span class="v2-lim">상한가 확률 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage || ""}</span>`
         : `<span class="vt-sub">${x.limitStage || "상한가 확률 계산 대기"}</span>`}</td>`
     : `<td><span class="vt-sub" style="margin:0">${x.vi2Stage || "—"}</span></td>`;
@@ -929,12 +935,12 @@ function switchHotView(v) {
   const top = pr[0];
   list.innerHTML = `<div class="v2-sum">
       <div class="c"><b>${two.length}</b><span>2차 도달</span></div>
-      <div class="c"><b style="color:var(--red)">${hit.length}</b><span>상한가 도달</span></div>
+      <div class="c"><b style="color:var(--red)">${hit.length}</b><span>상한가 터치</span></div>
       <div class="c"><b>${pr.length}</b><span>확률 표시</span></div>
       ${top ? `<div class="c"><b style="color:var(--red)">${top.limitProb}%</b><span>최고 · ${top.name}</span></div>` : ""}
       ${base ? `<div class="c"><b>${base}%</b><span>과거 평균</span></div>` : ""}
     </div>
-    ${rec}<div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 상한가 확률 높은 순 → 상한가 도달 → 나머지</div>
+    ${rec}<div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 상한가 확률 높은 순 → 상한가 터치 → 나머지 · '상한가 터치 후 이탈' = 장중 상한가에 닿았다가 지금은 그 아래</div>
     <div class="vi-scroll"><table class="vi-table v2-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>2차 도달</th><th>시가</th><th>2차 가격</th><th>현재가</th><th>상한가(남은 %)</th><th>상한가 확률</th><th>본전권(2차가 −15%)</th></tr>${
     [...pr, ...hit, ...rest].map((x, i) => {
       const prev = x.nowPrice && x.nowPct != null ? x.nowPrice / (1 + x.nowPct / 100) : null;
@@ -945,7 +951,7 @@ function switchHotView(v) {
       const hot = x.limitProb != null && x.limitProb >= 2 * (x.limitBase || 1);
       const pc = x.limitProb != null
         ? `<span class="v2-p v2-lim" style="${hot ? "font-size:26px" : ""}">${x.limitProb}%</span><span class="v2-bar"><i style="width:${Math.min(100, x.limitProb)}%"></i></span><span class="vt-sub">${x.limitStage}${x.limitPattern ? `<span class="v2-tag">패턴</span>` : ""}</span>`
-        : x.limitStage === "상한가 도달" ? `<span class="v2-done">상한가 도달</span>`
+        : x.limitStage === "상한가 도달" ? `<span class="v2-done">${limTouchLabel(x)}</span>`
         : `<span class="vt-sub" style="margin:0">${x.limitStage || "계산 대기"}</span>`;
       return `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><b>${x.name}</b><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}</span></td>
         <td style="color:var(--red);font-weight:700">${x.vi2Time || "—"}</td><td>${won(x.open)}</td><td>${won(p2)}</td>
