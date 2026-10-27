@@ -1015,7 +1015,7 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
   const md = d => (d || "").slice(5).replace("-", "/");
   document.getElementById("count-limit").textContent = `${L.items.length}종목`;
   document.getElementById("limit-meta").textContent =
-    `${md(L.date)} 마감 기준 · 검증(${md(L.holdoutFrom)}~): 날짜별 상위 20종목 중 ${L.holdoutTop20Hit}%가 실제 진입(평균 종목 ${L.holdoutBase}%)`;
+    `${md(L.date)} 마감 기준 · 검증(${md(L.holdoutFrom)}~): 날짜별 상위 20종목 중 ${L.holdoutTop20Hit}%가 실제 진입(평균 종목 ${L.holdoutBase}%) · 전일 거래량 ${(L.minVolume || 500000) / 10000}만주 초과 종목 중에서 선정(2026-10-27 50만→10만주: 50만주 기준 밖에 1년 상한가의 57%가 있었음)`;
   const R = L.review;
   document.getElementById("limit-review").innerHTML = R
     ? `<div class="money-stats">어제 후보(${md(R.pickDate)} 마감 기준) 채점 — ${md(R.checkDate)} 장중 상한가 진입 <b>${R.hits.length}/${R.n}종목</b>${
