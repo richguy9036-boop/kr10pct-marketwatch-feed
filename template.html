@@ -864,12 +864,17 @@ function switchHotView(v) {
     list.innerHTML = `<div class="empty-row">장중(09:00~15:30)에 1분마다 집계합니다. 아직 오늘 자료가 없습니다.</div>`;
     return;
   }
+  // 2026-10-27 사용자 요청: '돈 몰리는 곳'에도 선정된 종목은 빨간색(같은 화면의 DATA_HOT_SECTORS.money 기준)
+  const money = {};
+  ((DATA_HOT_SECTORS.money || {}).items || []).forEach(t => (t.stocks || []).forEach(x => { money[x.code] = money[x.code] || t.theme; }));
+  const both = S.items.filter(x => money[x.code]).length;
   document.getElementById("count-strength").textContent = `${S.items.length}종목`;
-  document.getElementById("strength-meta").innerHTML = `<div class="vi-note">${S.date.slice(5).replace("-", "/")} ${S.asOf} 기준 · 키움 현재가 창과 같은 당일 체결강도(매수 체결량 ÷ 매도 체결량 × 100, 100보다 크면 사는 쪽 체결이 많음) ${S.minStrength} 이상이면 편입 · 편입 뒤에는 ${S.dropStrength || 150} 이하로 내려갈 때까지 유지하고, ${S.dropStrength || 150} 이하가 되면 아래 '제외된 종목'으로 옮기고 새로 ${S.minStrength} 이상인 종목으로 채움(다시 ${S.minStrength} 이상이면 재편입) · 오늘 상승 종목 중 거래량 ${S.minVolume / 10000}만주 넘는 ${S.scanned}종목을 훑음(ETF·ETN·스팩 제외, 새 편입은 상승 종목만 · 편입 종목은 하락해도 계속 추적) · 체결강도 높은 순 · 1분마다 갱신(앱 반영은 약 5~10분 뒤) · 체결강도가 높아도 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
+  document.getElementById("strength-meta").innerHTML = `<div class="vi-note">${S.date.slice(5).replace("-", "/")} ${S.asOf} 기준 · 키움 현재가 창과 같은 당일 체결강도(매수 체결량 ÷ 매도 체결량 × 100, 100보다 크면 사는 쪽 체결이 많음) ${S.minStrength} 이상이면 편입 · 편입 뒤에는 ${S.dropStrength || 150} 이하로 내려갈 때까지 유지하고, ${S.dropStrength || 150} 이하가 되면 아래 '제외된 종목'으로 옮기고 새로 ${S.minStrength} 이상인 종목으로 채움(다시 ${S.minStrength} 이상이면 재편입) · 오늘 상승 종목 중 거래량 ${S.minVolume / 10000}만주 넘는 ${S.scanned}종목을 훑음(ETF·ETN·스팩 제외, 새 편입은 상승 종목만 · 편입 종목은 하락해도 계속 추적) · 체결강도 높은 순 · <b style="color:var(--red)">빨간색 = '돈 몰리는 곳'에도 선정된 종목</b>(${both}종목, 돈 몰리는 곳 ${(DATA_HOT_SECTORS.money || {}).asOfTime || DATA_HOT_SECTORS.asOfTime} 기준) · 1분마다 갱신(앱 반영은 약 5~10분 뒤) · 체결강도가 높아도 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
   const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
   list.innerHTML = !S.items.length ? `<div class="empty-row">지금은 명단에 든 종목이 없습니다(체결강도 ${S.minStrength} 이상 종목 없음).</div>`
     : `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>현재가</th><th>등락률</th><th>거래량</th><th>체결강도</th></tr>${
-    S.items.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n">${x.name}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}</span></td>
+    S.items.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><span style="${money[x.code] ? "color:var(--red);font-weight:700" : ""}">${x.name}</span>${
+      money[x.code] ? ` <span class="vt-tag" style="color:var(--red);border:1px solid var(--red);font-weight:700">돈 몰리는 곳</span>` : ""}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}${money[x.code] ? ` · <span style="color:var(--red)">${money[x.code]}</span>` : ""}</span></td>
       <td>${Number(x.price).toLocaleString("ko-KR")}원${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}</td><td style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
       <td>${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim">${x.strength.toFixed(2)}</span>${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}</td></tr>`).join("")}</table></div>`;
   const R = S.removed || [];
