@@ -511,14 +511,14 @@
 
   <!-- 2026-10-27 사용자 요청: 키움 현재가 창 체결강도 190 이상 종목 -->
   <section id="hot-view-strength" style="display:none">
-    <div class="sec-head"><h2>체결강도 — 190 이상 편입 · 150 이하 제외</h2><span class="count num" id="count-strength"></span></div>
+    <div class="sec-head"><h2>체결강도 — 190 이상 편입 · 150 이하 제외(상승 VI 종목은 150 · 120)</h2><span class="count num" id="count-strength"></span></div>
     <div class="money-stats" id="strength-meta"></div>
     <div id="list-strength"></div>
     <!-- 2026-10-27 사용자 요청: 상승 VI 종목에 체결강도 선정 기준 적용 -->
-    <div class="sec-head" style="margin-top:22px"><h2>상승 VI 종목 중 체결강도 기준 통과</h2><span class="count num" id="count-strength-vi"></span></div>
+    <div class="sec-head" style="margin-top:22px"><h2>상승 VI 종목 중 체결강도 선정(150 이상 편입 · 120 이하 제외)</h2><span class="count num" id="count-strength-vi"></span></div>
     <div class="money-stats" id="strength-vi-meta"></div>
     <div id="list-strength-vi"></div>
-    <div class="sec-head" style="margin-top:22px"><h2>제외된 종목 — 체결강도 150 이하(또는 거래량 미달)</h2><span class="count num" id="count-strength-out"></span></div>
+    <div class="sec-head" style="margin-top:22px"><h2>제외된 종목 — 체결강도 150 이하(상승 VI 120 이하) 또는 거래량 미달</h2><span class="count num" id="count-strength-out"></span></div>
     <div id="list-strength-out"></div>
   </section>
 
@@ -873,30 +873,34 @@ function switchHotView(v) {
   ((DATA_HOT_SECTORS.money || {}).items || []).forEach(t => (t.stocks || []).forEach(x => { money[x.code] = money[x.code] || t.theme; }));
   const both = S.items.filter(x => money[x.code]).length;
   document.getElementById("count-strength").textContent = `${S.items.length}종목`;
-  document.getElementById("strength-meta").innerHTML = `<div class="vi-note">${S.date.slice(5).replace("-", "/")} ${S.asOf} 기준 · 키움 현재가 창과 같은 당일 체결강도(매수 체결량 ÷ 매도 체결량 × 100, 100보다 크면 사는 쪽 체결이 많음) ${S.minStrength} 이상이면 편입 · 편입 뒤에는 ${S.dropStrength || 150} 이하로 내려갈 때까지 유지하고, ${S.dropStrength || 150} 이하가 되면 아래 '제외된 종목'으로 옮기고 새로 ${S.minStrength} 이상인 종목으로 채움(다시 ${S.minStrength} 이상이면 재편입) · 오늘 상승 종목 중 거래량 ${S.minVolume / 10000}만주 넘는 ${S.scanned}종목을 훑음(ETF·ETN·스팩 제외, 새 편입은 상승 종목만 · 편입 종목은 하락해도 계속 추적) · <b>강하게 치고 올라오는 순</b>(최근 ${S.upMin || 5}분 주가 상승률 높은 순, 같으면 체결강도 높은 순 · 편입 직후 2분은 집계 중으로 뒤에) · <b style="color:var(--red)">빨간색 = '돈 몰리는 곳'에도 선정된 종목</b>(${both}종목, 돈 몰리는 곳 ${(DATA_HOT_SECTORS.money || {}).asOfTime || DATA_HOT_SECTORS.asOfTime} 기준) · 1분마다 갱신(앱 반영은 약 5~10분 뒤) · 체결강도가 높아도 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
+  document.getElementById("strength-meta").innerHTML = `<div class="vi-note">${S.date.slice(5).replace("-", "/")} ${S.asOf} 기준 · 키움 현재가 창과 같은 당일 체결강도(매수 체결량 ÷ 매도 체결량 × 100, 100보다 크면 사는 쪽 체결이 많음) ${S.minStrength} 이상이면 편입 · 편입 뒤에는 ${S.dropStrength || 150} 이하로 내려갈 때까지 유지하고, ${S.dropStrength || 150} 이하가 되면 아래 '제외된 종목'으로 옮기고 새로 ${S.minStrength} 이상인 종목으로 채움(다시 ${S.minStrength} 이상이면 재편입) · <b>상승 VI 종목은 추가로 ${S.viMinStrength || 150} 이상이면 편입, ${S.viDropStrength || 120} 이하면 제외</b>(<span class="vt-tag vt-re">상승 VI</span> 표시) · 오늘 상승 종목 중 거래량 ${S.minVolume / 10000}만주 넘는 ${S.scanned}종목을 훑음(ETF·ETN·스팩 제외, 새 편입은 상승 종목만 · 편입 종목은 하락해도 계속 추적) · <b>강하게 치고 올라오는 순</b>(최근 ${S.upMin || 5}분 주가 상승률 높은 순, 같으면 체결강도 높은 순 · 편입 직후 2분은 집계 중으로 뒤에) · <b style="color:var(--red)">체결강도 숫자 빨간색 + <span class="vt-tag" style="color:#fff;background:var(--red)">체결강도 급상승</span> = 최근 ${S.upMin || 5}분 체결강도가 ${S.surge || 20}포인트 이상 오른 종목</b> · <b style="color:var(--red)">종목명 빨간색 = '돈 몰리는 곳'에도 선정된 종목</b>(${both}종목, 돈 몰리는 곳 ${(DATA_HOT_SECTORS.money || {}).asOfTime || DATA_HOT_SECTORS.asOfTime} 기준) · 1분마다 갱신(앱 반영은 약 5~10분 뒤) · 체결강도가 높아도 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
   const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
   // 2026-10-27 사용자 요청: 상승 VI 종목(같은 out.json viToday — 같은 1분 회차)에 체결강도 기준(편입·유지·제외·거래량)을 적용
   const vi = {};
   ((DATA.viToday || {}).items || []).forEach(x => { vi[x.code] = x; });
+  // 2026-10-27 사용자 요청: 체결강도가 급격히 상승하는 종목은 빨간색(최근 5분 체결강도 +S.surge포인트 이상)
+  const surge = x => x.sUp != null && x.sUp >= (S.surge || 20);
   const table = items => `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>현재가</th><th>최근 ${S.upMin || 5}분</th><th>등락률</th><th>거래량</th><th>체결강도</th></tr>${
     items.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><span style="${money[x.code] ? "color:var(--red);font-weight:700" : ""}">${x.name}</span>${
       money[x.code] ? ` <span class="vt-tag" style="color:var(--red);border:1px solid var(--red);font-weight:700">돈 몰리는 곳</span>` : ""}${
+      surge(x) ? ` <span class="vt-tag" style="color:#fff;background:var(--red);font-weight:700">체결강도 급상승</span>` : ""}${
       vi[x.code] ? ` <span class="vt-tag vt-re">상승 VI ${vi[x.code].time}</span>` : ""}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}${money[x.code] ? ` · <span style="color:var(--red)">${money[x.code]}</span>` : ""}</span></td>
       <td>${Number(x.price).toLocaleString("ko-KR")}원${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}</td>
       <td>${x.up == null ? `<span class="vt-sub" style="margin:0">집계 중</span>` : `<span style="font-weight:800;font-size:17px;color:${x.up > 0 ? "var(--red)" : x.up < 0 ? "var(--blue)" : "inherit"}">${sg(x.up)}</span>${x.upMin < (S.upMin || 5) ? `<span class="vt-sub">${x.upMin}분 기준</span>` : ""}`}</td><td style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
-      <td>${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim">${x.strength.toFixed(2)}</span>${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}</td></tr>`).join("")}</table></div>`;
+      <td>${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim" style="${surge(x) ? "" : "color:var(--text)"}">${x.strength.toFixed(2)}</span>${
+        x.sUp != null ? `<span class="vt-sub" style="${surge(x) ? "color:var(--red);font-weight:700" : ""}">${surge(x) ? "급상승 " : ""}5분 ${x.sUp > 0 ? "+" : ""}${x.sUp.toFixed(1)}</span>` : ""}${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}</td></tr>`).join("")}</table></div>`;
   list.innerHTML = !S.items.length ? `<div class="empty-row">지금은 명단에 든 종목이 없습니다(체결강도 ${S.minStrength} 이상 종목 없음).</div>` : table(S.items);
-  const VS = S.items.filter(x => vi[x.code]);
+  const VS = S.items.filter(x => vi[x.code] || x.rule === "vi");
   const nVi = Object.keys(vi).length;
   document.getElementById("count-strength-vi").textContent = `${VS.length}종목`;
-  document.getElementById("strength-vi-meta").innerHTML = `<div class="vi-note">'상승 VI' 메뉴 종목 ${nVi}개(${(DATA.viToday || {}).asOf || "—"} 기준)에 위 체결강도 기준을 그대로 적용 — 체결강도 ${S.minStrength} 이상 편입, ${S.dropStrength || 150} 이하 제외, 거래량 ${S.minVolume / 10000}만주 이하 제외 · 최근 ${S.upMin || 5}분 상승률 높은 순 · 위 표에서는 <span class="vt-tag vt-re">상승 VI</span> 표시(시각 = 첫 VI)</div>`;
+  document.getElementById("strength-vi-meta").innerHTML = `<div class="vi-note">'상승 VI' 메뉴 종목 ${nVi}개(${(DATA.viToday || {}).asOf || "—"} 기준)에서 추가 선정 — 체결강도 ${S.viMinStrength || 150} 이상 편입, ${S.viDropStrength || 120} 이하 제외, 거래량 ${S.minVolume / 10000}만주 이하 제외 · 최근 ${S.upMin || 5}분 상승률 높은 순 · 위 표에서는 <span class="vt-tag vt-re">상승 VI</span> 표시(시각 = 첫 VI)</div>`;
   document.getElementById("list-strength-vi").innerHTML = !nVi ? `<div class="empty-row">아직 오늘 상승 VI 종목이 없습니다.</div>`
     : !VS.length ? `<div class="empty-row">지금은 상승 VI 종목 중 체결강도 기준을 통과한 종목이 없습니다.</div>` : table(VS);
   const R = S.removed || [];
   document.getElementById("count-strength-out").textContent = `${R.length}건`;
   document.getElementById("list-strength-out").innerHTML = !R.length ? `<div class="empty-row">아직 오늘 제외된 종목이 없습니다.</div>`
     : `<div class="vi-scroll"><table class="vi-table"><tr><th>종목명</th><th>편입</th><th>제외</th><th>제외 때 체결강도</th><th>최고</th></tr>${
-    R.map(x => `<tr><td class="vt-n">${x.name}<span class="vt-sub">${x.code}${x.reason ? ` · ${x.reason}` : ""}</span></td><td>${x.since}</td><td>${x.out}</td>
+    R.map(x => `<tr><td class="vt-n">${x.name}<span class="vt-sub">${x.code}${x.rule === "vi" ? " · 상승 VI 기준" : ""}${x.reason ? ` · ${x.reason}` : ""}</span></td><td>${x.since}</td><td>${x.out}</td>
       <td style="color:var(--blue);font-weight:700">${Number(x.strength).toFixed(2)}</td><td>${Number(x.peak).toFixed(2)}</td></tr>`).join("")}</table></div>`;
 })();
 
