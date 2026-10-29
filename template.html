@@ -1072,8 +1072,8 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
     rows: O.items.flatMap(t => t.stocks.map(x => Object.assign({ theme: `${t.theme} ${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%` }, x))),
     render: r => pickTable(r, "테마", "<th>09:10 등락률</th><th>진입확률</th>", x => `<td style="font-weight:700;${colr(x.changePct)}">${sg2(x.changePct)}</td><td>${x.prob}%</td>`) });
   if (A && A.items && A.items.length && A.date === today) groups.push({ key: "openAll", label: "오늘 장 시작 전체 상위",
-    head: `<b>장 시작 전체 상위 ${A.items.length}</b> · ${A.asOfTime} 기준 · 아침 특성 + 테마 열기 + 시초가(전체 ${A.n}종목, 상한가 출발 제외)`,
-    rows: A.items, render: r => pickTable(r, "업종", "<th>시초가 갭</th><th>확률</th>", x => `<td style="font-weight:700;${colr(x.gapPct)}">${sg2(x.gapPct)}</td><td>${x.prob}%</td>`) });
+    head: `<b>장 시작 전체 상위 ${A.items.length}</b> · ${A.asOfTime} 기준 · 아침 특성 + 테마 열기 + 시초가${A.early ? ` + <b>09:10까지 흐름</b>(전체 ${A.n}종목, 상한가 출발·이미 상한가 닿은 ${A.touched}종목 제외 · 검증 100거래일: 상위 20 적중 9.2→16.3%, 상위 5 15→30%)` : `(전체 ${A.n}종목, 상한가 출발 제외)`}`,
+    rows: A.items, render: r => pickTable(r, "업종", `<th>시초가 갭</th>${A.early ? "<th>09:10 등락</th>" : ""}<th>확률</th>`, x => `<td style="font-weight:700;${colr(x.gapPct)}">${sg2(x.gapPct)}</td>${A.early ? `<td style="font-weight:700;${colr(x.nowPct)}">${sg2(x.nowPct)}</td>` : ""}<td style="font-weight:700;color:var(--red)${A.items.indexOf(x) < 5 ? ";font-size:21px" : ""}">${x.prob}%${A.items.indexOf(x) < 5 ? `<span class="v2-tag">상위 5</span>` : ""}</td>`) });
   if (RS && RS.items && RS.items.length) {
     groups.push({ key: "res", label: `${md(RS.date)} 결과 · 전일 마감 후보`, head: `<b>${md(RS.date)} 결과 · ${md(RS.pickDate)} 마감 기준 후보 ${RS.items.length}</b> — ${sum(RS.summary)}`, rows: RS.items, render: r => resTable(r, "업종") });
     if (RS.openAll && RS.openAll.length) groups.push({ key: "resAll", label: `${md(RS.date)} 결과 · 장 시작 전체`, head: `<b>${md(RS.date)} 결과 · 장 시작 전체 상위</b> — ${sum(RS.openAllSummary)}`, rows: RS.openAll, render: r => resTable(r, "업종") });
