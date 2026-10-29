@@ -94,7 +94,7 @@
     font-family: "IBM Plex Mono", monospace;
   }
 
-  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; }  /* 2026-10-30 아이패드 '화면이 좁아짐': 폭 1000px 미만(아이패드 세로·claude.ai 창)에서 760px로 줄던 것 → 화면 폭 그대로 최대 1100px */
 
   .kpi-strip {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
@@ -209,7 +209,7 @@
   .chart-empty { font-size: 16px; color: var(--text-dim); text-align: center; padding: 20px 0; }
 
   .tabbar {
-    display: flex; gap: 6px; padding: 10px 16px 0; max-width: 760px; margin: 0 auto;
+    display: flex; gap: 6px; padding: 10px 16px 0; max-width: 1100px; margin: 0 auto;
   }
   .tab-btn {
     flex: 1; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border);
@@ -310,7 +310,7 @@
   .flow-table .up { color: var(--red); } .flow-table .dn { color: var(--blue); }
   /* (규칙 우선순위 때문에 스타일 맨 끝에 둠) 2026-10-22 사용자 요청: 폰에서도 전체가 잘 보이게 — 좁은 화면은 전체 배율 축소(글씨 ×1.25 → 폰 약 ×1.06, 표 공간도 넓어짐) */
   /* 2026-10-22: 아이패드 가로·PC는 넓게(상승 VI 표 8열이 좌우 스크롤 없이 보이도록) */
-  @media (min-width: 1000px) { main, .tabbar { max-width: 1100px; } }
+  /* (2026-10-30: 1000px 기준 760↔1100 전환 없앰 — 위 main·.tabbar 최대 1100px 하나로) */
   @media (max-width: 520px) {
     body { zoom: 0.85; }
     /* 상한가 후보 결과 표(6열)는 폰에서 종목명 칸이 사라지지 않게 표만 글씨·열 폭 축소 */
@@ -328,6 +328,22 @@
 
   /* 2026-10-29 사용자 요청: 상한가 후보 메뉴 종목 표 글씨 굵고 진하게 */
   #hot-view-limit .vi-table td { font-weight: 700; color: var(--text); }
+  /* 2026-10-30 사용자 요청 '굵게 한 뒤 상승 VI 화면 글자가 넘침': 마지막 칸(2차 VI 확률·2차 도달·상한가 상태)이 한 줄로 길게 늘어 표가 잘리던 것 → 칸 안에서 줄바꿈, 글씨 조금 작게 */
+  #list-vi .vi-table td:last-child { white-space: normal; word-break: keep-all; min-width: 150px; max-width: 210px; line-height: 1.3; }
+  #list-vi .vi-table .v2-lim { font-size: 20px; }
+  #list-vi .vi-table td .vt-sub { white-space: normal; word-break: keep-all; }
+  /* 아이패드 세로(폭 1000px 미만)에서는 상승 VI 표가 좌우로 밀지 않고 한 화면에 들어오게 글씨·칸 여백만 줄임 */
+  @media (min-width: 600px) and (max-width: 999px) {
+    #list-vi .vi-table { min-width: 0; font-size: 15px; }
+    #list-vi .vi-table th { font-size: 13px; padding: 6px 3px; }
+    #list-vi .vi-table td { padding: 8px 3px; }
+    #list-vi .vi-table td.vt-s, #list-vi .vi-table td .vt-sub { font-size: 13px; }
+    #list-vi .vi-table .v2-lim { font-size: 17px; }
+    #list-vi .vi-table td:last-child { min-width: 110px; max-width: 150px; }
+    #list-vi .vi-table td.vt-n, #list-vi .vi-table td.vt-s { white-space: normal; word-break: keep-all; }
+    #list-vi .vi-table td.vt-n { min-width: 130px; }
+    #list-vi .vi-table .vt-tag { white-space: nowrap; }
+  }
   #hot-view-limit .vi-table td.vt-n > span:first-child { font-size: 19px; font-weight: 800; }
   #hot-view-limit .vi-table td.vt-s, #hot-view-limit .vi-table td.vt-r { color: var(--text); font-weight: 700; }
   #hot-view-limit .vi-table th { color: var(--text); font-weight: 700; }
