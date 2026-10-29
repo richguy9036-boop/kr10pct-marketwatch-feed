@@ -1405,6 +1405,50 @@ function drawCandles(canvas, candles) {
   ctx.fillText(hi.toLocaleString('ko-KR'), 2, padTop + 9);
   ctx.fillText(lo.toLocaleString('ko-KR'), 2, padTop + priceH - 2);
 }
+
+// 2026-10-29 사용자 요청(아이패드): 새 버전 발행(장중 약 5분마다)으로 페이지가 다시 열려도 보던 화면 그대로 —
+// 메뉴·하위 메뉴·검색어·필터·스크롤·펼친 차트는 직접 눌렀을 때만 바뀐다. 이 기기 브라우저에만 저장(없거나 막혀도 기본 화면).
+(function keepView() {
+  const KEY = "mw-view-v1";
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { return {}; } };
+  const save = patch => { try { localStorage.setItem(KEY, JSON.stringify(Object.assign(load(), patch))); } catch (e) { /* 저장 불가 */ } };
+  const st = load();
+  const wrap = (fn, key) => function (v) { fn(v); save({ [key]: v }); };
+  const orig = { tab: switchTab, hot: switchHotView, bo: switchBoView, bt: switchBt };
+  switchTab = wrap(orig.tab, "tab");
+  switchHotView = wrap(orig.hot, "hot");
+  switchBoView = wrap(orig.bo, "bo");
+  switchBt = wrap(orig.bt, "bt");
+  const oc = toggleChart;
+  toggleChart = function (t, el) { oc(t, el); save({ charts: Object.keys(openCharts).filter(k => openCharts[k]) }); };
+  try {
+    if (st.tab && document.getElementById("tab-" + st.tab)) orig.tab(st.tab);
+    if (st.hot && document.getElementById("hot-view-" + st.hot)) orig.hot(st.hot);
+    if (st.bo) orig.bo(st.bo);
+    if (st.bt) orig.bt(st.bt);
+    (st.charts || []).forEach(t => { if (document.getElementById("chart-" + t)) oc(t); });
+  } catch (e) { /* 예전 저장값이 맞지 않으면 기본 화면 */ }
+  // 검색어·유형 선택(상승 VI 표, 상한가 후보 표): 값 되살린 뒤 원래 그리기 이벤트를 불러 표에 반영
+  for (const id of ["vi-q", "vi-type", "lu-q", "lu-type"]) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const v = (st.inputs || {})[id];
+    if (v != null && v !== "" && (el.tagName !== "SELECT" || [...el.options].some(o => o.value === v))) {
+      el.value = v;
+      el.dispatchEvent(new Event(el.tagName === "SELECT" ? "change" : "input"));
+    }
+    el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => save({ inputs: Object.assign(load().inputs || {}, { [id]: el.value }) }));
+  }
+  // 스크롤 위치: 그리기가 끝난 뒤(상한가 표는 setTimeout으로 늦게 그려짐) 되돌림
+  let tm = null;
+  window.addEventListener("scroll", () => { clearTimeout(tm); tm = setTimeout(() => save({ y: window.scrollY }), 300); }, { passive: true });
+  if (st.y > 0) {
+    let touched = false;  // 열자마자 직접 스크롤했으면 되돌리지 않음
+    for (const ev of ["touchstart", "wheel", "keydown"]) window.addEventListener(ev, () => { touched = true; }, { once: true, passive: true });
+    const go = () => { if (!touched) window.scrollTo(0, st.y); };
+    requestAnimationFrame(go); setTimeout(go, 300); setTimeout(go, 1000);
+  }
+})();
 </script>
 
 
