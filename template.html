@@ -1,4 +1,9 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+  /* 2026-10-29 사용자 요청 '웹 시인성 개선·글자 키우고 굵게': 글자 크기 ×1.12, 흐린 글자·테두리 대비 강화, 기본 굵기 500, 표·숫자 600 */
+  body { font-weight: 500; }
+  .vi-table td, .bt-table td, .chip, .price, .meta-line, .money-stats, .sec-desc, .hot-meta, .vi-note { font-weight: 600; }
+  .row .name, .sec-head h2, .tab-btn, .seg button { font-weight: 700; }
+</style></head><body>
 <title>브레이크아웃 워치</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -16,9 +21,9 @@
     --bg: #f6f5f2;
     --surface: #ffffff;
     --surface-2: #f0eee9;
-    --border: #e2ddd3;
-    --text: #1b1d22;
-    --text-dim: #6b6f7a;
+    --border: #cfc8bb;
+    --text: #111216;
+    --text-dim: #43464f;
     --red: #c8333b;
     --blue: #2f6fd6;
     --amber: #a8701a;
@@ -31,9 +36,9 @@
       --bg: #0a0c10;
       --surface: #12151b;
       --surface-2: #171b22;
-      --border: #262c37;
-      --text: #e7eaf0;
-      --text-dim: #8a93a6;
+      --border: #3a4250;
+      --text: #f4f6fa;
+      --text-dim: #bcc4d3;
       --red: #ef4a52;
       --blue: #5b96f5;
       --amber: #e0ac4c;
@@ -46,9 +51,9 @@
     --bg: #0a0c10;
     --surface: #12151b;
     --surface-2: #171b22;
-    --border: #262c37;
-    --text: #e7eaf0;
-    --text-dim: #8a93a6;
+    --border: #3a4250;
+    --text: #f4f6fa;
+    --text-dim: #bcc4d3;
     --red: #ef4a52;
     --blue: #5b96f5;
     --amber: #e0ac4c;
@@ -60,7 +65,7 @@
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-size: 17.5px;  /* 2026-10-22 사용자 요청: 글씨 13pt 정도로 크게(전체 font-size ×1.25) */
+    font-size: 19.5px;  /* 2026-10-22 사용자 요청: 글씨 13pt 정도로 크게(전체 font-size ×1.25) */
     background: var(--bg);
     color: var(--text);
     font-family: "IBM Plex Sans KR", -apple-system, "Apple SD Gothic Neo", sans-serif;
@@ -87,10 +92,10 @@
     transform: translateY(-1px);
   }
   h1 {
-    font-size: 21.25px; font-weight: 700; letter-spacing: -0.01em; margin: 0;
+    font-size: 24px; font-weight: 700; letter-spacing: -0.01em; margin: 0;
   }
   .meta-line {
-    margin-top: 4px; font-size: 15px; color: var(--text-dim);
+    margin-top: 4px; font-size: 17px; color: var(--text-dim);
     font-family: "IBM Plex Mono", monospace;
   }
 
@@ -104,8 +109,8 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     padding: 10px 8px; text-align: center; box-shadow: var(--shadow);
   }
-  .kpi .v { font-family: "IBM Plex Mono", monospace; font-size: 25px; font-weight: 600; line-height: 1.1; }
-  .kpi .l { font-size: 13.125px; color: var(--text-dim); margin-top: 4px; letter-spacing: .01em; }
+  .kpi .v { font-family: "IBM Plex Mono", monospace; font-size: 28px; font-weight: 600; line-height: 1.1; }
+  .kpi .l { font-size: 14.5px; color: var(--text-dim); margin-top: 4px; letter-spacing: .01em; }
   .kpi.k-match3 .v { color: var(--red); }
   .kpi.k-match2 .v { color: var(--amber); }
   .kpi.k-risk .v { color: var(--blue); }
@@ -119,21 +124,21 @@
     display: flex; align-items: baseline; justify-content: space-between;
     margin-bottom: 9px; padding: 0 2px;
   }
-  .sec-head h2 { font-size: 16.25px; font-weight: 600; margin: 0; letter-spacing: .01em; }
-  .sec-head .count { font-family: "IBM Plex Mono", monospace; font-size: 15px; color: var(--text-dim); }
-  .sec-desc { font-size: 14.375px; color: var(--text-dim); margin: -5px 0 10px; padding: 0 2px; line-height: 1.5; }
+  .sec-head h2 { font-size: 18px; font-weight: 600; margin: 0; letter-spacing: .01em; }
+  .sec-head .count { font-family: "IBM Plex Mono", monospace; font-size: 17px; color: var(--text-dim); }
+  .sec-desc { font-size: 16px; color: var(--text-dim); margin: -5px 0 10px; padding: 0 2px; line-height: 1.5; }
 
   .divider {
     border: none; border-top: 1px solid var(--border); margin: 28px 0 22px;
   }
   .section-title-big {
-    font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: .04em;
+    font-size: 17px; font-weight: 700; color: var(--accent); letter-spacing: .04em;
     text-transform: uppercase; margin: 0 0 4px; padding: 0 2px;
   }
 
   .empty-row {
     border: 1px dashed var(--border); border-radius: 10px; padding: 16px;
-    font-size: 15.625px; color: var(--text-dim); text-align: center;
+    font-size: 17.5px; color: var(--text-dim); text-align: center;
   }
 
   .row {
@@ -153,15 +158,15 @@
 
   .row .body { flex: 1; min-width: 0; }
   .row .top-line { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-  .row .name { font-weight: 600; font-size: 18.125px; }
-  .row .code { font-family: "IBM Plex Mono", monospace; font-size: 13.75px; color: var(--text-dim); }
+  .row .name { font-weight: 600; font-size: 20.5px; }
+  .row .code { font-family: "IBM Plex Mono", monospace; font-size: 15.5px; color: var(--text-dim); }
   .row .market {
-    font-size: 11.875px; font-family: "IBM Plex Mono", monospace; padding: 1px 5px; border-radius: 4px;
+    font-size: 13.5px; font-family: "IBM Plex Mono", monospace; padding: 1px 5px; border-radius: 4px;
     border: 1px solid var(--border); color: var(--text-dim); letter-spacing: .02em;
   }
   .chips { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
   .chip {
-    font-size: 13.125px; padding: 2px 7px; border-radius: 20px;
+    font-size: 14.5px; padding: 2px 7px; border-radius: 20px;
     font-family: "IBM Plex Mono", monospace; border: 1px solid var(--border);
     color: var(--text-dim); background: var(--surface-2);
   }
@@ -171,17 +176,17 @@
   .chip.on-green { color: var(--green); border-color: color-mix(in srgb, var(--green) 40%, var(--border)); }
 
   .price-col { text-align: right; flex-shrink: 0; }
-  .price { font-family: "IBM Plex Mono", monospace; font-size: 16.25px; white-space: nowrap; }
-  .dist { font-family: "IBM Plex Mono", monospace; font-size: 13.125px; color: var(--green); margin-top: 3px; }
+  .price { font-family: "IBM Plex Mono", monospace; font-size: 18px; white-space: nowrap; }
+  .dist { font-family: "IBM Plex Mono", monospace; font-size: 14.5px; color: var(--green); margin-top: 3px; }
 
   .risk-note {
-    font-size: 13.75px; color: var(--blue); margin-top: 4px;
+    font-size: 15.5px; color: var(--blue); margin-top: 4px;
   }
 
   .disclaimer {
     margin-top: 30px; padding: 13px 15px; border-radius: 10px;
     background: var(--surface-2); border: 1px solid var(--border);
-    font-size: 14.375px; color: var(--text-dim); line-height: 1.7;
+    font-size: 16px; color: var(--text-dim); line-height: 1.7;
   }
   .disclaimer b { color: var(--text); }
   .disclaimer + .disclaimer { margin-top: 12px; }
@@ -190,7 +195,7 @@
     margin-top: 12px; padding: 12px 15px; border-radius: 10px;
     background: color-mix(in srgb, var(--accent) 10%, var(--surface));
     border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-    font-size: 14.375px; color: var(--text-dim); line-height: 1.7;
+    font-size: 16px; color: var(--text-dim); line-height: 1.7;
   }
   .install-hint b { color: var(--accent); }
 
@@ -204,106 +209,106 @@
   .chart-panel.open { display: block; }
   .chart-panel canvas { width: 100%; display: block; touch-action: pan-y; }
   .chart-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; padding: 0 2px; }
-  .chart-legend span { font-size: 12.5px; font-family: "IBM Plex Mono", monospace; display: flex; align-items: center; gap: 4px; }
+  .chart-legend span { font-size: 14px; font-family: "IBM Plex Mono", monospace; display: flex; align-items: center; gap: 4px; }
   .chart-legend .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-  .chart-empty { font-size: 14.375px; color: var(--text-dim); text-align: center; padding: 20px 0; }
+  .chart-empty { font-size: 16px; color: var(--text-dim); text-align: center; padding: 20px 0; }
 
   .tabbar {
     display: flex; gap: 6px; padding: 10px 16px 0; max-width: 760px; margin: 0 auto;
   }
   .tab-btn {
     flex: 1; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text-dim); font-size: 15.625px; font-weight: 600;
+    background: var(--surface); color: var(--text-dim); font-size: 17.5px; font-weight: 600;
     font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
   .tab-btn { word-break: keep-all; padding: 9px 4px; }  /* 2026-10-25: 탭 4개 한 줄 — 낱말 중간 줄바꿈 방지 */
-  .tab-btn { min-width: 0; font-size: 13.75px; padding: 9px 2px; }  /* 2026-10-25: 탭 5개(백테스트 추가) 한 줄 */
+  .tab-btn { min-width: 0; font-size: 15.5px; padding: 9px 2px; }  /* 2026-10-25: 탭 5개(백테스트 추가) 한 줄 */
   .bt-sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 12px; }
   .bt-sum .c { border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; background: var(--surface); text-align: center; }
-  .bt-sum .c b { display: block; font-size: 20px; font-family: "IBM Plex Mono", monospace; }
-  .bt-sum .c .lb { display: block; font-size: 12px; color: var(--text-dim); }
+  .bt-sum .c b { display: block; font-size: 22.5px; font-family: "IBM Plex Mono", monospace; }
+  .bt-sum .c .lb { display: block; font-size: 13.5px; color: var(--text-dim); }
   .bt-week { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; box-shadow: var(--shadow); }
   .bt-week summary { list-style: none; cursor: pointer; padding: 11px 13px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
   .bt-week summary::-webkit-details-marker { display: none; }
-  .bt-week summary .wk { font-weight: 700; font-size: 16.25px; }
-  .bt-week summary .st { font-family: "IBM Plex Mono", monospace; font-size: 14px; color: var(--text-dim); }
+  .bt-week summary .wk { font-weight: 700; font-size: 18px; }
+  .bt-week summary .st { font-family: "IBM Plex Mono", monospace; font-size: 15.5px; color: var(--text-dim); }
   .bt-week summary .st b { color: var(--text); }
   .bt-up { color: var(--red) !important; } .bt-dn { color: var(--blue) !important; }
-  .bt-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  .bt-table th { font-size: 12.5px; font-weight: 600; color: var(--text-dim); padding: 6px 4px; border-top: 1px solid var(--border); text-align: right; white-space: nowrap; }
+  .bt-table { width: 100%; border-collapse: collapse; font-size: 17px; }
+  .bt-table th { font-size: 14px; font-weight: 600; color: var(--text-dim); padding: 6px 4px; border-top: 1px solid var(--border); text-align: right; white-space: nowrap; }
   .bt-table td { padding: 8px 4px; border-top: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
   .bt-table th:first-child, .bt-table td:first-child { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; padding-left: 13px; }
   .bt-table td:last-child, .bt-table th:last-child { padding-right: 13px; }
   .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-  .hot-meta { font-size: 13.75px; color: var(--text-dim); font-family: "IBM Plex Mono", monospace; margin: -14px 0 16px; padding: 0 2px; }
+  .hot-meta { font-size: 15.5px; color: var(--text-dim); font-family: "IBM Plex Mono", monospace; margin: -14px 0 16px; padding: 0 2px; }
   .hot-theme-head { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 6px; padding: 0 2px; }
   .hot-theme-head:first-child { margin-top: 0; }
-  .hot-theme-name { font-size: 16.875px; font-weight: 700; }
-  .hot-theme-count { font-size: 13.75px; color: var(--text-dim); margin-left: auto; }
+  .hot-theme-name { font-size: 19px; font-weight: 700; }
+  .hot-theme-count { font-size: 15.5px; color: var(--text-dim); margin-left: auto; }
   .seg { display: flex; gap: 6px; margin: 0 0 14px; }
   .seg button {
     flex: 1; padding: 8px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
-    color: var(--text-dim); font-size: 15px; font-weight: 600; font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer;
+    color: var(--text-dim); font-size: 17px; font-weight: 600; font-family: "IBM Plex Sans KR", sans-serif; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
   .seg button.active { border-color: var(--accent); color: var(--accent); }
   .seg button { padding: 8px 3px; word-break: keep-all; }
   .vi-filter { display: flex; gap: 8px; margin: 6px 0 10px; }
-  .vi-filter input, .vi-filter select { flex: 1; min-width: 0; font: inherit; font-size: 15px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card, transparent); color: var(--text); }
-  .vi-sum { font-weight: 700; margin: 4px 0; } .vi-note { color: var(--text-dim); font-size: 13.75px; line-height: 1.5; }
+  .vi-filter input, .vi-filter select { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card, transparent); color: var(--text); }
+  .vi-sum { font-weight: 700; margin: 4px 0; } .vi-note { color: var(--text-dim); font-size: 15.5px; line-height: 1.5; }
   .vi-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .vi-table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 15px; }
-  .vi-table th { font-size: 13px; font-weight: 600; color: var(--text-dim); padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+  .vi-table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 17px; }
+  .vi-table th { font-size: 14.5px; font-weight: 600; color: var(--text-dim); padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
   .vi-table td { padding: 10px 6px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; white-space: nowrap; vertical-align: middle; }
   .vi-table th:nth-child(-n+3), .vi-table td.vt-s, .vi-table td.vt-n { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
   .vi-table td.vt-r { text-align: center; color: var(--text-dim); }
-  .vi-table td.vt-s { font-size: 13.75px; color: var(--text-dim); white-space: nowrap; }
+  .vi-table td.vt-s { font-size: 15.5px; color: var(--text-dim); white-space: nowrap; }
   .v2-sum { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
   .v2-sum .c { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; background: var(--surface); min-width: 92px; }
-  .v2-sum .c b { display: block; font-size: 20px; font-family: "IBM Plex Mono", monospace; }
-  .v2-sum .c span { font-size: 12px; color: var(--text-dim); }
+  .v2-sum .c b { display: block; font-size: 22.5px; font-family: "IBM Plex Mono", monospace; }
+  .v2-sum .c span { font-size: 13.5px; color: var(--text-dim); }
   .v2-table { min-width: 900px; }
-  .v2-p { font-size: 20px; font-weight: 700; }
-  .v2-lim { display: block; font-size: 22px; font-weight: 800; color: var(--red); font-family: "IBM Plex Sans KR", sans-serif; }  /* 2026-10-25 사용자 요청: 상한가 확률 크고 굵게 빨강 */
+  .v2-p { font-size: 22.5px; font-weight: 700; }
+  .v2-lim { display: block; font-size: 24.5px; font-weight: 800; color: var(--red); font-family: "IBM Plex Sans KR", sans-serif; }  /* 2026-10-25 사용자 요청: 상한가 확률 크고 굵게 빨강 */
   .v2-bar { display: block; height: 5px; border-radius: 3px; background: var(--border); margin: 4px 0 2px auto; width: 96px; overflow: hidden; }
   .v2-bar i { display: block; height: 100%; background: var(--red); }
-  .v2-tag { display: inline-block; font-size: 11.5px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--red); color: var(--red); font-family: "IBM Plex Sans KR", sans-serif; margin-left: 4px; }
+  .v2-tag { display: inline-block; font-size: 13px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--red); color: var(--red); font-family: "IBM Plex Sans KR", sans-serif; margin-left: 4px; }
   .v2-done { color: var(--red); font-weight: 700; font-family: "IBM Plex Sans KR", sans-serif; }
-  .v2-dip { width: auto; border-collapse: collapse; font-size: 13px; margin: 6px 0; }
+  .v2-dip { width: auto; border-collapse: collapse; font-size: 14.5px; margin: 6px 0; }
   .v2-dip th, .v2-dip td { border: 1px solid var(--border); padding: 4px 8px; text-align: right; font-family: "IBM Plex Mono", monospace; }
   .v2-dip th { color: var(--text-dim); font-weight: 600; }
-  .vt-sub { display: block; font-size: 12px; color: var(--text-dim); font-weight: 400; font-family: "IBM Plex Sans KR", sans-serif; }
-  .vt-tag { font-size: 12px; padding: 1px 5px; border-radius: 5px; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
-  .money-stats { font-size: 13.75px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
+  .vt-sub { display: block; font-size: 13.5px; color: var(--text-dim); font-weight: 500; font-family: "IBM Plex Sans KR", sans-serif; }
+  .vt-tag { font-size: 13.5px; padding: 1px 5px; border-radius: 5px; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
+  .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
-  .open-table { width: 100%; border-collapse: collapse; font-size: 17.5px; margin: 6px 0 14px; }
-  .open-table th { font-weight: 600; color: var(--text-dim); font-size: 13.75px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
+  .open-table { width: 100%; border-collapse: collapse; font-size: 19.5px; margin: 6px 0 14px; }
+  .open-table th { font-weight: 600; color: var(--text-dim); font-size: 15.5px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
   .open-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; vertical-align: middle; }
   .open-table th:nth-child(-n+2), .open-table td.ot-l { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
-  .open-table td.ot-theme { font-size: 15px; font-weight: 600; }
+  .open-table td.ot-theme { font-size: 17px; font-weight: 600; }
   .open-table td.ot-theme span { display: block; color: var(--red); font-weight: 500; font-family: "IBM Plex Mono", monospace; }
   .open-table td.ot-up { color: var(--red); font-weight: 600; }
-  .pair-table { width: 100%; border-collapse: collapse; font-size: 16.25px; margin: 6px 0; table-layout: fixed; }
-  .pair-table th { font-weight: 600; color: var(--text-dim); font-size: 13.125px; padding: 6px 3px; border-bottom: 1px solid var(--border); }
+  .pair-table { width: 100%; border-collapse: collapse; font-size: 18px; margin: 6px 0; table-layout: fixed; }
+  .pair-table th { font-weight: 600; color: var(--text-dim); font-size: 14.5px; padding: 6px 3px; border-bottom: 1px solid var(--border); }
   .pair-table td { padding: 8px 3px; border-bottom: 1px solid var(--border); font-family: "IBM Plex Mono", monospace; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pair-table td.pt-n { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
   .pair-table td.pt-r { text-align: center; color: var(--text-dim); }
   .pair-table td.up { color: var(--red); font-weight: 600; } .pair-table td.dn { color: var(--blue); font-weight: 600; }
   .pair-table td.pt-sep { border-left: 1px solid var(--border); }
-  .pair-table td:not(.pt-n):not(.pt-r) { font-size: 13.75px; padding-left: 1px; padding-right: 1px; }
+  .pair-table td:not(.pt-n):not(.pt-r) { font-size: 15.5px; padding-left: 1px; padding-right: 1px; }
   .pair-table .pt-ohlc i, .pair-table .pt-ohlc em { font-style: normal; }
-  .pair-table .pt-ohlc { display: block; font-family: "IBM Plex Mono", monospace; font-size: 13.125px; color: var(--text-dim); white-space: normal; }
-  .limit-table { width: 100%; border-collapse: collapse; font-size: 17.5px; margin: 6px 0; }
-  .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 13.75px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
+  .pair-table .pt-ohlc { display: block; font-family: "IBM Plex Mono", monospace; font-size: 14.5px; color: var(--text-dim); white-space: normal; }
+  .limit-table { width: 100%; border-collapse: collapse; font-size: 19.5px; margin: 6px 0; }
+  .limit-table th { font-weight: 600; color: var(--text-dim); font-size: 15.5px; padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; }
   .limit-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
   .limit-table th:nth-child(1), .limit-table td:nth-child(1) { text-align: center; width: 2.4em; color: var(--text-dim); }
   .limit-table th:nth-child(2), .limit-table td:nth-child(2) { text-align: left; font-family: "IBM Plex Sans KR", sans-serif; }
-  .limit-table td .lt-code { color: var(--text-dim); font-size: 13.75px; margin-left: 4px; font-family: "IBM Plex Mono", monospace; }
+  .limit-table td .lt-code { color: var(--text-dim); font-size: 15.5px; margin-left: 4px; font-family: "IBM Plex Mono", monospace; }
   .limit-table td.lt-p { color: var(--red); font-weight: 600; }
-  .flow-table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 4px 0 6px; }
-  .flow-table th { font-weight: 600; color: var(--text-dim); font-size: 13.75px; text-align: right; padding: 5px 4px; border-bottom: 1px solid var(--border); }
+  .flow-table { width: 100%; border-collapse: collapse; font-size: 17px; margin: 4px 0 6px; }
+  .flow-table th { font-weight: 600; color: var(--text-dim); font-size: 15.5px; text-align: right; padding: 5px 4px; border-bottom: 1px solid var(--border); }
   .flow-table th:first-child, .flow-table td:first-child { text-align: left; }
   .flow-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: right; font-family: "IBM Plex Mono", monospace; }
   .flow-table td:first-child { font-family: "IBM Plex Sans KR", sans-serif; }
@@ -314,10 +319,10 @@
   @media (max-width: 520px) {
     body { zoom: 0.85; }
     /* 상한가 후보 결과 표(6열)는 폰에서 종목명 칸이 사라지지 않게 표만 글씨·열 폭 축소 */
-    .pair-table { font-size: 12.5px; }
-    .pair-table td:not(.pt-n):not(.pt-r) { font-size: 11.5px; }
-    .pair-table .pt-ohlc { font-size: 11px; }
-    .pair-table th { font-size: 11px; }
+    .pair-table { font-size: 14px; }
+    .pair-table td:not(.pt-n):not(.pt-r) { font-size: 13px; }
+    .pair-table .pt-ohlc { font-size: 12.5px; }
+    .pair-table th { font-size: 12.5px; }
     .pair-table td.pt-n { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
     .pair-table .pt-ohlc i { display: block; } .pair-table .pt-ohlc em { display: none; }
   }
@@ -886,7 +891,7 @@ function switchHotView(v) {
       surge(x) ? ` <span class="vt-tag" style="color:#fff;background:var(--red);font-weight:700">체결강도 급상승</span>` : ""}${
       vi[x.code] ? ` <span class="vt-tag vt-re">상승 VI ${vi[x.code].time}</span>` : ""}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}${money[x.code] ? ` · <span style="color:var(--red)">${money[x.code]}</span>` : ""}</span></td>
       <td>${Number(x.price).toLocaleString("ko-KR")}원${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}</td>
-      <td>${x.up == null ? `<span class="vt-sub" style="margin:0">집계 중</span>` : `<span style="font-weight:800;font-size:17px;color:${x.up > 0 ? "var(--red)" : x.up < 0 ? "var(--blue)" : "inherit"}">${sg(x.up)}</span>${x.upMin < (S.upMin || 5) ? `<span class="vt-sub">${x.upMin}분 기준</span>` : ""}`}</td><td style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
+      <td>${x.up == null ? `<span class="vt-sub" style="margin:0">집계 중</span>` : `<span style="font-weight:800;font-size:19px;color:${x.up > 0 ? "var(--red)" : x.up < 0 ? "var(--blue)" : "inherit"}">${sg(x.up)}</span>${x.upMin < (S.upMin || 5) ? `<span class="vt-sub">${x.upMin}분 기준</span>` : ""}`}</td><td style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
       <td>${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim" style="${surge(x) ? "" : "color:var(--text)"}">${x.strength.toFixed(2)}</span>${
         x.sUp != null ? `<span class="vt-sub" style="${surge(x) ? "color:var(--red);font-weight:700" : ""}">${surge(x) ? "급상승 " : ""}5분 ${x.sUp > 0 ? "+" : ""}${x.sUp.toFixed(1)}</span>` : ""}${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}</td></tr>`).join("")}</table></div>`;
   list.innerHTML = !S.items.length ? `<div class="empty-row">지금은 명단에 든 종목이 없습니다(체결강도 ${S.minStrength} 이상 종목 없음).</div>` : table(S.items);
@@ -1008,7 +1013,7 @@ function switchHotView(v) {
       const room = lim && x.nowPrice ? (lim / x.nowPrice - 1) * 100 : null;
       const hot = x.limitProb != null && x.limitProb >= 2 * (x.limitBase || 1);
       const pc = x.limitProb != null
-        ? `<span class="v2-p v2-lim" style="${hot ? "font-size:26px" : ""}">${x.limitProb}%</span><span class="v2-bar"><i style="width:${Math.min(100, x.limitProb)}%"></i></span><span class="vt-sub">${x.limitStage}${x.limitPattern ? `<span class="v2-tag">패턴</span>` : ""}</span>`
+        ? `<span class="v2-p v2-lim" style="${hot ? "font-size:29px" : ""}">${x.limitProb}%</span><span class="v2-bar"><i style="width:${Math.min(100, x.limitProb)}%"></i></span><span class="vt-sub">${x.limitStage}${x.limitPattern ? `<span class="v2-tag">패턴</span>` : ""}</span>`
         : x.limitStage === "상한가 도달" ? `<span class="v2-done">${limTouchLabel(x)}</span>`
         : `<span class="vt-sub" style="margin:0">${x.limitStage || "계산 대기"}</span>`;
       return `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><b>${x.name}</b><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}</span></td>
@@ -1396,7 +1401,7 @@ function drawCandles(canvas, candles) {
   });
 
   ctx.fillStyle = colDim;
-  ctx.font = '9px "IBM Plex Mono", monospace';
+  ctx.font = '600 11px "IBM Plex Mono", monospace';
   ctx.textAlign = 'left';
   ctx.fillText(candles[0].d, 2, cssH - 2);
   ctx.textAlign = 'right';
