@@ -10,6 +10,14 @@
   #hot-view-limit .vi-table td.vt-s, #hot-view-limit .vi-table td.vt-r { color: var(--text); font-weight: 700; }
   #hot-view-limit .vi-table th { color: var(--text); font-weight: 700; }
   #hot-view-limit .vt-sub { color: var(--text); font-weight: 600; opacity: .8; }
+
+  /* 2026-10-29 사용자 요청 '글자체 더 진하게': 글꼴 최대 굵기(700) 위에 얇은 외곽선으로 더 진하게, 순검정/순흰색 */
+  #hot-view-limit { --ink: #000; }
+  :root[data-theme="dark"] #hot-view-limit { --ink: #fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #hot-view-limit { --ink: #fff; } }
+  #hot-view-limit .vi-table td, #hot-view-limit .vi-table th, #hot-view-limit .vt-sub,
+  #hot-view-limit .money-stats, #hot-view-limit .vi-sum, #hot-view-limit .vi-note { color: var(--ink); font-weight: 700; opacity: 1; -webkit-text-stroke: 0.35px currentColor; }
+  #hot-view-limit .vi-table td.vt-n > span:first-child { -webkit-text-stroke: 0.6px currentColor; }
 </style></head><body>
 <title>브레이크아웃 워치</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
