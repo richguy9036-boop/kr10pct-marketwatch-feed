@@ -1038,7 +1038,7 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
   const md = d => (d || "").slice(5).replace("-", "/");
   document.getElementById("count-limit").textContent = `${L.items.length}종목`;
   document.getElementById("limit-meta").textContent =
-    `${md(L.date)} 마감 기준 · 검증(${md(L.holdoutFrom)}~): 날짜별 상위 20종목 중 ${L.holdoutTop20Hit}%가 실제 진입(평균 종목 ${L.holdoutBase}%) · 전일 거래량 ${(L.minVolume || 500000) / 10000}만주 초과 종목 중에서 선정(2026-10-27 50만→10만주: 50만주 기준 밖에 1년 상한가의 57%가 있었음)`;
+    `${md(L.date)} 마감 기준 · 검증(${md(L.holdoutFrom)}~): 날짜별 상위 20종목 중 ${L.holdoutTop20Hit}%가 실제 진입(평균 종목 ${L.holdoutBase}%)${L.holdoutTop5Hit != null ? ` — 그중 상위 5종목 ${L.holdoutTop5Hit}% · 6~20위 ${L.holdoutRestHit}% (적중은 상위에 몰림: 상위 5를 먼저 보세요)` : ""} · 전일 거래량 ${(L.minVolume || 500000) / 10000}만주 초과 종목 중에서 선정(2026-10-27 50만→10만주: 50만주 기준 밖에 1년 상한가의 57%가 있었음)`;
   const R = L.review;
   document.getElementById("limit-review").innerHTML = R
     ? `<div class="money-stats">어제 후보(${md(R.pickDate)} 마감 기준) 채점 — ${md(R.checkDate)} 장중 상한가 진입 <b>${R.hits.length}/${R.n}종목</b>${
@@ -1080,7 +1080,7 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
     if (RS.open && RS.open.length) groups.push({ key: "resOpen", label: `${md(RS.date)} 결과 · 09:10 강한 테마`, head: `<b>${md(RS.date)} 결과 · 09:10 강한 테마</b> — ${sum(RS.openSummary)}`, rows: RS.open, render: r => resTable(r, "테마") });
   }
   groups.push({ key: "next", label: `${md(L.date)} 마감 기준 다음 거래일 후보`, head: `<b>${md(L.date)} 마감 기준 다음 거래일 후보 ${L.items.length}</b>`,
-    rows: L.items, render: r => pickTable(r, "업종", "<th>진입확률</th><th>종가</th>", x => `<td style="font-weight:700;color:var(--red)">${x.prob}%</td><td>${won(x.close)}</td>`) });
+    rows: L.items, render: r => pickTable(r, "업종", "<th>진입확률</th><th>종가</th>", x => `<td style="font-weight:700;color:var(--red)${L.items.indexOf(x) < 5 ? ";font-size:21px" : ""}">${x.prob}%${L.items.indexOf(x) < 5 ? `<span class="v2-tag">상위 5</span>` : ""}</td><td>${won(x.close)}</td>`) });
 
   document.getElementById("open-meta").innerHTML = `<div class="vi-filter"><input id="lu-q" type="search" placeholder="종목명 또는 종목코드"><select id="lu-type"><option value="">유형 전체</option>${
     groups.map(g => `<option value="${g.key}">${g.label}</option>`).join("")}</select></div><div class="vi-sum" id="lu-sum"></div>
