@@ -571,7 +571,7 @@
     보여주는 순수 정보 탭입니다. 이미 많이 오른 종목을 뒤늦게 쫓아가는 추격매수는 일반적으로 검증된
     우위가 없는 위험한 진입 방식이라는 점에 유의하시기 바랍니다. <b>갱신 주기</b>: 평일 08:00~09:00 10분마다, 09:00~15:30 5분마다
     갱신되고(2026-10-26부터), 15:30 결과가 그날의 마지막 화면으로 남습니다. 08:00~09:00(정규장 시작 전)에는 "장전"으로
-    표시되며, 이 시간대 등락률은 전일 기준이거나 시간외 호가가 반영된 값일 수 있습니다. <b>돈 몰리는 곳</b>은 09:00에 전일 확정 거래량·주가 기준으로 먼저 게시되고, 이후 장중 자료로 09:05~15:30 5분마다 집계(앱 반영은 약 5~10분 뒤)되며 15:30 결과가 그날 최종으로 남습니다. 거래량이 늘었다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
+    표시되며, 이 시간대 순위는 NXT 프리마켓(08:00~08:50) 체결 시세로 만듭니다(NXT에서 거래되는 종목만, 테마 등락률은 NXT 거래 구성종목 평균). NXT 시세를 못 받으면 전일 기준 값으로 대신합니다. <b>돈 몰리는 곳</b>은 09:00에 전일 확정 거래량·주가 기준으로 먼저 게시되고, 이후 장중 자료로 09:05~15:30 5분마다 집계(앱 반영은 약 5~10분 뒤)되며 15:30 결과가 그날 최종으로 남습니다. 거래량이 늘었다는 사실만 보여줄 뿐 앞으로의 방향을 뜻하지 않습니다. <b>매매 추천이 아니며, 투자 판단과 손익 책임은 본인에게
     있습니다.</b>
   </div>
   </div><!-- /tab-hot -->
@@ -731,7 +731,8 @@ function hotThemeGroup(t) {
       </div>
       <div class="chips">
         ${s.openChangePct != null ? chipHtml(`시가대비 +${s.openChangePct}%`, "on-red") : ""}
-        ${chipHtml(`전일대비 ${s.changePct > 0 ? "+" : ""}${s.changePct}%`, sChgCls)}
+        ${chipHtml(`${s.nxtVolume != null ? "NXT " : ""}전일대비 ${s.changePct > 0 ? "+" : ""}${s.changePct}%`, sChgCls)}
+        ${s.nxtVolume != null ? chipHtml(`NXT 거래량 ${s.nxtVolume.toLocaleString("ko-KR")}`) : ""}
         ${chipHtml(`${s.volBasis === "prev" ? "전일 거래량" : "거래량"} ${s.volume.toLocaleString("ko-KR")}`)}
       </div>
     </div>
@@ -743,7 +744,7 @@ function hotThemeGroup(t) {
   <div class="hot-theme-head">
     <span class="hot-theme-name">${t.theme}</span>
     ${chipHtml(`${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%`, chgCls)}
-    <span class="hot-theme-count num">${t.stockCount}종목${t.risePct != null ? ` · 상승 ${t.risePct}%` : ""}</span>
+    <span class="hot-theme-count num">${t.stockCount}종목${t.nxtCount != null ? ` · NXT ${t.nxtCount}종목` : ""}${t.risePct != null ? ` · 상승 ${t.risePct}%` : ""}</span>
   </div>
   ${leaderLine(t)}
   ${stocksHtml}`;
@@ -1246,6 +1247,8 @@ document.getElementById("list-hot").innerHTML = DATA_HOT_SECTORS.items.length
 })();
 document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "마감"
   ? `${DATA_HOT_SECTORS.date} 마감종목 · ${DATA_HOT_SECTORS.asOfTime} 기준`
+  : DATA_HOT_SECTORS.session === "장전" && DATA_HOT_SECTORS.basis === "nxt"
+  ? `${DATA_HOT_SECTORS.date} 장전 · ${DATA_HOT_SECTORS.asOfTime} 기준 · NXT 프리마켓(08:00~08:50) 시세 — NXT 거래 종목만, 테마 등락률 = 구성종목 평균`
   : DATA_HOT_SECTORS.session === "장전"
   ? `${DATA_HOT_SECTORS.date} 장전 · ${DATA_HOT_SECTORS.asOfTime} 기준(정규장 시작 전 — 전일 기준 값일 수 있음)`
   : `${DATA_HOT_SECTORS.date} 장중 · ${DATA_HOT_SECTORS.asOfTime} 기준(08:00~09:00 10분 · 09:00~15:30 5분마다 갱신)`;
