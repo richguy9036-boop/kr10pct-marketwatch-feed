@@ -1,24 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-  /* 2026-10-29 사용자 요청 '웹 시인성 개선·글자 키우고 굵게': 글자 크기 ×1.12, 흐린 글자·테두리 대비 강화, 기본 굵기 500, 표·숫자 600 */
-  body { font-weight: 500; }
-  .vi-table td, .bt-table td, .chip, .price, .meta-line, .money-stats, .sec-desc, .hot-meta, .vi-note { font-weight: 600; }
-  .row .name, .sec-head h2, .tab-btn, .seg button { font-weight: 700; }
-
-  /* 2026-10-29 사용자 요청: 상한가 후보 메뉴 종목 표 글씨 굵고 진하게 */
-  #hot-view-limit .vi-table td { font-weight: 700; color: var(--text); }
-  #hot-view-limit .vi-table td.vt-n > span:first-child { font-size: 19px; font-weight: 800; }
-  #hot-view-limit .vi-table td.vt-s, #hot-view-limit .vi-table td.vt-r { color: var(--text); font-weight: 700; }
-  #hot-view-limit .vi-table th { color: var(--text); font-weight: 700; }
-  #hot-view-limit .vt-sub { color: var(--text); font-weight: 600; opacity: .8; }
-
-  /* 2026-10-29 사용자 요청 '글자체 더 진하게': 글꼴 최대 굵기(700) 위에 얇은 외곽선으로 더 진하게, 순검정/순흰색 */
-  #hot-view-limit { --ink: #000; }
-  :root[data-theme="dark"] #hot-view-limit { --ink: #fff; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #hot-view-limit { --ink: #fff; } }
-  #hot-view-limit .vi-table td, #hot-view-limit .vi-table th, #hot-view-limit .vt-sub,
-  #hot-view-limit .money-stats, #hot-view-limit .vi-sum, #hot-view-limit .vi-note { color: var(--ink); font-weight: 700; opacity: 1; -webkit-text-stroke: 0.35px currentColor; }
-  #hot-view-limit .vi-table td.vt-n > span:first-child { -webkit-text-stroke: 0.6px currentColor; }
-</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>브레이크아웃 워치</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -341,6 +321,25 @@
     .pair-table td.pt-n { white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
     .pair-table .pt-ohlc i { display: block; } .pair-table .pt-ohlc em { display: none; }
   }
+  /* 2026-10-29 사용자 요청 '웹 시인성 개선·글자 키우고 굵게': 글자 크기 ×1.12, 흐린 글자·테두리 대비 강화, 기본 굵기 500, 표·숫자 600 */
+  body { font-weight: 500; }
+  .vi-table td, .bt-table td, .chip, .price, .meta-line, .money-stats, .sec-desc, .hot-meta, .vi-note { font-weight: 600; }
+  .row .name, .sec-head h2, .tab-btn, .seg button { font-weight: 700; }
+
+  /* 2026-10-29 사용자 요청: 상한가 후보 메뉴 종목 표 글씨 굵고 진하게 */
+  #hot-view-limit .vi-table td { font-weight: 700; color: var(--text); }
+  #hot-view-limit .vi-table td.vt-n > span:first-child { font-size: 19px; font-weight: 800; }
+  #hot-view-limit .vi-table td.vt-s, #hot-view-limit .vi-table td.vt-r { color: var(--text); font-weight: 700; }
+  #hot-view-limit .vi-table th { color: var(--text); font-weight: 700; }
+  #hot-view-limit .vt-sub { color: var(--text); font-weight: 600; opacity: .8; }
+
+  /* 2026-10-29 사용자 요청 '글자체 더 진하게': 글꼴 최대 굵기(700) 위에 얇은 외곽선으로 더 진하게, 순검정/순흰색 */
+  #hot-view-limit { --ink: #000; }
+  :root[data-theme="dark"] #hot-view-limit { --ink: #fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #hot-view-limit { --ink: #fff; } }
+  #hot-view-limit .vi-table td, #hot-view-limit .vi-table th, #hot-view-limit .vt-sub,
+  #hot-view-limit .money-stats, #hot-view-limit .vi-sum, #hot-view-limit .vi-note { color: var(--ink); font-weight: 700; opacity: 1; -webkit-text-stroke: 0.35px currentColor; }
+  #hot-view-limit .vi-table td.vt-n > span:first-child { -webkit-text-stroke: 0.6px currentColor; }
 </style>
 
 <header>
