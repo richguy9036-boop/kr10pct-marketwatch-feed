@@ -347,6 +347,17 @@
   #hot-view-limit .vi-table td.vt-n > span:first-child { font-size: 19px; font-weight: 800; }
   #hot-view-limit .vi-table td.vt-s, #hot-view-limit .vi-table td.vt-r { color: var(--text); font-weight: 700; }
   #hot-view-limit .vi-table th { color: var(--text); font-weight: 700; }
+  /* 2026-10-30: 아이패드 세로에서 상승 VI2·체결강도 표(최소 860~900px)도 한 화면에 맞춤 */
+  @media (min-width: 600px) and (max-width: 999px) {
+    #hot-view-vi2 .vi-table, #hot-view-strength .vi-table { min-width: 0; font-size: 15px; }
+    #hot-view-vi2 .vi-table th, #hot-view-strength .vi-table th { font-size: 13px; padding: 6px 3px; white-space: normal; word-break: keep-all; }
+    #hot-view-vi2 .vi-table td, #hot-view-strength .vi-table td { padding: 8px 3px; }
+    #hot-view-vi2 .vi-table td.vt-n, #hot-view-vi2 .vi-table td.vt-s, #hot-view-strength .vi-table td.vt-n, #hot-view-strength .vi-table td.vt-s { white-space: normal; word-break: keep-all; }
+    #hot-view-vi2 .v2-lim, #hot-view-strength .v2-lim { font-size: 18px; }
+    #hot-view-vi2 .v2-p.v2-lim { font-size: 20px !important; }
+    #hot-view-vi2 .v2-bar { width: 64px; }
+    #hot-view-vi2 .vt-tag, #hot-view-strength .vt-tag { white-space: nowrap; }
+  }
   /* 2026-10-30: 아이패드 세로에서 상한가 후보 결과 표(8열, 최소 860px)가 잘리던 것 → 한 화면에 맞춤 */
   @media (min-width: 600px) and (max-width: 999px) {
     #hot-view-limit .vi-table { min-width: 0; font-size: 15px; }
