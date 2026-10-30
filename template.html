@@ -347,6 +347,15 @@
   #hot-view-limit .vi-table td.vt-n > span:first-child { font-size: 19px; font-weight: 800; }
   #hot-view-limit .vi-table td.vt-s, #hot-view-limit .vi-table td.vt-r { color: var(--text); font-weight: 700; }
   #hot-view-limit .vi-table th { color: var(--text); font-weight: 700; }
+  /* 2026-10-30: 아이패드 세로에서 상한가 후보 결과 표(8열, 최소 860px)가 잘리던 것 → 한 화면에 맞춤 */
+  @media (min-width: 600px) and (max-width: 999px) {
+    #hot-view-limit .vi-table { min-width: 0; font-size: 15px; }
+    #hot-view-limit .vi-table th { font-size: 13px; padding: 6px 3px; white-space: normal; word-break: keep-all; }
+    #hot-view-limit .vi-table td { padding: 8px 3px; }
+    #hot-view-limit .vi-table td.vt-n, #hot-view-limit .vi-table td.vt-s { white-space: normal; word-break: keep-all; }
+    #hot-view-limit .vi-table td.vt-n > span:first-child { font-size: 16.5px; }
+    #hot-view-limit .vi-table .vt-tag { white-space: nowrap; }
+  }
   #hot-view-limit .vt-sub { color: var(--text); font-weight: 600; opacity: .8; }
 
   /* 2026-10-29 사용자 요청 '글자체 더 진하게': 글꼴 최대 굵기(700) 위에 얇은 외곽선으로 더 진하게, 순검정/순흰색 */
@@ -1115,7 +1124,7 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
 
   document.getElementById("open-meta").innerHTML = `<div class="vi-filter"><input id="lu-q" type="search" placeholder="종목명 또는 종목코드"><select id="lu-type"><option value="">유형 전체</option>${
     groups.map(g => `<option value="${g.key}">${g.label}</option>`).join("")}</select></div><div class="vi-sum" id="lu-sum"></div>
-    <div class="vi-note">시가 = 09:00 시초가 · 종가 = 16:10 확정 일봉 · '상한가 터치' = 장중 상한가 도달 · 시가 대비 고가는 최고점 매도 가정 · 좁은 화면은 표를 좌우로 밀어 보세요.</div>`;
+    <div class="vi-note">시가 = 09:00 시초가 · 종가 = 다음 날 아침 확정 일봉 · '상한가 터치' = 장중 상한가 도달 · 시가 대비 고가는 최고점 매도 가정 · 좁은 화면은 표를 좌우로 밀어 보세요.</div>`;
   ["list-openall", "openall-meta"].forEach(id => document.getElementById(id).innerHTML = "");
   const q = document.getElementById("lu-q"), ty = document.getElementById("lu-type");
   function drawLimit() {
