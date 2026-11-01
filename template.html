@@ -218,6 +218,13 @@
   }
   .tab-btn { word-break: keep-all; padding: 9px 4px; }  /* 2026-10-25: 탭 4개 한 줄 — 낱말 중간 줄바꿈 방지 */
   .tab-btn { min-width: 0; font-size: 15.5px; padding: 9px 2px; }  /* 2026-10-25: 탭 5개(백테스트 추가) 한 줄 */
+  @media (max-width: 520px) { .tabbar { gap: 4px; padding: 10px 8px 0; } .tab-btn { font-size: 13.5px; padding: 8px 1px; } }  /* 2026-11-01: 탭 6개 */
+  .sw-box { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 10px 12px; margin: 0 0 10px; font-size: 15.5px; line-height: 1.55; }
+  .sw-box b { color: var(--text); }
+  .sw-tag { display: inline-block; font-size: 13px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--border); color: var(--text-dim); margin-left: 4px; font-family: "IBM Plex Sans KR", sans-serif; }
+  .sw-tag.t1 { border-color: var(--red); color: var(--red); font-weight: 700; }
+  .sw-warn { color: var(--blue); font-weight: 700; }
+  #tab-swing .vi-table th:nth-child(4), #tab-swing .vi-table th:nth-child(10), #tab-swing .vi-table th:nth-child(11) { text-align: left; }
   .bt-sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 12px; }
   .bt-sum .c { border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; background: var(--surface); text-align: center; }
   .bt-sum .c b { display: block; font-size: 22.5px; font-family: "IBM Plex Mono", monospace; }
@@ -386,6 +393,8 @@
 <div class="tabbar">
   <!-- 2026-10-25 사용자 요청: '오늘의 종목'을 브레이크아웃 워치와 같은 줄, 맨 앞에 -->
   <button class="tab-btn" id="tab-btn-hot" onclick="switchTab('hot')">오늘의 종목</button>
+  <!-- 2026-11-01 사용자 요청: 오늘의 종목 옆 '스윙돌파후보' -->
+  <button class="tab-btn" id="tab-btn-swing" onclick="switchTab('swing')">스윙<wbr>돌파후보</button>
   <button class="tab-btn active" id="tab-btn-breakout" onclick="switchTab('breakout')">브레이크아웃 워치</button>
   <button class="tab-btn" id="tab-btn-imminent" onclick="switchTab('imminent')">임박 스캐너</button>
   <button class="tab-btn" id="tab-btn-volatility" onclick="switchTab('volatility')">변동성 패턴</button>
@@ -538,6 +547,11 @@
     </div>
     <div id="bt-body"></div>
   </div><!-- /tab-backtest -->
+
+  <div class="tab-panel" id="tab-swing">
+    <div class="sec-head"><h2>스윙돌파후보 — 오늘 매수 타이밍 상위 10</h2><span class="count num" id="sw-count"></span></div>
+    <div id="sw-body"></div>
+  </div><!-- /tab-swing -->
 
   <div class="install-hint">
 
@@ -1324,6 +1338,45 @@ function renderBt() {
 }
 renderBt();
 
+// 2026-11-01 사용자 요청: 스윙돌파후보(swing_candidates.py → DATA.swing) — 박스 돌파 + 전일 미국 묶음 + 장전 NXT 프리마켓 갭 + 핫 테마
+(function renderSwing() {
+  const S = DATA.swing, body = document.getElementById("sw-body");
+  if (!S || !S.items) { body.innerHTML = `<div class="empty-row">아직 집계 없음 — 평일 07:30 이후 표시됩니다.</div>`; return; }
+  const won = n => n == null ? "—" : `${Math.round(n).toLocaleString("ko-KR")}`;
+  const sg = (v, d = 1) => v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(d)}%`;
+  const col = v => v == null ? "" : v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
+  const md = d => d ? d.slice(5).replace("-", "/") : "—";
+  const nxt = S.basis === "nxt";
+  document.getElementById("sw-count").textContent = `${S.items.length}종목`;
+  const M = S.market || {};
+  const usTop = (S.usGroups || []).slice(0, 4).map(g => `${g.group} <span style="${col(g.d1)}">${sg(g.d1)}</span>(5일 ${sg(g.d5)})`).join(" · ");
+  const usLow = (S.usGroups || []).slice(-2).map(g => `${g.group} <span style="${col(g.d1)}">${sg(g.d1)}</span>`).join(" · ");
+  const hot = (S.hotThemes || []).slice(0, 5).map(t => `${t[0]} <span style="${col(t[1])}">${sg(t[1])}</span>`).join(" · ");
+  const rows = S.items.map((x, i) => {
+    const buy = x.type === "S5" ? `<b>시가 매수</b>` : `<b>${won(x.trigger)}</b> 돌파 시`;
+    const stop = x.type === "S5" ? (x.stop ? `${won(x.stop)}(−8%)` : "시가 −8%") : "매수일 저가";
+    const us = x.usGroup ? `${x.usGroup} <span style="${col(x.us1)}">${sg(x.us1)}</span>${x.usPts > 0 ? ' <span class="sw-tag t1">강</span>' : x.usPts < 0 ? ' <span class="sw-tag">약</span>' : ""}` : '<span style="color:var(--text-dim)">연결 없음</span>';
+    const gap = x.gap == null ? `<span style="color:var(--text-dim)">${nxt ? "NXT 없음" : "08시 반영"}</span>` : `<span style="${col(x.gap)}">${sg(x.gap, 2)}</span>`;
+    return `<tr><td class="vt-r">${i + 1}</td><td class="vt-n">${x.type === "S5" ? "시가 매수" : "돌파 매수"}<span class="sw-tag${x.tier === 1 ? " t1" : ""}">${x.tier === 1 ? "1군" : "2군"}</span></td>
+      <td class="vt-s">${x.sector || ""}</td><td class="vt-n"><b>${x.name}</b> <span style="color:var(--text-dim);font-size:14px">${x.code}</span></td>
+      <td>${won(x.close)}</td><td>${nxt && x.nxt ? won(x.nxt) : "—"}</td><td>${gap}</td><td>${buy}${x.dist != null ? `<span class="vt-sub">남은 ${sg(x.dist)}</span>` : ""}</td><td>${stop}</td>
+      <td class="vt-n">${us}</td><td class="vt-n">${x.theme || "—"}${x.theme5d != null ? ` <span style="${col(x.theme5d)}">${sg(x.theme5d)}</span>` : ""}</td>
+      <td><b>${x.pts > 0 ? "+" : ""}${x.pts}</b></td><td>${sg(x.expRet, 2)} · ${x.expWin}%</td></tr>`;
+  }).join("");
+  const drop = (S.dropped || []).length ? `<div class="vi-note">장전 갭 때문에 뺀 종목: ${S.dropped.map(x => `${x.name}(${sg(x.gap, 1)})`).join(", ")}</div>` : "";
+  body.innerHTML = `
+    <div class="sw-box">기준 <b>${md(S.base)} 종가</b> · 미국 <b>${md(S.usDate)}</b> 장 · ${nxt ? `<b>NXT 프리마켓 ${S.asof} 반영</b>` : "<b>장전 프리마켓 반영 전</b>(08:00~08:50 10분마다 갱신)"} · 후보 풀 ${S.nPool}종목<br>
+      시장(전 종목 동일가중 지수): ${M.up ? `<b style="color:var(--red)">50일선 위(${sg(M.gapPct)})</b>` : `<span class="sw-warn">50일선 아래(${sg(M.gapPct)}) — 과거 이때 시가 매수 평균 +0.2%로 약함, 비중 축소</span>`}<br>
+      전일 미국 강한 묶음: ${usTop || "—"}${usLow ? ` · 약한 묶음: ${usLow}` : ""}<br>
+      한국 핫 테마(5일): ${hot || "—"}</div>
+    <div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>매수 방법</th><th>업종</th><th>종목</th><th>전일 종가</th><th>NXT 프리</th><th>장전 갭</th><th>매수 기준</th><th>손절</th><th>미국 영향(전일)</th><th>핫 테마(5일)</th><th>점수</th><th>과거 평균·승률</th></tr></thead><tbody>${rows || `<tr><td colspan="13" class="vt-n">오늘 조건 맞는 종목 없음</td></tr>`}</tbody></table></div>
+    ${drop}
+    <div class="vi-note"><b>고르는 법</b>(5년 일봉 백테스트 2022-09~2026-10, 비용 0.3%) · <b>1군</b> = 60일 +30% 이상 오른 뒤 10일 고저폭 15% 안 박스 — <b>시가 매수</b>: 어제 종가로 박스 위 마감 → 오늘 시가(과거 2,280건 평균 +1.30%·승률 52%) · <b>돌파 매수</b>: 오늘 장중 박스 고가 +0.1% 넘으면 그 가격(4,125건 +1.41%·승률 39%) · <b>2군</b>(1군이 10개 미만일 때만) = 60일 +20%·폭 20%, 평균 +1.1~1.4%지만 2022~24년 구간은 손실 → 소액만.
+    <br><b>점수</b> = 미국 영향(종목 테마에 연결된 미국 묶음의 전일 1일·5일 순위가 최상위 15% '강' +2 → 과거 평균 +3.4~4.7%, 하위 '약' −1) + 장전 갭(NXT 프리마켓/전일 종가: 0~+3% +1, +3~5% −1, +5~8% −2, −2% 이하·+8% 초과는 제외 — 모두 과거 손실 구간). 핫 테마는 따로는 효과가 일정하지 않아 같은 점수 안 순서에만 씀. '과거 평균·승률' = 같은 점수 과거 거래(1군) 또는 2군 유형 평균.
+    <br><b>파는 법</b> · 매수 3일째 종가가 매수가보다 높으면 절반 매도 + 나머지 손절선을 매수가로 · 나머지는 종가가 20일선 아래로 마감한 다음 날 시가에 매도(최대 60일) · 승률은 40~50%대라 손절을 꼭 지켜야 하는 방식(작은 손실 여러 번, 큰 수익 몇 번).
+    <br>한계: 현재 상장 종목만으로 한 백테스트(상폐 종목 빠짐), 테마 소속은 현재 기준, 미국 묶음↔한국 테마 연결은 수작업 · 참고용이며 투자 권유 아님 · 좁은 화면은 표를 좌우로 밀어 보세요.</div>`;
+})();
+
 const CHART_DATA = /*__PLACEHOLDER_CHART_DATA__*/;
 
 const openCharts = {};
@@ -1339,6 +1392,8 @@ function switchTab(name) {
   document.getElementById('tab-btn-hot').classList.toggle('active', name === 'hot');
   document.getElementById('tab-backtest').classList.toggle('active', name === 'backtest');
   document.getElementById('tab-btn-backtest').classList.toggle('active', name === 'backtest');
+  document.getElementById('tab-swing').classList.toggle('active', name === 'swing');
+  document.getElementById('tab-btn-swing').classList.toggle('active', name === 'swing');
 }
 
 function toggleChart(ticker, rowEl) {
