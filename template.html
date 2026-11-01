@@ -1357,7 +1357,7 @@ function toggleSwingChart(code) {
       <span><i class="dot" style="background:#5b96f5"></i>20일</span><span><i class="dot" style="background:#a05cc8"></i>60일</span>
       <span><i class="dot" style="background:var(--text)"></i>240일</span><span style="margin-left:auto">일봉 · 최근 ${bars.length}일</span></div>
     <canvas id="swcv-${code}"></canvas>`;
-  drawCandles(document.getElementById("swcv-" + code), bars);
+  drawCandles(document.getElementById("swcv-" + code), bars, 5);  // 사용자 요청: 오른쪽 캔들 5개 여유
   box.dataset.rendered = "1";
 }
 
@@ -1460,7 +1460,7 @@ function renderChartPanel(ticker, panel) {
   drawCandles(document.getElementById('cv-' + ticker), candles);
 }
 
-function drawCandles(canvas, candles) {
+function drawCandles(canvas, candles, padSlots = 0) {  // padSlots: 오른쪽 빈 캔들 자리 수(2026-11-01 스윙 차트 5개)
   const dpr = window.devicePixelRatio || 1;
   const cssW = canvas.parentElement.clientWidth;
   const priceH = 170, volH = 46, gap = 6, padTop = 6, padBottom = 4;
@@ -1479,7 +1479,7 @@ function drawCandles(canvas, candles) {
   const colText = cs.getPropertyValue('--text').trim() || '#1b1d22';
 
   const n = candles.length;
-  const slot = cssW / n;
+  const slot = cssW / (n + padSlots);
   const bodyW = Math.max(1, slot * 0.62);
 
   let lo = Infinity, hi = -Infinity;
@@ -1543,7 +1543,7 @@ function drawCandles(canvas, candles) {
   ctx.textAlign = 'left';
   ctx.fillText(candles[0].d, 2, cssH - 2);
   ctx.textAlign = 'right';
-  ctx.fillText(candles[n - 1].d, cssW - 2, cssH - 2);
+  ctx.fillText(candles[n - 1].d, n * slot - 2, cssH - 2);
   ctx.textAlign = 'left';
   ctx.fillText(hi.toLocaleString('ko-KR'), 2, padTop + 9);
   ctx.fillText(lo.toLocaleString('ko-KR'), 2, padTop + priceH - 2);
