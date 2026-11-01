@@ -1357,7 +1357,7 @@ function toggleSwingChart(code) {
       <span><i class="dot" style="background:#5b96f5"></i>20일</span><span><i class="dot" style="background:#a05cc8"></i>60일</span>
       <span><i class="dot" style="background:var(--text)"></i>240일</span><span style="margin-left:auto">일봉 · 최근 ${bars.length}일</span></div>
     <canvas id="swcv-${code}"></canvas>`;
-  drawCandles(document.getElementById("swcv-" + code), bars, 5);  // 사용자 요청: 오른쪽 캔들 5개 여유
+  drawCandles(document.getElementById("swcv-" + code), bars, 5, true);  // 사용자 요청: 오른쪽 캔들 5개 여유
   box.dataset.rendered = "1";
 }
 
@@ -1460,7 +1460,7 @@ function renderChartPanel(ticker, panel) {
   drawCandles(document.getElementById('cv-' + ticker), candles);
 }
 
-function drawCandles(canvas, candles, padSlots = 0) {  // padSlots: 오른쪽 빈 캔들 자리 수(2026-11-01 스윙 차트 5개)
+function drawCandles(canvas, candles, padSlots = 0, monthLines = false) {  // padSlots: 오른쪽 빈 캔들 자리 수(2026-11-01 스윙 차트 5개)
   const dpr = window.devicePixelRatio || 1;
   const cssW = canvas.parentElement.clientWidth;
   const priceH = 170, volH = 46, gap = 6, padTop = 6, padBottom = 4;
@@ -1505,6 +1505,25 @@ function drawCandles(canvas, candles, padSlots = 0) {  // padSlots: 오른쪽 �
   for (let i = 0; i <= 3; i++) {
     const y = padTop + (priceH / 3) * i;
     ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(cssW, y + 0.5); ctx.stroke();
+  }
+
+  // 2026-11-01 사용자 요청(스윙 차트): 달이 바뀌는 첫 거래일에 세로 점선 + 'M월'(1월은 'YY년 1월')
+  if (monthLines) {
+    ctx.save();
+    ctx.strokeStyle = colDim; ctx.globalAlpha = 0.6; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+    ctx.font = '600 11px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'left';
+    for (let i = 1; i < n; i++) {
+      if (candles[i].d.slice(3, 5) === candles[i - 1].d.slice(3, 5)) continue;
+      const x = Math.round(i * slot) + 0.5;
+      ctx.beginPath(); ctx.moveTo(x, padTop); ctx.lineTo(x, volTop + volH); ctx.stroke();
+      const mm = +candles[i].d.slice(3, 5);
+      if (x > 52 && x < n * slot - 20) {
+        ctx.globalAlpha = 0.9; ctx.fillStyle = colDim;
+        ctx.fillText(mm === 1 ? `${candles[i].d.slice(0, 2)}년 1월` : `${mm}월`, x + 3, padTop + priceH - 3);
+        ctx.globalAlpha = 0.6;
+      }
+    }
+    ctx.restore();
   }
 
   function maLine(key, color, width) {
