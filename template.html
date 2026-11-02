@@ -1011,10 +1011,11 @@ function switchHotView(v) {
   document.getElementById("closebet-meta").innerHTML = `<div class="sw-box">
     <b>${d.date.slice(5).replace("-", "/")} ${d.asOf} 선정</b>${isToday ? "" : ` <span class="sw-warn">(오늘 선정 전 — 오늘은 15:20에 고릅니다)</span>`} ·
     시장 온도 <b style="color:${moodColor}">${d.mood}</b>(조건 통과 ${d.ncand}종목) — ${d.moodNote}<br>${usLine}<br>
-    주도 업종: ${(d.leadSectors || []).join(", ")}</div>
-    <div class="vi-note"><b>고르는 법</b>: 15:20까지 <b>+3~29% 상승 · 장중 고가 −2% 이내 · 거래량 20일 평균 2.7배 이상</b> · 1,000원 이상 · 거래대금 10억 이상 · 관리/정리매매 제외 → <b>주도 업종(오늘 업종 평균 등락률 상위 5) 먼저, 그다음 등락률 높은 순</b> 5개.
+    주도 업종: ${(d.leadSectors || []).join(", ")}${d.nxtExcludedN ? `<br>NXT 거래 종목이라 뺀 후보 ${d.nxtExcludedN}개: ${(d.nxtExcluded || []).map(x => `${x.name} ${sg(x.chg)}`).join(", ")}` : ""}</div>
+    <div class="vi-note"><b>고르는 법</b>: 15:20까지 <b>+3~29% 상승 · 장중 고가 −2% 이내 · 거래량 20일 평균 2.7배 이상</b> · 1,000원 이상 · 거래대금 10억 이상 · 관리/정리매매 제외 · <b>NXT(넥스트레이드) 거래 종목 제외</b> → <b>주도 업종(오늘 업종 평균 등락률 상위 5) 먼저, 그다음 등락률 높은 순</b> 5개.
     <b>사고 파는 법</b>: 오늘 <b>종가 단일가(15:20~15:30)</b>에 같은 금액씩 사서 <b>내일 시초가(동시호가 08:30~09:00)</b>에 모두 팝니다 — 09:15 이후까지 들고 있으면 과거 평균이 마이너스로 바뀌었습니다.
-    <b>근거</b>(비용 0.3% 뺀 값): 3분봉 1년 하루 평균 +0.33%·이긴 날 51%·최대 낙폭 −41%, 5년 일봉에선 후보 5개 이상인 날 +0.19%. 이긴 날이 절반 남짓이라 <b>한 번에 거는 돈은 작게</b>.
+    <b>근거</b>(비용 0.3% 뺀 값): 3분봉 1년 하루 평균 <b>+0.51%</b>·이긴 날 54%·최대 낙폭 −41%(최근 6개월 +0.22%), 5년 일봉에선 후보 5개 이상인 날 +0.19%. 이긴 날이 절반 남짓이라 <b>한 번에 거는 돈은 작게</b>.
+    <b>애프터마켓(NXT 15:40~20:00·프리 08:00~08:50)</b>: NXT 종목은 그날 저녁 애프터마켓에서 밤사이 기대가 미리 반영돼 다음 날 시가 이익이 작았습니다(종목당 +0.26% 대 NXT 아닌 종목 +0.68%, 최근 6개월 −0.41% 대 +0.22%) → <b>NXT 종목은 빼고 고릅니다</b>(빼기 전 하루 +0.33%). NXT 종목을 애프터마켓·프리마켓에서 팔거나 애프터에서 손절하는 것도 모두 다음 날 KRX 시가 매도보다 나빴습니다.
     <b>전일 미국시장</b>: 나스닥 방향만으로는 5년 동안 차이가 없었지만(하락 +0.12% · 상승 +0.11%), <b>후보 4개 이하 + 나스닥 하락이 겹친 날은 5년 −0.52%(1년 −1.51%)</b>라 '쉬는 날'로 강하게 표시합니다. 종목마다 연결된 미국 묶음의 전일 등락을 보여 주지만 순위엔 넣지 않습니다 — 미국 강세 묶음 종목은 그날 한국장에 이미 반영돼 다음 날 시가가 오히려 약했습니다.
     과거 성과가 앞으로를 보장하지 않습니다 · 참고용</div>`;
   list.innerHTML = !d.picks.length ? `<div class="empty-row">조건을 통과한 종목이 없습니다 — 베팅하지 않는 날입니다.</div>`
@@ -1023,7 +1024,7 @@ function switchHotView(v) {
         <td class="vt-n"><b>${x.name}</b><span class="vt-sub">${x.code}${obTag(x.code)}</span></td>
         <td>${Math.round(x.price).toLocaleString("ko-KR")}원</td>
         <td style="font-weight:700;color:${col(x.chg)}">${sg(x.chg)}</td>
-        <td>${x.usGroup ? `${x.usGroup} <b style="color:${col(x.us1)}">${sg(x.us1)}</b>${x.usStrong ? ` <span class="sw-tag">미국 강세 선반영</span>` : ""}` : "연결 없음"}</td><td>${x.vx}배</td><td>${x.amt.toLocaleString("ko-KR")}억</td><td>${x.nearHi}%</td>
+        <td class="vt-s" style="color:var(--text)">${x.usGroup ? `${x.usGroup} <b style="color:${col(x.us1)}">${sg(x.us1)}</b>${x.usStrong ? ` <span class="sw-tag">미국 강세 선반영</span>` : ""}` : "연결 없음"}</td><td>${x.vx}배</td><td>${x.amt.toLocaleString("ko-KR")}억</td><td>${x.nearHi}%</td>
 </tr>`).join("")}</table></div>`;
   const H = C.history || [], st = C.stats || {};
   document.getElementById("closebet-history").innerHTML = `<div class="sec-head" style="margin-top:18px"><h2>지난 결과 — 종가 매수 → 다음 날 시가 매도</h2><span class="count num">${st.days || 0}일</span></div>`
