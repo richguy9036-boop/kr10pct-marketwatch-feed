@@ -227,7 +227,7 @@
   #tab-swing .sw-row { cursor: pointer; } #tab-swing .sw-row:hover td { background: var(--surface); }
   #tab-swing .sw-chart { position: sticky; left: 0; }  /* 표를 옆으로 밀어도 차트는 화면 폭에 */
   #tab-swing .vi-table th:nth-child(4), #tab-swing .vi-table th:nth-child(10), #tab-swing .vi-table th:nth-child(11) { text-align: left; }
-  .bt-sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 12px; }
+  .bt-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 4px 0 12px; }
   .bt-sum .c { border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; background: var(--surface); text-align: center; }
   .bt-sum .c b { display: block; font-size: 22.5px; font-family: "IBM Plex Mono", monospace; }
   .bt-sum .c .lb { display: block; font-size: 13.5px; color: var(--text-dim); }
