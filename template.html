@@ -565,6 +565,8 @@
     <!-- 2026-10-25 사용자 요청: 상승 VI 맨 앞, 상승 VI2 둘째 -->
     <!-- 2026-11-02 사용자 요청: 6개 메뉴에 공통으로 선정된 종목 3개 -->
     <button id="seg-common" onclick="switchHotView('common')">공통종목</button>
+    <!-- 2026-11-02 사용자 요청: 매일 15:20 종가베팅 5종목(전일 미국시장 반영) -->
+    <button id="seg-closebet" onclick="switchHotView('closebet')">종가베팅</button>
     <button id="seg-vi" onclick="switchHotView('vi')">상승 VI</button>
     <button id="seg-vi2" onclick="switchHotView('vi2')">상승 VI2</button>
     <button id="seg-strength" onclick="switchHotView('strength')">체결강도</button>
@@ -577,6 +579,13 @@
     <div class="sec-head"><h2>공통종목 — 오늘의 종목 여러 메뉴에 함께 선정된 종목 상위 3</h2><span class="count num" id="count-common"></span></div>
     <div class="money-stats" id="common-meta"></div>
     <div id="list-common"></div>
+  </section>
+
+  <section id="hot-view-closebet" style="display:none">
+    <div class="sec-head"><h2>종가베팅 — 오늘 종가에 사서 내일 시초가에 파는 5종목</h2><span class="count num" id="count-closebet"></span></div>
+    <div class="money-stats" id="closebet-meta"></div>
+    <div id="list-closebet"></div>
+    <div id="closebet-history"></div>
   </section>
 
   <section id="hot-view-vi" style="display:none">
@@ -943,7 +952,7 @@ function toggleWeeklyChart(code) {
 })();
 
 function switchHotView(v) {
-  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength", "common"]) {
+  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength", "common", "closebet"]) {
     document.getElementById("hot-view-" + k).style.display = v === k ? "" : "none";
     document.getElementById("seg-" + k).classList.toggle("active", v === k);
   }
@@ -982,6 +991,48 @@ function switchHotView(v) {
         <td>${x.price != null ? Math.round(x.price).toLocaleString("ko-KR") + "원" : "—"}</td>
         <td style="font-weight:700;color:${x.pct > 0 ? "var(--red)" : x.pct < 0 ? "var(--blue)" : "inherit"}">${sg(x.pct)}</td>
         <td><b style="color:var(--red)">${x.menus.length}개</b><span class="vt-sub">${x.menus.join(" · ")}</span></td></tr>`).join("")}</table></div>`;
+})();
+
+// 2026-11-02 사용자 요청: 종가베팅 5종목(close_bet_pick.py → DATA.closeBet). 15:20 선정, 다음 날 시가 결과 자동 기록.
+(function renderCloseBet() {
+  const C = DATA.closeBet, list = document.getElementById("list-closebet");
+  const sg = v => v == null ? "—" : `${v > 0 ? "+" : ""}${Number(v).toFixed(2)}%`;
+  const col = v => v > 0 ? "var(--red)" : v < 0 ? "var(--blue)" : "inherit";
+  if (!C || !C.latest) {
+    document.getElementById("closebet-meta").innerHTML = `<div class="vi-note">매일 15:20에 다섯 종목을 고릅니다. 아직 선정 기록이 없습니다.</div>`;
+    return;
+  }
+  const d = C.latest, us = d.us || {}, today = DATA_HOT_SECTORS.date;
+  const isToday = d.date === today;
+  const moodColor = { "쉬는 날": "var(--blue)", "보통": "var(--text-dim)", "강한 날": "var(--red)" }[d.mood] || "inherit";
+  const gs = us.groups || [];
+  const usLine = us.date ? `<b>전일 미국(${us.date.slice(5).replace("-", "/")})</b>: 나스닥 <b style="color:${col(us.ndx)}">${sg(us.ndx)}</b> · 반도체(SOX) <b style="color:${col(us.sox)}">${sg(us.sox)}</b>${gs.length ? ` · 강한 묶음 ${gs.slice(0, 3).map(g => `${g.g} <span style="color:${col(g.r1)}">${sg(g.r1)}</span>`).join(", ")} · 약한 묶음 ${gs.slice(-3).reverse().map(g => `${g.g} <span style="color:${col(g.r1)}">${sg(g.r1)}</span>`).join(", ")}` : ""}` : "전일 미국 자료 없음";
+  document.getElementById("count-closebet").textContent = d.picks.length ? `${d.picks.length}종목` : "";
+  document.getElementById("closebet-meta").innerHTML = `<div class="sw-box">
+    <b>${d.date.slice(5).replace("-", "/")} ${d.asOf} 선정</b>${isToday ? "" : ` <span class="sw-warn">(오늘 선정 전 — 오늘은 15:20에 고릅니다)</span>`} ·
+    시장 온도 <b style="color:${moodColor}">${d.mood}</b>(조건 통과 ${d.ncand}종목) — ${d.moodNote}<br>${usLine}<br>
+    주도 업종: ${(d.leadSectors || []).join(", ")}</div>
+    <div class="vi-note"><b>고르는 법</b>: 15:20까지 <b>+3~29% 상승 · 장중 고가 −2% 이내 · 거래량 20일 평균 2.7배 이상</b> · 1,000원 이상 · 거래대금 10억 이상 · 관리/정리매매 제외 → <b>주도 업종(오늘 업종 평균 등락률 상위 5) 먼저, 그다음 등락률 높은 순</b> 5개.
+    <b>사고 파는 법</b>: 오늘 <b>종가 단일가(15:20~15:30)</b>에 같은 금액씩 사서 <b>내일 시초가(동시호가 08:30~09:00)</b>에 모두 팝니다 — 09:15 이후까지 들고 있으면 과거 평균이 마이너스로 바뀌었습니다.
+    <b>근거</b>(비용 0.3% 뺀 값): 3분봉 1년 하루 평균 +0.33%·이긴 날 51%·최대 낙폭 −41%, 5년 일봉에선 후보 5개 이상인 날 +0.19%. 이긴 날이 절반 남짓이라 <b>한 번에 거는 돈은 작게</b>.
+    <b>전일 미국시장</b>: 나스닥 방향만으로는 5년 동안 차이가 없었지만(하락 +0.12% · 상승 +0.11%), <b>후보 4개 이하 + 나스닥 하락이 겹친 날은 5년 −0.52%(1년 −1.51%)</b>라 '쉬는 날'로 강하게 표시합니다. 종목마다 연결된 미국 묶음의 전일 등락을 보여 주지만 순위엔 넣지 않습니다 — 미국 강세 묶음 종목은 그날 한국장에 이미 반영돼 다음 날 시가가 오히려 약했습니다.
+    과거 성과가 앞으로를 보장하지 않습니다 · 참고용</div>`;
+  list.innerHTML = !d.picks.length ? `<div class="empty-row">조건을 통과한 종목이 없습니다 — 베팅하지 않는 날입니다.</div>`
+    : `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>${d.asOf} 가격</th><th>등락률</th><th>연결 미국 묶음<br>(전일)</th><th>거래량<br>20일 평균 대비</th><th>거래대금</th><th>고가 대비</th></tr>${
+      d.picks.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector}${x.lead ? ` <span class="sw-tag t1">주도 ${x.srank}위</span>` : ""}</td>
+        <td class="vt-n"><b>${x.name}</b><span class="vt-sub">${x.code}${obTag(x.code)}</span></td>
+        <td>${Math.round(x.price).toLocaleString("ko-KR")}원</td>
+        <td style="font-weight:700;color:${col(x.chg)}">${sg(x.chg)}</td>
+        <td>${x.usGroup ? `${x.usGroup} <b style="color:${col(x.us1)}">${sg(x.us1)}</b>${x.usStrong ? ` <span class="sw-tag">미국 강세 선반영</span>` : ""}` : "연결 없음"}</td><td>${x.vx}배</td><td>${x.amt.toLocaleString("ko-KR")}억</td><td>${x.nearHi}%</td>
+</tr>`).join("")}</table></div>`;
+  const H = C.history || [], st = C.stats || {};
+  document.getElementById("closebet-history").innerHTML = `<div class="sec-head" style="margin-top:18px"><h2>지난 결과 — 종가 매수 → 다음 날 시가 매도</h2><span class="count num">${st.days || 0}일</span></div>`
+    + (!H.length ? `<div class="empty-row">첫 결과는 선정 다음 날 09:01 이후에 기록됩니다.</div>`
+    : `<div class="vi-note">${st.days}일 중 이긴 날 ${st.winDays}일 · 하루 평균(비용 0.3% 뺀 값) <b style="color:${col(st.avgNet)}">${sg(st.avgNet)}</b></div>
+      <div class="vi-scroll"><table class="vi-table"><tr><th>선정일</th><th>온도</th><th>평균</th><th>비용 뺀 값</th><th>종목별(종가 → 다음 날 시가)</th></tr>${
+      H.map(h => `<tr><td class="vt-n">${h.date.slice(5).replace("-", "/")}</td><td>${h.mood}(${h.ncand})</td><td style="color:${col(h.result.avg)}">${sg(h.result.avg)}</td>
+        <td style="font-weight:700;color:${col(h.result.net)}">${sg(h.result.net)}</td>
+        <td class="vt-s">${h.picks.map(x => `${x.name} <span style="color:${col(x.ret)}">${sg(x.ret)}</span>`).join(" · ")}</td></tr>`).join("")}</table></div>`);
 })();
 
 // 2026-10-27 사용자 요청: 키움 현재가 창 체결강도 190 이상(strength_fetch.py → vi_quick.py → DATA.strengthToday). 체결강도 높은 순.
