@@ -563,6 +563,8 @@
   <div class="hot-meta" id="hot-meta"></div>
   <div class="seg">
     <!-- 2026-10-25 사용자 요청: 상승 VI 맨 앞, 상승 VI2 둘째 -->
+    <!-- 2026-11-02 사용자 요청: 6개 메뉴에 공통으로 선정된 종목 3개 -->
+    <button id="seg-common" onclick="switchHotView('common')">공통종목</button>
     <button id="seg-vi" onclick="switchHotView('vi')">상승 VI</button>
     <button id="seg-vi2" onclick="switchHotView('vi2')">상승 VI2</button>
     <button id="seg-strength" onclick="switchHotView('strength')">체결강도</button>
@@ -570,6 +572,12 @@
     <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 곳</button>
     <button id="seg-limit" onclick="switchHotView('limit')">상한가 후보</button>
   </div>
+
+  <section id="hot-view-common" style="display:none">
+    <div class="sec-head"><h2>공통종목 — 오늘의 종목 여러 메뉴에 함께 선정된 종목 상위 3</h2><span class="count num" id="count-common"></span></div>
+    <div class="money-stats" id="common-meta"></div>
+    <div id="list-common"></div>
+  </section>
 
   <section id="hot-view-vi" style="display:none">
     <div class="sec-head"><h2>상승 VI — 오늘 정적 VI(+10%) 발동 종목</h2><span class="count num" id="count-vi"></span></div>
@@ -935,11 +943,46 @@ function toggleWeeklyChart(code) {
 })();
 
 function switchHotView(v) {
-  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength"]) {
+  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength", "common"]) {
     document.getElementById("hot-view-" + k).style.display = v === k ? "" : "none";
     document.getElementById("seg-" + k).classList.toggle("active", v === k);
   }
 }
+
+// 2026-11-02 사용자 요청: 오늘의 종목 6개 메뉴(상승 VI·VI2·체결강도·등락률 순위·돈 몰리는 곳·상한가 후보)에
+// 공통으로 선정된 종목 3개 — 각 메뉴가 지금 보여주는 오늘 목록 그대로 집계(2개 메뉴 이상), 많이 겹친 순 → 같으면 등락률 높은 순.
+(function renderCommon() {
+  const H = DATA_HOT_SECTORS, today = H.date, V = DATA.viToday, S = DATA.strengthToday, L = DATA.limitup || {};
+  const menus = {}, info = {};
+  const add = (menu, x, price, pct) => {
+    if (!x || !x.code) return;
+    (menus[x.code] = menus[x.code] || new Set()).add(menu);
+    const o = info[x.code] = info[x.code] || { code: x.code, name: x.name };
+    if (o.price == null && price != null) { o.price = price; o.pct = pct; }
+    if (!o.sector && x.sector) o.sector = x.sector;
+  };
+  const viItems = V && V.date === today ? V.items || [] : [];
+  viItems.forEach(x => add("상승 VI", x, x.nowPrice, x.nowPct));
+  viItems.filter(x => x.vi2Stage === "2차 도달").forEach(x => add("상승 VI2", x, x.nowPrice, x.nowPct));
+  (S && S.date === today ? S.items || [] : []).forEach(x => add("체결강도", x, x.price, x.chgPct));
+  (H.items || []).forEach(t => (t.stocks || []).forEach(x => add("등락률 순위", { ...x, theme: t.theme }, x.close, x.changePct)));
+  ((H.money || {}).items || []).forEach(t => (t.stocks || []).forEach(x => add("돈 몰리는 곳", x, x.close, x.changePct)));
+  if (L.open && L.open.date === today) (L.open.items || []).forEach(t => (t.stocks || []).forEach(x => add("상한가 후보", x, null, null)));
+  if (L.openAll && L.openAll.date === today) (L.openAll.items || []).forEach(x => add("상한가 후보", x, x.price, x.nowPct));
+  (L.items || []).forEach(x => add("상한가 후보", x, null, null));  // 전일 마감 기준 오늘 후보
+  const all = Object.keys(menus).map(c => ({ ...info[c], menus: [...menus[c]] })).filter(x => x.menus.length >= 2)
+    .sort((a, b) => b.menus.length - a.menus.length || (b.pct ?? -99) - (a.pct ?? -99));
+  const top = all.slice(0, 3);
+  document.getElementById("count-common").textContent = top.length ? `${top.length}종목` : "";
+  document.getElementById("common-meta").innerHTML = `<div class="vi-note">${today.slice(5).replace("-", "/")} 기준 · 6개 메뉴(상승 VI·상승 VI2·체결강도·등락률 순위·돈 몰리는 곳·상한가 후보)가 지금 보여주는 오늘 목록에서 <b>2개 이상 메뉴에 함께 오른 종목</b>을 많이 겹친 순(같으면 등락률 높은 순)으로 3개 · 2개 이상 겹친 종목은 모두 ${all.length}개 · 상승 VI2는 상승 VI 안의 '2차 도달' 종목이라 두 메뉴로 따로 셉니다 · 각 메뉴가 갱신될 때 같이 바뀜(앱 반영은 약 5~10분 간격) · 여러 메뉴에 겹쳤다고 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
+  const sg = v => v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+  document.getElementById("list-common").innerHTML = !top.length ? `<div class="empty-row">지금은 2개 이상 메뉴에 함께 오른 종목이 없습니다.</div>`
+    : `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>현재가</th><th>등락률</th><th>선정 메뉴</th></tr>${
+      top.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><b>${x.name}</b><span class="vt-sub">${x.code}${obTag(x.code)}</span></td>
+        <td>${x.price != null ? Math.round(x.price).toLocaleString("ko-KR") + "원" : "—"}</td>
+        <td style="font-weight:700;color:${x.pct > 0 ? "var(--red)" : x.pct < 0 ? "var(--blue)" : "inherit"}">${sg(x.pct)}</td>
+        <td><b style="color:var(--red)">${x.menus.length}개</b><span class="vt-sub">${x.menus.join(" · ")}</span></td></tr>`).join("")}</table></div>`;
+})();
 
 // 2026-10-27 사용자 요청: 키움 현재가 창 체결강도 190 이상(strength_fetch.py → vi_quick.py → DATA.strengthToday). 체결강도 높은 순.
 (function renderStrength() {
