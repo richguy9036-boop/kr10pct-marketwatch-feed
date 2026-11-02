@@ -1309,7 +1309,7 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
   : `${DATA_HOT_SECTORS.date} 장중 · ${DATA_HOT_SECTORS.asOfTime} 기준(08:00~09:00 10분 · 09:00~15:30 5분마다 갱신)`;
 
 // 2026-10-25 사용자 요청: 탭1~3 주간 백테스트(backtest_weekly.py → out.json "backtest")
-// 기초가 = 그 주 첫 거래일 시가, 주중 고가, 금요일(마지막 거래일) 종가. 대상 = 월요일 아침에 보이던 목록.
+// 기초가 = 그 주 첫 거래일 시가, 수익률 = 주중 최고가 기준(2026-11-02 사용자 요청), 금 종가는 참고. 대상 = 월요일 아침에 보이던 목록.
 let btTab = "breakout";
 function switchBt(t) {
   btTab = t;
@@ -1327,16 +1327,18 @@ function renderBt() {
   document.getElementById("bt-count").textContent = `${T.weeks.length}주`;
   const sum = tot.n ? `<div class="bt-sum">
       <div class="c"><b>${tot.n}</b><span class="lb">종목(완료 주)</span></div>
-      <div class="c"><b>${tot.win}%</b><span class="lb">승률(금 종가&gt;월 시가)</span></div>
-      <div class="c"><b>${pc(tot.avgClose)}</b><span class="lb">평균 금요일 종가</span></div>
-      <div class="c"><b>${pc(tot.avgHigh)}</b><span class="lb">평균 주중 고가</span></div></div>` : "";
+      <div class="c"><b>${pc(tot.avgHigh)}</b><span class="lb">평균 수익률(주중 최고가)</span></div>
+      ${tot.medHigh != null ? `<div class="c"><b>${pc(tot.medHigh)}</b><span class="lb">중앙값</span></div>` : ""}
+      ${tot.hit5 != null ? `<div class="c"><b>${tot.hit5}%</b><span class="lb">+5% 도달</span></div>` : ""}
+      <div class="c"><b>${tot.hit10}%</b><span class="lb">+10% 도달</span></div></div>
+      <div class="vi-note" style="margin:4px 0 8px">참고: 금요일 종가까지 들고 있었다면 평균 ${pc(tot.avgClose)} · 종가 플러스 ${tot.win}%</div>` : "";
   const weeks = T.weeks.map((w, i) => `<details class="bt-week"${i === 0 ? " open" : ""}><summary>
       <span class="wk">${md(w.firstDay)}~${md(w.lastDay)}${w.done ? "" : " (진행 중)"}</span>
-      <span class="st">${w.n}종목 · 승률 <b>${w.win}%</b> · 금 종가 <b>${pc(w.avgClose)}</b> · 주중 고가 <b>${pc(w.avgHigh)}</b> · +10% 터치 ${w.hit10}%</span></summary>
-      ${w.items ? `<div class="vi-scroll"><table class="bt-table"><tr><th>종목</th><th>월 시가</th><th>주중 고가</th><th>${w.done ? "금 종가" : "최근 종가"}</th></tr>${
+      <span class="st">${w.n}종목 · 수익률(주중 최고가) <b>${pc(w.avgHigh)}</b>${w.hit5 != null ? ` · +5% 도달 ${w.hit5}%` : ""} · +10% 도달 ${w.hit10}% · <span style="opacity:.75">금 종가 ${pc(w.avgClose)}</span></span></summary>
+      ${w.items ? `<div class="vi-scroll"><table class="bt-table"><tr><th>종목</th><th>주 시작가</th><th>주중 최고가<br>(수익률)</th><th>${w.done ? "금 종가" : "최근 종가"}<br>(참고)</th></tr>${
         [...w.items].sort((a, b) => b.highPct - a.highPct).map(x => `<tr><td>${x.name}</td><td>${won(x.open)}</td><td>${won(x.high)}<br>${pc(x.highPct)}</td><td>${won(x.close)}<br>${pc(x.closePct)}</td></tr>`).join("")
       }</table></div>` : ""}</details>`).join("");
-  body.innerHTML = sum + weeks + `<div class="vi-note" style="margin-top:10px"><b>평가 방법</b> · 그 주 첫 거래일(보통 월요일) 아침 앱에 올라와 있던 종목을 그 날 <b>KRX 시가</b>에 샀다고 보고, 그 주 <b>최고가</b>와 마지막 거래일(보통 금요일) <b>종가</b>로 평가합니다. 주중에 새로 올라온 종목은 이미 오른 뒤라 제외합니다. 앱에 실제로 표시됐던 목록(발행 이력) 그대로이며, 시세는 네이버 확정 일봉입니다. 수수료·세금·슬리피지는 빼지 않았습니다. 평균은 종목별 같은 금액 투자 기준입니다. 시세 ${B.priceThrough}까지 · ${B.generatedAt} 계산.</div>
+  body.innerHTML = sum + weeks + `<div class="vi-note" style="margin-top:10px"><b>평가 방법</b> · 그 주 첫 거래일(보통 월요일) 아침 앱에 올라와 있던 종목을 <b>주 시작가</b>(그 주 첫 거래일 KRX 시가)에 샀다고 보고, <b>수익률 = 주중 최고가 ÷ 주 시작가 − 1</b>로 계산합니다(2026-11-02 변경). 최고가에 정확히 파는 것은 현실적으로 어려우므로 <b>실제로 얻을 수 있는 수익의 상한</b>으로 보셔야 하며, 금요일 종가 수익률은 참고로 함께 표시합니다. 주중에 새로 올라온 종목은 이미 오른 뒤라 제외합니다. 앱에 실제로 표시됐던 목록(발행 이력) 그대로이며, 시세는 네이버 확정 일봉입니다. 수수료·세금·슬리피지는 빼지 않았습니다. 평균은 종목별 같은 금액 투자 기준입니다. 시세 ${B.priceThrough}까지 · ${B.generatedAt} 계산.</div>
     <div class="vi-note"><b>과거 성과는 미래 수익을 보장하지 않으며, 매매 추천이 아닙니다.</b></div>`;
 }
 renderBt();
