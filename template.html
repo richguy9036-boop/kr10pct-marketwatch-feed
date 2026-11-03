@@ -286,6 +286,8 @@
   .ob-tag { display: inline-block; margin-left: 6px; font-size: 12px; color: var(--text-dim); font-weight: 500; white-space: nowrap; }
   .ob-tag.ob-sell { color: #c2410c; font-weight: 700; }
   .vt-sub { display: block; font-size: 13.5px; color: var(--text-dim); font-weight: 500; font-family: "IBM Plex Sans KR", sans-serif; }
+  .eg { font-size: 13.5px; padding: 1px 5px; border-radius: 5px; font-weight: 700; white-space: nowrap; }
+  .eg-no { color: #fff; background: var(--blue); } .eg-ok { color: #1a7f37; border: 1px solid #1a7f37; } .eg-mid { color: var(--text-dim); border: 1px solid var(--border); }
   .vt-tag { font-size: 13.5px; padding: 1px 5px; border-radius: 5px; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
   .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
@@ -578,6 +580,7 @@
   <section id="hot-view-common" style="display:none">
     <div class="sec-head"><h2>공통종목 — 오늘의 종목 여러 메뉴에 함께 선정된 종목 상위 3</h2><span class="count num" id="count-common"></span></div>
     <div class="money-stats" id="common-meta"></div>
+    <div class="money-stats entry-guide-note"></div>
     <div id="list-common"></div>
   </section>
 
@@ -591,6 +594,7 @@
   <section id="hot-view-vi" style="display:none">
     <div class="sec-head"><h2>상승 VI — 오늘 정적 VI(+10%) 발동 종목</h2><span class="count num" id="count-vi"></span></div>
     <div class="money-stats" id="vi-meta"></div>
+    <div class="money-stats entry-guide-note"></div>
     <div id="list-vi"></div>
   </section>
 
@@ -603,6 +607,7 @@
   <section id="hot-view-strength" style="display:none">
     <div class="sec-head"><h2>체결강도 — 190 이상 편입 · 150 이하 제외(상승 VI 종목은 150 · 120)</h2><span class="count num" id="count-strength"></span></div>
     <div class="money-stats" id="strength-meta"></div>
+    <div class="money-stats entry-guide-note"></div>
     <div id="list-strength"></div>
     <!-- 2026-10-27 사용자 요청: 상승 VI 종목에 체결강도 선정 기준 적용 -->
     <div class="sec-head" style="margin-top:22px"><h2>상승 VI 종목 중 체결강도 선정(150 이상 편입 · 120 이하 제외)</h2><span class="count num" id="count-strength-vi"></span></div>
@@ -626,6 +631,7 @@
   <section id="hot-view-money" style="display:none">
     <div class="sec-head"><h2>돈 몰리는 곳 — 거래량이 급증한 테마</h2><span class="count num" id="count-money"></span></div>
     <div class="money-stats" id="money-asof"></div>
+    <div class="money-stats entry-guide-note"></div>
     <div id="list-money"></div>
     <div class="sec-head" style="margin-top:22px"><h2>외국인·기관 순매수 업종</h2></div>
     <div id="list-flows"></div>
@@ -633,6 +639,7 @@
 
   <section id="hot-view-chg">
     <div class="sec-head"><h2>오늘의 종목 — 테마 등락률 상위</h2><span class="count num" id="count-hot"></span></div>
+    <div class="money-stats entry-guide-note"></div>
     <div id="list-hot"></div>
   </section>
 
@@ -674,6 +681,44 @@ function fmtPrice(n) {
 function limTouchLabel(x) {
   const held = x.limitPrice ? x.nowPrice >= x.limitPrice : (x.nowPct != null && x.nowPct >= 29.5);
   return held ? (x.closed ? "상한가 마감" : "상한가 유지") : `상한가 터치 후 이탈${x.closed ? "(마감)" : ""}`;
+}
+
+// 2026-11-03 사용자 요청 '이미 오른 종목만 나와서 사면 다 손절 가격대': 장중 메뉴 매수 가이드.
+// 근거 research_entry_pullback.py(1년 3분봉, 시가 대비 +5% 첫 등장 2만6천 건, 비용 0.3% 뺀 값):
+// 추격 금지(09:12 전·전일 대비 +16%↑·시가 갭 +5% 초과) 바로 사면 당일 종가 −2.8% · 눌림 매수(+12% 미만·갭 0~5%·12시 전)
+// 시가+3% 지정가 → 시가 아래 손절 → 다음 날 시가 매도 +0.2%(바로 사면 −0.7%) · 그 밖 같은 방법 −0.1%.
+const egTick = p => p < 2000 ? 1 : p < 5000 ? 5 : p < 20000 ? 10 : p < 50000 ? 50 : p < 200000 ? 100 : p < 500000 ? 500 : 1000;
+function entryGuide(cur, open, chg, t, high) {
+  if (!cur || !open || chg == null || !t || !/^\d\d:\d\d/.test(t)) return null;
+  if (Math.max(cur, high || 0) < open * 1.05) return null;  // 검증 대상 = 시가 대비 +5% 이상 오른 종목
+  const m = +t.slice(0, 2) * 60 + +t.slice(3, 5);
+  if (m < 540 || m >= 930) return null;  // 정규장 중에만
+  const gap = (open / (cur / (1 + chg / 100)) - 1) * 100, b0 = open * 1.03;
+  const kind = m < 552 || chg >= 16 || gap > 5 ? "no" : chg < 12 && gap >= 0 && m <= 720 ? "ok" : "mid";
+  return { kind, buy: Math.floor(b0 / egTick(b0)) * egTick(b0), stop: open - egTick(open), now: cur <= b0 };
+}
+function egTag(g) {
+  if (!g) return "";
+  const w = n => n.toLocaleString("ko-KR");
+  return g.kind === "no" ? `<span class="eg eg-no">추격 금지</span>`
+    : `<span class="eg eg-${g.kind}">${g.kind === "ok" ? "눌림 매수" : "눌림 때만"} ${g.now ? "지금가 가능" : w(g.buy) + "원 이하"}</span>`;
+}
+function egSub(g) {
+  if (!g) return "";
+  return g.kind === "no" ? `<span class="vt-sub">${egTag(g)} 바로 사면 평균 −2.8%</span>`
+    : `<span class="vt-sub">${egTag(g)} 손절 ${g.stop.toLocaleString("ko-KR")}원</span>`;
+}
+function egChip(g) {
+  if (!g) return "";
+  return g.kind === "no" ? egTag(g) : `${egTag(g)} <span class="eg eg-mid">손절 ${g.stop.toLocaleString("ko-KR")}원</span>`;
+}
+function entryGuideNote() {
+  const html = `<div class="vi-note"><b>매수 가이드</b>(2026-11-03, 1년 3분봉 검증 · 비용 0.3% 뺀 값): 이 메뉴들은 '지금 강한 종목'을 보여 줄 뿐 매수 신호가 아닙니다 — 시가 대비 크게 오른 순간 바로 사면 평균 손실이었습니다(당일 종가 기준 +5% 때 −1.5%, +10% 때 −2.6%, +15% 때 −3.7%).
+    <span class="eg eg-no">추격 금지</span> = 09:12 전 · 전일 대비 +16% 이상 · 시가가 전일보다 +5% 넘게 출발 — 바로 사면 평균 −2.8%, 절반 가까이 −3% 넘게 손실, 눌림을 기다려도 마이너스.
+    <span class="eg eg-ok">눌림 매수</span> = 전일 대비 +12% 미만 · 시가 갭 0~5% · 12시 전 — <b>시가+3% 지정가로 기다렸다 사고</b>(체결 약 절반), <b>시가 아래로 내려가면 손절</b>, <b>다음 날 시가 매도</b> 시 평균 +0.2%(같은 종목을 바로 사면 −0.7%).
+    <span class="eg eg-mid">눌림 때만</span> = 그 밖 — 같은 방법 평균 −0.1%. 모든 경우 당일 종가보다 다음 날 시가 매도가 나았습니다.
+    기다려도 큰 이익은 아니고 <b>큰 손실을 피하는 방법</b>입니다(최근 6개월은 눌림 매수도 0% 근처) · 시가 대비 +5% 이상 오른 종목에만 표시 · 시각은 발행 기준 · 참고용</div>`;
+  document.querySelectorAll(".entry-guide-note").forEach(e => { e.innerHTML = html; });
 }
 
 function chipHtml(label, cls) {
@@ -812,6 +857,7 @@ function hotThemeGroup(t) {
         ${chipHtml(`${s.nxtVolume != null ? "NXT " : ""}전일대비 ${s.changePct > 0 ? "+" : ""}${s.changePct}%`, sChgCls)}
         ${s.nxtVolume != null ? chipHtml(`NXT 거래량 ${s.nxtVolume.toLocaleString("ko-KR")}`) : ""}
         ${chipHtml(`${s.volBasis === "prev" ? "전일 거래량" : "거래량"} ${s.volume.toLocaleString("ko-KR")}`)}
+        ${DATA_HOT_SECTORS.session === "장중" && s.nxtVolume == null ? egChip(entryGuide(s.close, s.open, s.changePct, DATA_HOT_SECTORS.asOfTime)) : ""}
       </div>
     </div>
     <div class="price num">${fmtPrice(s.close)}</div>
@@ -859,6 +905,7 @@ function moneyThemeGroup(t) {
         ${s.openChangePct != null ? chipHtml(`시가대비 +${s.openChangePct}%`, "on-red") : ""}
         ${s.volRatioPct != null ? chipHtml(`거래량 평소의 ${s.volRatioPct.toLocaleString("ko-KR")}%`) : ""}
         ${chipHtml(`거래대금 ${s.valueEok.toLocaleString("ko-KR")}억`)}
+        ${DATA_HOT_SECTORS.session === "장중" && (DATA_HOT_SECTORS.money || {}).basis !== "prev" ? egChip(entryGuide(s.close, s.open, s.changePct, (DATA_HOT_SECTORS.money || {}).asOfTime || DATA_HOT_SECTORS.asOfTime)) : ""}
       </div>
     </div>
     <div class="price num">${fmtPrice(s.close)}</div>
@@ -960,6 +1007,7 @@ function switchHotView(v) {
 
 // 2026-11-02 사용자 요청: 오늘의 종목 6개 메뉴(상승 VI·VI2·체결강도·등락률 순위·돈 몰리는 곳·상한가 후보)에
 // 공통으로 선정된 종목 3개 — 각 메뉴가 지금 보여주는 오늘 목록 그대로 집계(2개 메뉴 이상), 많이 겹친 순 → 같으면 등락률 높은 순.
+entryGuideNote();
 (function renderCommon() {
   const H = DATA_HOT_SECTORS, today = H.date, V = DATA.viToday, S = DATA.strengthToday, L = DATA.limitup || {};
   const menus = {}, info = {};
@@ -968,6 +1016,7 @@ function switchHotView(v) {
     (menus[x.code] = menus[x.code] || new Set()).add(menu);
     const o = info[x.code] = info[x.code] || { code: x.code, name: x.name };
     if (o.price == null && price != null) { o.price = price; o.pct = pct; }
+    if (o.open == null && x.open) o.open = x.open;
     if (!o.sector && x.sector) o.sector = x.sector;
   };
   const viItems = V && V.date === today ? V.items || [] : [];
@@ -988,7 +1037,7 @@ function switchHotView(v) {
   document.getElementById("list-common").innerHTML = !top.length ? `<div class="empty-row">지금은 2개 이상 메뉴에 함께 오른 종목이 없습니다.</div>`
     : `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>현재가</th><th>등락률</th><th>선정 메뉴</th></tr>${
       top.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><b>${x.name}</b><span class="vt-sub">${x.code}${obTag(x.code)}</span></td>
-        <td>${x.price != null ? Math.round(x.price).toLocaleString("ko-KR") + "원" : "—"}</td>
+        <td>${x.price != null ? Math.round(x.price).toLocaleString("ko-KR") + "원" : "—"}${H.session === "장중" ? egSub(entryGuide(x.price, x.open, x.pct, H.asOfTime)) : ""}</td>
         <td style="font-weight:700;color:${x.pct > 0 ? "var(--red)" : x.pct < 0 ? "var(--blue)" : "inherit"}">${sg(x.pct)}</td>
         <td><b style="color:var(--red)">${x.menus.length}개</b><span class="vt-sub">${x.menus.join(" · ")}</span></td></tr>`).join("")}</table></div>`;
 })();
@@ -1064,7 +1113,7 @@ function switchHotView(v) {
       surge(x) ? ` <span class="vt-tag" style="color:#fff;background:var(--red);font-weight:700">체결강도 급상승</span>` : ""}${
       vi[x.code] ? ` <span class="vt-tag vt-re">상승 VI ${vi[x.code].time}</span>` : ""}${
       x.rule === "trend" ? ` <span class="vt-tag" style="color:#1a7f37;border:1px solid #1a7f37;font-weight:700">서서히 상승${x.trend ? ` +${x.trend.rise.toFixed(1)}/${x.trend.min}분` : ""}</span>` : ""}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}${obTag(x.code)}${money[x.code] ? ` · <span style="color:var(--red)">${money[x.code]}</span>` : ""}</span></td>
-      <td>${Number(x.price).toLocaleString("ko-KR")}원${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}</td>
+      <td>${Number(x.price).toLocaleString("ko-KR")}원${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}${egSub(entryGuide(x.price, x.open, x.chgPct, x.seen || S.asOf))}</td>
       <td>${x.up == null ? `<span class="vt-sub" style="margin:0">집계 중</span>` : `<span style="font-weight:800;font-size:19px;color:${x.up > 0 ? "var(--red)" : x.up < 0 ? "var(--blue)" : "inherit"}">${sg(x.up)}</span>${x.upMin < (S.upMin || 5) ? `<span class="vt-sub">${x.upMin}분 기준</span>` : ""}`}</td><td style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
       <td>${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim" style="${surge(x) ? "" : "color:var(--text)"}">${x.strength.toFixed(2)}</span>${
         x.sUp != null ? `<span class="vt-sub" style="${surge(x) ? "color:var(--red);font-weight:700" : ""}">${surge(x) ? "급상승 " : ""}5분 ${x.sUp > 0 ? "+" : ""}${x.sUp.toFixed(1)}</span>` : ""}${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}</td></tr>`).join("")}</table></div>`;
@@ -1141,7 +1190,7 @@ function switchHotView(v) {
         return `<tr><td class="vt-r">${r}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><span style="${top ? "color:var(--red);font-weight:700" : ""}">${x.name}</span>${
           x.reRise ? ` <span class="vt-tag vt-re">재상승 ${x.reRise.reTime}</span>` : ""}<span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}${x.hotTheme ? ` · <span style="color:var(--red)">강세 ${x.hotTheme}</span>` : ""}${obTag(x.code)}</span></td>
           <td style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.open)}</td><td style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.high)}</td>
-          <td><span style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.nowPrice)}</span><span class="vt-sub">${x.closed ? "종가 · 확정" : `현재가 · ${x.priceTime || V.asOf}`}</span></td>
+          <td><span style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.nowPrice)}</span><span class="vt-sub">${x.closed ? "종가 · 확정" : `현재가 · ${x.priceTime || V.asOf}`}</span>${x.closed ? "" : egSub(entryGuide(x.nowPrice, x.open, x.nowPct, x.priceTime || V.asOf, x.high))}</td>
           <td style="font-weight:700;${col(x.ohPct)}">${sg(x.ohPct)}</td><td style="font-weight:700;${col(x.ocPct)}">${sg(x.ocPct)}</td>${vi2Cell(x)}</tr>`; }).join("")}</table></div>`;
   }
   q.addEventListener("input", draw); ty.addEventListener("change", draw);
