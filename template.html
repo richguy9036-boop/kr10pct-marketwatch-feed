@@ -1542,10 +1542,6 @@ function toggleSwingChart(code) {
   const md = d => d ? d.slice(5).replace("-", "/") : "—";
   const live = S.basis === "live", nxt = S.basis === "nxt" || live;  // 2026-11-01: 장중 5분 갱신(live)
   document.getElementById("sw-count").textContent = `${S.items.length}종목`;
-  const M = S.market || {};
-  const usTop = (S.usGroups || []).slice(0, 4).map(g => `${g.group} <span style="${col(g.d1)}">${sg(g.d1)}</span>(5일 ${sg(g.d5)})`).join(" · ");
-  const usLow = (S.usGroups || []).slice(-2).map(g => `${g.group} <span style="${col(g.d1)}">${sg(g.d1)}</span>`).join(" · ");
-  const hot = (S.hotThemes || []).slice(0, 5).map(t => `${t[0]} <span style="${col(t[1])}">${sg(t[1])}</span>`).join(" · ");
   // 2026-11-03 사용자 요청: 1군을 위에서부터 추천 순위대로, 2군은 그 아래 추천 순위대로(같은 군 안 순서는 서버 순서 그대로) · 1군 빨간색
   const items = [...S.items.filter(x => x.tier === 1), ...S.items.filter(x => x.tier !== 1)];
   const rows = items.map((x, i) => {
@@ -1564,11 +1560,8 @@ function toggleSwingChart(code) {
       <tr class="sw-chart-row" id="swrow-${x.code}" style="display:none"><td colspan="13" style="padding:6px 0 12px;text-align:left"><div class="sw-chart" id="swchart-${x.code}"></div></td></tr>`;
   }).join("");
   const drop = (S.dropped || []).length ? `<div class="vi-note">${live ? "시초가" : "장전"} 갭 때문에 뺀 종목: ${S.dropped.map(x => `${x.name}(${sg(x.gap, 1)})`).join(", ")}</div>` : "";
+  // 2026-11-03 사용자 요청: 표 위 설명(기준일·시장·미국·핫 테마 상자) 삭제
   body.innerHTML = `
-    <div class="sw-box">기준 <b>${md(S.base)} 종가</b> · 미국 <b>${md(S.usDate)}</b> 장 · ${live ? `<b>장중 ${S.asof} 갱신</b>(09:00~15:30 5분마다 · 시초가 갭·돌파 성립·현재 수익)` : nxt ? `<b>NXT 프리마켓 ${S.asof} 반영</b>` : "<b>장전 프리마켓 반영 전</b>(08:00~08:50 10분마다 갱신)"} · 후보 풀 ${S.nPool}종목<br>
-      시장(전 종목 동일가중 지수): ${M.up ? `<b style="color:var(--red)">50일선 위(${sg(M.gapPct)})</b>` : `<span class="sw-warn">50일선 아래(${sg(M.gapPct)}) — 과거 이때 시가 매수 평균 +0.2%로 약함, 비중 축소</span>`}<br>
-      전일 미국 강한 묶음: ${usTop || "—"}${usLow ? ` · 약한 묶음: ${usLow}` : ""}<br>
-      한국 핫 테마(5일): ${hot || "—"}</div>
     <div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>매수 방법</th><th>업종</th><th>종목</th><th>전일 종가</th><th>${live ? "현재가" : "NXT 프리"}</th><th>${live ? "시초가 갭" : "장전 갭"}</th><th>매수 기준</th><th>손절</th><th>미국 영향(전일)</th><th>핫 테마(5일)</th><th>점수</th><th>과거 평균·승률</th></tr></thead><tbody>${rows || `<tr><td colspan="13" class="vt-n">오늘 조건 맞는 종목 없음</td></tr>`}</tbody></table></div>
     ${drop}
     <div class="vi-note"><b>고르는 법</b>(5년 일봉 백테스트 2022-09~2026-10, 비용 0.3%) · <b>1군</b> = 60일 +30% 이상 오른 뒤 10일 고저폭 15% 안 박스 — <b>시가 매수</b>: 어제 종가로 박스 위 마감 → 오늘 시가(과거 2,280건 평균 +1.30%·승률 52%) · <b>돌파 매수</b>: 오늘 장중 박스 고가 +0.1% 넘으면 그 가격(4,125건 +1.41%·승률 39%) · <b>2군</b>(1군이 10개 미만일 때만) = 60일 +20%·폭 20%, 평균 +1.1~1.4%지만 2022~24년 구간은 손실 → 소액만. · <b>5일 평균거래량 20만주 이하 종목은 제외</b>.
