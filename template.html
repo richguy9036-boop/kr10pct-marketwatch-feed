@@ -1165,7 +1165,9 @@ entryGuideNote();
   const bandHit = p => { const b = BC && BC.bands.find(b => p >= b.lo && p < b.hi); return b && b.n ? ` · 검증 실제 ${Math.round(b.hit)}%` : ""; };
   const vi2Cell = x => x.vi2Prob != null
     // 2026-10-25 사용자 요청: 2차 VI 확률도 상한가 확률처럼 크고 굵게 빨간색으로
-    ? `<td><span class="v2-lim"${down(x.vi2Prob, x.vi2ProbPrev)}>2차 VI 확률 ${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%${bandHit(x.vi2Prob)}</span></td>`
+    // 2026-11-03 사용자 요청 '1차 VI 순간 상한가 확률'(모델 L, 2차 미도달 경과만큼 감쇠) — 2차 확률 아래 같이
+    ? `<td><span class="v2-lim"${down(x.vi2Prob, x.vi2ProbPrev)}>2차 VI 확률 ${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%${bandHit(x.vi2Prob)}</span>${
+        x.limit1Prob != null ? `<span style="font-size:.85em"><span class="v2-lim"${down(x.limit1Prob, x.limit1ProbPrev)}>상한가 확률 ${x.limit1Prob}%</span></span><span class="vt-sub">평균 ${x.limit1Base}%</span>` : ""}</td>`
     // 2026-10-25 사용자 요청: 상한가 확률을 크고 굵게 빨간색으로
     : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}${
         x.limitStage === "상한가 도달" ? `<span class="v2-lim">${limTouchLabel(x)}</span>`
