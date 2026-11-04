@@ -375,6 +375,32 @@
     #hot-view-vi2 .v2-bar { width: 64px; }
     #hot-view-vi2 .vt-tag, #hot-view-strength .vt-tag { white-space: nowrap; }
   }
+  /* 2026-11-04 사용자 요청 '상승 VI2 화면 밖에 보이는 것을 한 화면에': 폰·아이패드 미니 세로(800px 미만)는 10열 → 4열(순위·업종·2차 시각은 종목명 칸, 시가·2차 가격은 현재가 칸, 본전권은 상한가 칸 아래 줄) */
+  .v2-table .m-only { display: none; }
+  #hot-view-vi2 .v2-table td:nth-last-child(2) { white-space: normal; word-break: keep-all; min-width: 140px; max-width: 200px; line-height: 1.3; }
+  #hot-view-vi2 .v2-table td .vt-sub { white-space: normal; word-break: keep-all; }
+  @media (max-width: 799px) {
+    #hot-view-vi2 .v2-table { min-width: 0; font-size: 15px; }
+    #hot-view-vi2 .v2-table .d-only { display: none; }
+    #hot-view-vi2 .v2-table span.m-only { display: block; }
+    #hot-view-vi2 .v2-table b > span.m-only { display: inline; }
+    #hot-view-vi2 .v2-table th { font-size: 13px; padding: 6px 3px; white-space: normal; word-break: keep-all; }
+    #hot-view-vi2 .v2-table td { padding: 8px 3px; white-space: normal; word-break: keep-all; }
+    #hot-view-vi2 .v2-table td .vt-sub { font-size: 12.5px; }
+    #hot-view-vi2 .v2-table .v2-lim { font-size: 19px; }
+    #hot-view-vi2 .v2-table .v2-p.v2-lim { font-size: 21px !important; }
+    #hot-view-vi2 .v2-table .v2-bar { width: 56px; }
+    #hot-view-vi2 .v2-table .ob-tag, #hot-view-vi2 .v2-table .v2-tag { white-space: nowrap; }
+    #hot-view-vi2 .v2-dip { font-size: 13px; }
+    #hot-view-vi2 .v2-dip th, #hot-view-vi2 .v2-dip td { padding: 3px 4px; }
+  }
+  @media (max-width: 379px) {
+    #hot-view-vi2 .v2-table { font-size: 14px; }
+    #hot-view-vi2 .v2-table td { padding: 7px 2px; }
+    #hot-view-vi2 .v2-table td .vt-sub { font-size: 12px; }
+    #hot-view-vi2 .v2-table td:nth-last-child(2) { min-width: 110px; }
+    #hot-view-vi2 .v2-table .v2-bar { width: 44px; }
+  }
   /* 2026-10-30: 아이패드 세로에서 상한가 후보 결과 표(8열, 최소 860px)가 잘리던 것 → 한 화면에 맞춤 */
   @media (min-width: 600px) and (max-width: 999px) {
     #hot-view-limit .vi-table { min-width: 0; font-size: 15px; }
@@ -1244,7 +1270,7 @@ entryGuideNote();
       ${base ? `<div class="c"><b>${base}%</b><span>과거 평균</span></div>` : ""}
     </div>
 
-    <div class="vi-scroll"><table class="vi-table v2-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>2차 도달</th><th>시가</th><th>2차 가격</th><th>현재가</th><th>상한가(남은 %)</th><th>상한가 확률</th><th>본전권(2차가 −15%)</th></tr>${
+    <div class="vi-scroll"><table class="vi-table v2-table"><tr><th class="d-only">순위</th><th class="d-only">업종</th><th>종목명</th><th class="d-only">2차 도달</th><th class="d-only">시가</th><th class="d-only">2차 가격</th><th>현재가</th><th>상한가(남은 %)</th><th>상한가 확률</th><th class="d-only">본전권(2차가 −15%)</th></tr>${
     [...pr, ...hit, ...rest].map((x, i) => {
       const prev = x.nowPrice && x.nowPct != null ? x.nowPrice / (1 + x.nowPct / 100) : null;
       const lim = prev ? fl(prev * 1.3) : null;
@@ -1256,11 +1282,13 @@ entryGuideNote();
         ? `<span class="v2-p v2-lim" style="${hot ? "font-size:29px" : ""}">${x.limitProb}%</span><span class="v2-bar"><i style="width:${Math.min(100, x.limitProb)}%"></i></span><span class="vt-sub">${x.limitStage}${x.limitPattern ? `<span class="v2-tag">패턴</span>` : ""}</span>${speedHist(x)}`
         : x.limitStage === "상한가 도달" ? `<span class="v2-done">${limTouchLabel(x)}</span>`
         : `<span class="vt-sub" style="margin:0">${x.limitStage || "계산 대기"}</span>${speedHist(x)}`;
-      return `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><b>${x.name}</b><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}${obTag(x.code)}</span></td>
-        <td style="color:var(--red);font-weight:700">${x.vi2Time || "—"}</td><td>${won(x.open)}</td><td>${won(p2)}</td>
-        <td><b>${won(x.nowPrice)}</b><span class="vt-sub">시가 대비 ${sg(x.ocPct)}</span></td>
-        <td>${won(lim)}<span class="vt-sub">${room == null ? "" : room <= 0.05 ? "상한가" : `+${room.toFixed(1)}% 남음`}</span></td>
-        <td>${pc}</td><td>${x.limitStage === "상한가 도달" ? "—" : won(be)}</td></tr>`; }).join("")}</table></div>${how}${dip}`;
+      const beTxt = x.limitStage === "상한가 도달" ? "—" : won(be);
+      // 2026-11-04 사용자 요청 '상승 VI2 화면 밖에 보이는 것을 한 화면에': 폰에서는 d-only 열을 숨기고 그 값을 m-only 줄로 옆 칸에 합침
+      return `<tr><td class="vt-r d-only">${i + 1}</td><td class="vt-s d-only">${x.sector || "미확인"}</td><td class="vt-n"><b><span class="m-only">${i + 1}. </span>${x.name}</b><span class="vt-sub m-only">${x.sector || "미확인"} · <b style="color:var(--red)">2차 ${x.vi2Time || "—"}</b></span><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}${obTag(x.code)}</span></td>
+        <td class="d-only" style="color:var(--red);font-weight:700">${x.vi2Time || "—"}</td><td class="d-only">${won(x.open)}</td><td class="d-only">${won(p2)}</td>
+        <td><b>${won(x.nowPrice)}</b><span class="vt-sub">시가 대비 ${sg(x.ocPct)}</span><span class="vt-sub m-only">시가 ${won(x.open)}<br>2차 ${won(p2)}</span></td>
+        <td>${won(lim)}<span class="vt-sub">${room == null ? "" : room <= 0.05 ? "상한가" : `+${room.toFixed(1)}% 남음`}</span><span class="vt-sub m-only">본전권 ${beTxt}</span></td>
+        <td>${pc}</td><td class="d-only">${beTxt}</td></tr>`; }).join("")}</table></div>${how}${dip}`;
 })();
 
 function limitTable(items) {
