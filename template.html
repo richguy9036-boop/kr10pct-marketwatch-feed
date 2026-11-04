@@ -425,7 +425,6 @@
     #hot-view-strength .v2-lim { font-size: 18px; }
     #hot-view-strength .st-table .eg { white-space: normal; display: inline-block; }
     #hot-view-strength .st-table td:nth-child(5) span[style] { font-size: 16px !important; }
-    #hot-view-strength .st-out td, #hot-view-strength .st-out th { font-size: 13.5px; }
   }
   @media (max-width: 379px) {
     #hot-view-strength .vi-table td { padding: 7px 2px; }
@@ -675,8 +674,6 @@
     <div class="sec-head" style="margin-top:22px"><h2>상승 VI 종목 중 체결강도 선정(150 이상 편입 · 120 이하 제외)</h2><span class="count num" id="count-strength-vi"></span></div>
     <div class="money-stats" id="strength-vi-meta"></div>
     <div id="list-strength-vi"></div>
-    <div class="sec-head" style="margin-top:22px"><h2>제외된 종목 — 체결강도 150 이하(상승 VI 120 이하) 또는 거래량 미달</h2><span class="count num" id="count-strength-out"></span></div>
-    <div id="list-strength-out"></div>
   </section>
 
   <section id="hot-view-limit" style="display:none">
@@ -1170,7 +1167,7 @@ entryGuideNote();
   ((DATA_HOT_SECTORS.money || {}).items || []).forEach(t => (t.stocks || []).forEach(x => { money[x.code] = money[x.code] || t.theme; }));
   const both = S.items.filter(x => money[x.code]).length;
   document.getElementById("count-strength").textContent = `${S.items.length}종목`;
-  document.getElementById("strength-meta").innerHTML = `<div class="vi-note">${S.date.slice(5).replace("-", "/")} ${S.asOf} 기준 · 키움 현재가 창과 같은 당일 체결강도(매수 체결량 ÷ 매도 체결량 × 100, 100보다 크면 사는 쪽 체결이 많음) ${S.minStrength} 이상이면 편입 · 편입 뒤에는 ${S.dropStrength || 150} 이하로 내려갈 때까지 유지하고, ${S.dropStrength || 150} 이하가 되면 아래 '제외된 종목'으로 옮기고 새로 ${S.minStrength} 이상인 종목으로 채움(다시 ${S.minStrength} 이상이면 재편입) · <b>상승 VI 종목은 추가로 ${S.viMinStrength || 150} 이상이면 편입, ${S.viDropStrength || 120} 이하면 제외</b>(<span class="vt-tag vt-re">상승 VI</span> 표시) · ${S.trendWin ? `<b>2026-11-02 추가: 체결강도가 100 이하라도 최근 ${S.trendWin}분 동안 꾸준히 ${S.trendRise}포인트 이상 오르고(오른·보합 구간 75% 이상, 지금이 구간 최고 근처) 주가도 밀리지 않은 종목 편입</b>(<span class="vt-tag" style="color:#1a7f37;border:1px solid #1a7f37">서서히 상승 +상승폭/분</span> 표시) — 편입 뒤 최고점보다 ${S.trendDrop}포인트 내려가면 제외, ${S.minStrength} 넘으면 일반 기준 · ` : ""}오늘 상승 종목 중 거래량 ${S.minVolume / 10000}만주 넘는 ${S.scanned}종목을 훑음(ETF·ETN·스팩 제외, 새 편입은 상승 종목만 · 편입 종목은 하락해도 계속 추적) · <b>강하게 치고 올라오는 순</b>(최근 ${S.upMin || 5}분 주가 상승률 높은 순, 같으면 체결강도 높은 순 · 편입 직후 2분은 집계 중으로 뒤에) · <b style="color:var(--red)">체결강도 숫자 빨간색 + <span class="vt-tag" style="color:#fff;background:var(--red)">체결강도 급상승</span> = 최근 ${S.upMin || 5}분 체결강도가 ${S.surge || 10}포인트 이상 오른 종목</b> · <b style="color:var(--red)">종목명 빨간색 = '돈 몰리는 곳'에도 선정된 종목</b>(${both}종목, 돈 몰리는 곳 ${(DATA_HOT_SECTORS.money || {}).asOfTime || DATA_HOT_SECTORS.asOfTime} 기준) · 1분마다 갱신(앱 반영은 약 5~10분 뒤) · 체결강도가 높아도 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
+  document.getElementById("strength-meta").innerHTML = `<div class="vi-note">${S.date.slice(5).replace("-", "/")} ${S.asOf} 기준 · 키움 현재가 창과 같은 당일 체결강도(매수 체결량 ÷ 매도 체결량 × 100, 100보다 크면 사는 쪽 체결이 많음) ${S.minStrength} 이상이면 편입 · 편입 뒤에는 ${S.dropStrength || 150} 이하로 내려갈 때까지 유지하고, ${S.dropStrength || 150} 이하가 되면 명단에서 빼고(따로 쌓지 않음) 새로 ${S.minStrength} 이상인 종목으로 채움(다시 ${S.minStrength} 이상이면 재편입) · <b>상승 VI 종목은 추가로 ${S.viMinStrength || 150} 이상이면 편입, ${S.viDropStrength || 120} 이하면 제외</b>(<span class="vt-tag vt-re">상승 VI</span> 표시) · ${S.trendWin ? `<b>2026-11-02 추가: 체결강도가 100 이하라도 최근 ${S.trendWin}분 동안 꾸준히 ${S.trendRise}포인트 이상 오르고(오른·보합 구간 75% 이상, 지금이 구간 최고 근처) 주가도 밀리지 않은 종목 편입</b>(<span class="vt-tag" style="color:#1a7f37;border:1px solid #1a7f37">서서히 상승 +상승폭/분</span> 표시) — 편입 뒤 최고점보다 ${S.trendDrop}포인트 내려가면 제외, ${S.minStrength} 넘으면 일반 기준 · ` : ""}오늘 상승 종목 중 거래량 ${S.minVolume / 10000}만주 넘는 ${S.scanned}종목을 훑음(ETF·ETN·스팩 제외, 새 편입은 상승 종목만 · 편입 종목은 하락해도 계속 추적) · <b>강하게 치고 올라오는 순</b>(최근 ${S.upMin || 5}분 주가 상승률 높은 순, 같으면 체결강도 높은 순 · 편입 직후 2분은 집계 중으로 뒤에) · <b style="color:var(--red)">체결강도 숫자 빨간색 + <span class="vt-tag" style="color:#fff;background:var(--red)">체결강도 급상승</span> = 최근 ${S.upMin || 5}분 체결강도가 ${S.surge || 10}포인트 이상 오른 종목</b> · <b style="color:var(--red)">종목명 빨간색 = '돈 몰리는 곳'에도 선정된 종목</b>(${both}종목, 돈 몰리는 곳 ${(DATA_HOT_SECTORS.money || {}).asOfTime || DATA_HOT_SECTORS.asOfTime} 기준) · 1분마다 갱신(앱 반영은 약 5~10분 뒤) · 체결강도가 높아도 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
   const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
   // 2026-10-27 사용자 요청: 상승 VI 종목(같은 out.json viToday — 같은 1분 회차)에 체결강도 기준(편입·유지·제외·거래량)을 적용
   const vi = {};
@@ -1194,12 +1191,6 @@ entryGuideNote();
   document.getElementById("strength-vi-meta").innerHTML = `<div class="vi-note">'상승 VI' 메뉴 종목 ${nVi}개(${(DATA.viToday || {}).asOf || "—"} 기준)에서 추가 선정 — 체결강도 ${S.viMinStrength || 150} 이상 편입, ${S.viDropStrength || 120} 이하 제외, 거래량 ${S.minVolume / 10000}만주 이하 제외 · 최근 ${S.upMin || 5}분 상승률 높은 순 · 위 표에서는 <span class="vt-tag vt-re">상승 VI</span> 표시(시각 = 첫 VI)</div>`;
   document.getElementById("list-strength-vi").innerHTML = !nVi ? `<div class="empty-row">아직 오늘 상승 VI 종목이 없습니다.</div>`
     : !VS.length ? `<div class="empty-row">지금은 상승 VI 종목 중 체결강도 기준을 통과한 종목이 없습니다.</div>` : table(VS);
-  const R = S.removed || [];
-  document.getElementById("count-strength-out").textContent = `${R.length}건`;
-  document.getElementById("list-strength-out").innerHTML = !R.length ? `<div class="empty-row">아직 오늘 제외된 종목이 없습니다.</div>`
-    : `<div class="vi-scroll"><table class="vi-table st-out"><tr><th>종목명</th><th>편입</th><th>제외</th><th>제외 때 체결강도</th><th>최고</th></tr>${
-    R.map(x => `<tr><td class="vt-n">${x.name}<span class="vt-sub">${x.code}${x.rule === "vi" ? " · 상승 VI 기준" : x.rule === "trend" ? " · 서서히 상승 기준(최고점 −" + (S.trendDrop || 5) + ")" : ""}${x.reason ? ` · ${x.reason}` : ""}</span></td><td>${x.since}</td><td>${x.out}</td>
-      <td style="color:var(--blue);font-weight:700">${Number(x.strength).toFixed(2)}</td><td>${Number(x.peak).toFixed(2)}</td></tr>`).join("")}</table></div>`;
 })();
 
 // 2026-10-20: 장중 상승 정적 VI 종목(vi_today.py → DATA.viToday). 최근 발동 순.
