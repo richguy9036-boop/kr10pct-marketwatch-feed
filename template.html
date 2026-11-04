@@ -401,6 +401,36 @@
     #hot-view-vi2 .v2-table td:nth-last-child(2) { min-width: 110px; }
     #hot-view-vi2 .v2-table .v2-bar { width: 44px; }
   }
+  /* 2026-11-04 사용자 요청 '체결강도 화면도 한 화면에': 종목명 칸 태그·현재가 칸 매수 가이드가 한 줄로 늘어 PC에서도 잘리던 것 → 칸 안 줄바꿈.
+     800px 미만은 8열 → 4열(순위·업종은 종목명 칸, 등락률은 현재가 칸, 거래량은 체결강도 칸 아래 줄) */
+  .st-table .m-only { display: none; }
+  #hot-view-strength .vi-table { min-width: 0; }
+  #hot-view-strength .st-table td.vt-n { white-space: normal; min-width: 200px; line-height: 1.5; }
+  #hot-view-strength .st-table td.vt-n .vt-tag, #hot-view-strength .st-table .eg, #hot-view-strength .ob-tag { white-space: nowrap; }
+  #hot-view-strength .st-table td .vt-sub { white-space: normal; word-break: keep-all; }
+  #hot-view-strength .st-table td:nth-child(4) { white-space: normal; min-width: 120px; }
+  @media (max-width: 799px) {
+    #hot-view-strength .vi-table { font-size: 15px; }
+    #hot-view-strength .st-table .d-only { display: none; }
+    #hot-view-strength .st-table span.m-only { display: inline; }
+    #hot-view-strength .st-table td span.vt-sub.m-only { display: block; }
+    #hot-view-strength .vi-table th { font-size: 13px; padding: 6px 3px; white-space: normal; word-break: keep-all; }
+    #hot-view-strength .vi-table td { padding: 8px 3px; white-space: normal; word-break: keep-all; }
+    #hot-view-strength .st-table td.vt-n { min-width: 0; }
+    #hot-view-strength .st-table td:nth-child(4) { min-width: 0; }
+    #hot-view-strength .vi-table td .vt-sub { font-size: 12.5px; }
+    #hot-view-strength .vi-table .vt-tag { font-size: 12px; }
+    #hot-view-strength .v2-lim { font-size: 18px; }
+    #hot-view-strength .st-table .eg { white-space: normal; display: inline-block; }
+    #hot-view-strength .st-table td:nth-child(5) span[style] { font-size: 16px !important; }
+    #hot-view-strength .st-out td, #hot-view-strength .st-out th { font-size: 13.5px; }
+  }
+  @media (max-width: 379px) {
+    #hot-view-strength .vi-table td { padding: 7px 2px; }
+    #hot-view-strength .st-table td .vt-sub, #hot-view-strength .st-table .eg { font-size: 11.5px; }
+    #hot-view-strength .st-table td:nth-child(5) span[style] { font-size: 14.5px !important; }
+    #hot-view-strength .v2-lim { font-size: 16px; }
+  }
   /* 2026-10-30: 아이패드 세로에서 상한가 후보 결과 표(8열, 최소 860px)가 잘리던 것 → 한 화면에 맞춤 */
   @media (min-width: 600px) and (max-width: 999px) {
     #hot-view-limit .vi-table { min-width: 0; font-size: 15px; }
@@ -1145,16 +1175,16 @@ entryGuideNote();
   ((DATA.viToday || {}).items || []).forEach(x => { vi[x.code] = x; });
   // 2026-10-27 사용자 요청: 체결강도가 급격히 상승하는 종목은 빨간색(최근 5분 체결강도 +S.surge포인트 이상)
   const surge = x => x.sUp != null && x.sUp >= (S.surge || 10);
-  const table = items => `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>현재가</th><th>최근 ${S.upMin || 5}분</th><th>등락률</th><th>거래량</th><th>체결강도</th></tr>${
-    items.map((x, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-s">${x.sector || "미확인"}</td><td class="vt-n"><span style="${money[x.code] ? "color:var(--red);font-weight:700" : ""}">${x.name}</span>${
+  const table = items => `<div class="vi-scroll"><table class="vi-table st-table"><tr><th class="d-only">순위</th><th class="d-only">업종</th><th>종목명</th><th>현재가</th><th>최근 ${S.upMin || 5}분</th><th class="d-only">등락률</th><th class="d-only">거래량</th><th>체결강도</th></tr>${
+    items.map((x, i) => `<tr><td class="vt-r d-only">${i + 1}</td><td class="vt-s d-only">${x.sector || "미확인"}</td><td class="vt-n"><span style="${money[x.code] ? "color:var(--red);font-weight:700" : ""}"><span class="m-only">${i + 1}. </span>${x.name}</span>${
       money[x.code] ? ` <span class="vt-tag" style="color:var(--red);border:1px solid var(--red);font-weight:700">돈 몰리는 곳</span>` : ""}${
       surge(x) ? ` <span class="vt-tag" style="color:#fff;background:var(--red);font-weight:700">체결강도 급상승</span>` : ""}${
       vi[x.code] ? ` <span class="vt-tag vt-re">상승 VI ${vi[x.code].time}</span>` : ""}${
-      x.rule === "trend" ? ` <span class="vt-tag" style="color:#1a7f37;border:1px solid #1a7f37;font-weight:700">서서히 상승${x.trend ? ` +${x.trend.rise.toFixed(1)}/${x.trend.min}분` : ""}</span>` : ""}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}${obTag(x.code)}${money[x.code] ? ` · <span style="color:var(--red)">${money[x.code]}</span>` : ""}</span></td>
-      <td>${Number(x.price).toLocaleString("ko-KR")}원${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}${egSub(entryGuide(x.price, x.open, x.chgPct, x.seen || S.asOf))}</td>
-      <td>${x.up == null ? `<span class="vt-sub" style="margin:0">집계 중</span>` : `<span style="font-weight:800;font-size:19px;color:${x.up > 0 ? "var(--red)" : x.up < 0 ? "var(--blue)" : "inherit"}">${sg(x.up)}</span>${x.upMin < (S.upMin || 5) ? `<span class="vt-sub">${x.upMin}분 기준</span>` : ""}`}</td><td style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
-      <td>${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim" style="${surge(x) ? "" : "color:var(--text)"}">${x.strength.toFixed(2)}</span>${
-        x.sUp != null ? `<span class="vt-sub" style="${surge(x) ? "color:var(--red);font-weight:700" : ""}">${surge(x) ? "급상승 " : ""}5분 ${x.sUp > 0 ? "+" : ""}${x.sUp.toFixed(1)}</span>` : ""}${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}</td></tr>`).join("")}</table></div>`;
+      x.rule === "trend" ? ` <span class="vt-tag" style="color:#1a7f37;border:1px solid #1a7f37;font-weight:700">서서히 상승${x.trend ? ` +${x.trend.rise.toFixed(1)}/${x.trend.min}분` : ""}</span>` : ""}<span class="vt-sub">${x.code}${x.since ? ` · ${x.since} 편입` : ""}${obTag(x.code)}${money[x.code] ? ` · <span style="color:var(--red)">${money[x.code]}</span>` : ""}<span class="m-only"> · ${x.sector || "미확인"}</span></span></td>
+      <td>${Number(x.price).toLocaleString("ko-KR")}원<span class="vt-sub m-only" style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</span>${x.seen && x.seen !== S.asOf ? `<span class="vt-sub">${x.seen} 값(이번 회차 확인 실패)</span>` : ""}${egSub(entryGuide(x.price, x.open, x.chgPct, x.seen || S.asOf))}</td>
+      <td>${x.up == null ? `<span class="vt-sub" style="margin:0">집계 중</span>` : `<span style="font-weight:800;font-size:19px;color:${x.up > 0 ? "var(--red)" : x.up < 0 ? "var(--blue)" : "inherit"}">${sg(x.up)}</span>${x.upMin < (S.upMin || 5) ? `<span class="vt-sub">${x.upMin}분 기준</span>` : ""}`}</td><td class="d-only" style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : x.chgPct < 0 ? "var(--blue)" : "inherit"}">${sg(x.chgPct)}</td>
+      <td class="d-only">${Number(x.volume).toLocaleString("ko-KR")}주</td><td><span class="v2-lim" style="${surge(x) ? "" : "color:var(--text)"}">${x.strength.toFixed(2)}</span>${
+        x.sUp != null ? `<span class="vt-sub" style="${surge(x) ? "color:var(--red);font-weight:700" : ""}">${surge(x) ? "급상승 " : ""}5분 ${x.sUp > 0 ? "+" : ""}${x.sUp.toFixed(1)}</span>` : ""}${x.peak && x.peak > x.strength ? `<span class="vt-sub">최고 ${x.peak.toFixed(2)}</span>` : ""}<span class="vt-sub m-only">${Number(x.volume).toLocaleString("ko-KR")}주</span></td></tr>`).join("")}</table></div>`;
   list.innerHTML = !S.items.length ? `<div class="empty-row">지금은 명단에 든 종목이 없습니다(체결강도 ${S.minStrength} 이상${S.trendWin ? "·서서히 상승" : ""} 종목 없음).</div>` : table(S.items);
   const VS = S.items.filter(x => vi[x.code] || x.rule === "vi");
   const nVi = Object.keys(vi).length;
@@ -1165,7 +1195,7 @@ entryGuideNote();
   const R = S.removed || [];
   document.getElementById("count-strength-out").textContent = `${R.length}건`;
   document.getElementById("list-strength-out").innerHTML = !R.length ? `<div class="empty-row">아직 오늘 제외된 종목이 없습니다.</div>`
-    : `<div class="vi-scroll"><table class="vi-table"><tr><th>종목명</th><th>편입</th><th>제외</th><th>제외 때 체결강도</th><th>최고</th></tr>${
+    : `<div class="vi-scroll"><table class="vi-table st-out"><tr><th>종목명</th><th>편입</th><th>제외</th><th>제외 때 체결강도</th><th>최고</th></tr>${
     R.map(x => `<tr><td class="vt-n">${x.name}<span class="vt-sub">${x.code}${x.rule === "vi" ? " · 상승 VI 기준" : x.rule === "trend" ? " · 서서히 상승 기준(최고점 −" + (S.trendDrop || 5) + ")" : ""}${x.reason ? ` · ${x.reason}` : ""}</span></td><td>${x.since}</td><td>${x.out}</td>
       <td style="color:var(--blue);font-weight:700">${Number(x.strength).toFixed(2)}</td><td>${Number(x.peak).toFixed(2)}</td></tr>`).join("")}</table></div>`;
 })();
