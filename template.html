@@ -263,6 +263,8 @@
   }
   .seg button.active { border-color: var(--accent); color: var(--accent); }
   .seg button { padding: 8px 3px; word-break: keep-all; }
+  /* 2026-11-04 사용자 요청 '체결강도 화면 한 화면에': 폰에서 메뉴 버튼 8개 줄이 화면보다 넓어 페이지 전체가 옆으로 밀리던 것 → 4개씩 두 줄 */
+  @media (max-width: 599px) { .seg { flex-wrap: wrap; } .seg button { flex: 1 1 22%; min-width: 0; } }
   .vi-filter { display: flex; gap: 8px; margin: 6px 0 10px; }
   .vi-filter input, .vi-filter select { flex: 1; min-width: 0; font: inherit; font-size: 17px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card, transparent); color: var(--text); }
   .vi-sum { font-weight: 700; margin: 4px 0; } .vi-note { color: var(--text-dim); font-size: 15.5px; line-height: 1.5; }
