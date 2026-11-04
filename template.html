@@ -618,6 +618,8 @@
   <div class="tab-panel" id="tab-swing">
     <div class="sec-head"><h2>스윙돌파후보 — 오늘 매수 타이밍 상위 10</h2><span class="count num" id="sw-count"></span></div>
     <div id="sw-body"></div>
+    <div class="sec-head" style="margin-top:22px"><h2>눌림형 — 업종 동반 급등 뒤 1~2일 눌림</h2><span class="count num" id="sw-pb-count"></span></div>
+    <div id="sw-pb-body"></div>
   </div><!-- /tab-swing -->
 
   <div class="install-hint">
@@ -1565,8 +1567,8 @@ function renderBt() {
 renderBt();
 
 // 2026-11-01 사용자 요청: 스윙돌파후보 종목 누르면 일봉 240개 + 5·10·20·60·240일선
-function toggleSwingChart(code) {
-  const row = document.getElementById("swrow-" + code), box = document.getElementById("swchart-" + code);
+function toggleSwingChart(code, key = code) {
+  const row = document.getElementById("swrow-" + key), box = document.getElementById("swchart-" + key);
   if (!row) return;
   if (row.style.display !== "none") { row.style.display = "none"; return; }
   row.style.display = "";
@@ -1580,8 +1582,8 @@ function toggleSwingChart(code) {
       <span><i class="dot" style="background:#e0ac4c"></i>5일</span><span><i class="dot" style="background:#167d8f"></i>10일</span>
       <span><i class="dot" style="background:#5b96f5"></i>20일</span><span><i class="dot" style="background:#a05cc8"></i>60일</span>
       <span><i class="dot" style="background:var(--text)"></i>240일</span><span style="margin-left:auto">일봉 · 최근 ${bars.length}일</span></div>
-    <canvas id="swcv-${code}"></canvas>`;
-  drawCandles(document.getElementById("swcv-" + code), bars, 5, true);  // 사용자 요청: 오른쪽 캔들 5개 여유
+    <canvas id="swcv-${key}"></canvas>`;
+  drawCandles(document.getElementById("swcv-" + key), bars, 5, true);  // 사용자 요청: 오른쪽 캔들 5개 여유
   box.dataset.rendered = "1";
 }
 
@@ -1622,6 +1624,35 @@ function toggleSwingChart(code) {
     <br>종목 줄을 누르면 일봉 240개 차트(5·10·20·60·240일선)가 펼쳐집니다 · <b>순서</b> · <b style="color:var(--red)">1군(빨간색)</b>을 먼저, 2군은 그 아래 · 같은 군 안에서는 돌파가에 가까운 순(시가 매수·이미 돌파 성립 = 맨 앞), 같으면 점수 순 · 장중엔 5분마다 현재가로 다시 계산.
     <br><b>파는 법</b> · 매수 3일째 종가가 매수가보다 높으면 절반 매도 + 나머지 손절선을 매수가로 · 나머지는 종가가 20일선 아래로 마감한 다음 날 시가에 매도(최대 60일) · 승률은 40~50%대라 손절을 꼭 지켜야 하는 방식(작은 손실 여러 번, 큰 수익 몇 번).
     <br>한계: 현재 상장 종목만으로 한 백테스트(상폐 종목 빠짐), 테마 소속은 현재 기준, 미국 묶음↔한국 테마 연결은 수작업 · 참고용이며 투자 권유 아님 · 좁은 화면은 표를 좌우로 밀어 보세요.</div>`;
+})();
+
+// 2026-11-04 사용자 요청: 스윙 '눌림형'(급등 → 1~2일 눌림 지지, 업종 동반 + 급등일 외국인·기관 순매수 + 눌림 중 순매도)
+(function renderSwingPullback() {
+  const S = DATA.swing, body = document.getElementById("sw-pb-body");
+  if (!S) { body.innerHTML = ""; return; }
+  const P = S.pullback;
+  const won = n => n == null ? "—" : `${Math.round(n).toLocaleString("ko-KR")}`;
+  const sg = (v, d = 1) => v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(d)}%`;
+  const col = v => v == null ? "" : v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
+  const md = d => d ? d.slice(5).replace("-", "/") : "—";
+  const live = S.basis === "live";
+  const sh = n => `${n > 0 ? "+" : ""}${Math.round(n).toLocaleString("ko-KR")}주`;
+  document.getElementById("sw-pb-count").textContent = P ? `${P.length}종목` : "";
+  if (!P) { body.innerHTML = `<div class="empty-row">다음 아침(07:30) 집계부터 표시됩니다.</div>`; return; }
+  const rows = P.map((x, i) => `<tr class="sw-row" onclick="toggleSwingChart('${x.code}','pb${x.code}')"><td class="vt-r">${i + 1}</td>
+      <td class="vt-s">${x.sector || ""}</td><td class="vt-n"><b>${x.name}</b> <span style="color:var(--text-dim);font-size:14px">${x.code}</span></td>
+      <td>${md(x.d0)} <b style="color:var(--red)">${sg(x.r0)}</b><span class="vt-sub">거래량 ${x.vr0.toFixed(1)}배</span></td>
+      <td>${x.pbN}일 <span style="${col(x.depth)}">${sg(x.depth)}</span><span class="vt-sub">저점 ${won(x.pbLow)}</span></td>
+      <td>평균 <span style="${col(x.secAvg)}">${sg(x.secAvg)}</span><span class="vt-sub">${x.secN}종목 중 ${x.secUp}% 상승</span></td>
+      <td><span style="color:var(--red)">${sh(x.fi0)}</span><span class="vt-sub">눌림 중 <span style="color:var(--blue)">${sh(x.fipb)}</span></span></td>
+      <td>${won(x.close)}</td><td>${live && x.cur ? `<span style="${col(x.cur - x.close)}">${won(x.cur)}</span>` : x.nxt ? won(x.nxt) : "—"}</td>
+      <td>${x.gap == null ? "—" : `<span style="${col(x.gap)}">${sg(x.gap, 2)}</span>${x.gap > 2 ? '<span class="vt-sub" style="color:var(--blue)">+2% 초과: 과거 약함</span>' : ""}`}</td>
+      <td>${live && x.ret != null ? `시가 대비 <span style="${col(x.ret)}">${sg(x.ret, 2)}</span>` : "시가 매수"}</td><td>${sg(x.expRet, 2)} · ${x.expWin}%</td></tr>
+      <tr class="sw-chart-row" id="swrow-pb${x.code}" style="display:none"><td colspan="12" style="padding:6px 0 12px;text-align:left"><div class="sw-chart" id="swchart-pb${x.code}"></div></td></tr>`).join("");
+  body.innerHTML = `<div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>업종</th><th>종목</th><th>급등일</th><th>눌림</th><th>급등일 업종</th><th>외국인+기관(급등일)</th><th>전일 종가</th><th>${live ? "현재가" : "NXT 프리"}</th><th>${live ? "시초가 갭" : "장전 갭"}</th><th>매수</th><th>과거 평균·승률</th></tr></thead><tbody>${rows || `<tr><td colspan="12" class="vt-n">오늘 조건 맞는 종목 없음</td></tr>`}</tbody></table></div>
+    <div class="vi-note"><b>고르는 법</b> · 어제나 그제 <b>+5~10% 급등</b>(거래량 20일 평균 1.5배 이상) → 그 뒤 1~2일 <b>눌림</b>(하루 −5~+1%, 급등일 종가 아래, 저가가 급등일 양봉 몸통 절반 위에서 지지) · 급등한 날 <b>같은 업종도 함께 상승</b>(업종 평균 +2% 이상, 60% 이상 종목 상승) · 급등한 날 <b>외국인+기관 순매수</b>, 눌림 동안엔 <b>외국인+기관 순매도</b>(차익 실현을 받아내며 버팀) · 어제 거래대금 5억 원 이상 · 업종 평균이 높은 순.
+    <br><b>사고파는 법</b> · 오늘 시가에 사서 4거래일째 종가에 매도 — 5년 일봉·수급 백테스트 850건 평균 +0.87%·승률 50%(수수료·세금 전, 10거래일 보유 시 +1.56%) · 같은 모양이라도 업종·수급 조건이 없으면 평균 0%, 눌림 중 외국인·기관이 계속 사면 +0.25%로 약했음 · 오늘 시초가가 +2% 넘게 뜨면 과거 −0.96%(51건)로 약함 · 손절 규칙은 아직 검증 안 됨(눌림 저점은 참고).
+    <br>종목 줄을 누르면 일봉 차트가 펼쳐집니다 · 참고용이며 투자 권유 아님.</div>`;
 })();
 
 const CHART_DATA = /*__PLACEHOLDER_CHART_DATA__*/;
