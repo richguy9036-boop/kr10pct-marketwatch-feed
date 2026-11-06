@@ -604,6 +604,9 @@
   </div><!-- /tab-volatility -->
 
   <div class="tab-panel" id="tab-backtest">
+    <!-- 2026-11-06 사용자 요청 '종목선정 신뢰도를 높이는 가장 좋은 방법' → 실전 성적표(scorecard.py) -->
+    <div class="sec-head"><h2>실전 성적표 — 실제 발행 목록, 비용·시장 대비</h2><span class="count num" id="sc-count"></span></div>
+    <div id="sc-body"></div>
     <div class="sec-head"><h2>주간 백테스트 — 월요일 시가 매수 기준</h2><span class="count num" id="bt-count"></span></div>
     <div class="seg" id="bt-seg">
       <!-- 2026-10-25 사용자 요청: 브레이크아웃 워치를 '오늘 돌파'와 '이번주 종목'으로 구분 -->
@@ -1567,6 +1570,25 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
 
 // 2026-10-25 사용자 요청: 탭1~3 주간 백테스트(backtest_weekly.py → out.json "backtest")
 // 기초가 = 그 주 첫 거래일 시가, 수익률 = 주중 최고가 기준(2026-11-02 사용자 요청), 금 종가는 참고. 대상 = 월요일 아침에 보이던 목록.
+(function renderScorecard() {
+  const S = DATA.scorecard, body = document.getElementById("sc-body");
+  if (!S) { body.innerHTML = `<div class="empty-row">다음 아침(07:30) 집계부터 표시됩니다.</div>`; return; }
+  document.getElementById("sc-count").textContent = `${S.priceThrough.slice(5).replace("-", "/")}까지`;
+  const sg = v => v == null ? "—" : `<span class="${v > 0 ? "bt-up" : v < 0 ? "bt-dn" : ""}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>`;
+  const vc = { "신뢰 낮음": "var(--blue)", "실전 확인": "var(--red)", "판단 보류": "var(--text-dim)", "표본 부족": "var(--text-dim)" };
+  const lab = { d1: "당일 종가", d4: "4거래일 종가", n1: "다음 날 시가" };
+  const rows = Object.values(S.menus).map(m => {
+    const st = m.stats, a = st[m.main] || {}, x = m.main === "n1" ? null : st[m.main === "d1" ? "x1" : "x4"] || {};
+    return `<tr><td class="vt-n"><b>${m.name}</b><span class="vt-sub">${m.from ? m.from.slice(5).replace("-", "/") + "부터 · " + m.days + "일" : "기록 없음"}</span></td>
+      <td>${lab[m.main]}</td><td class="num">${a.n || 0}</td><td>${sg(a.mean)}<span class="vt-sub">승률 ${a.win ?? "—"}%</span></td>
+      <td>${x ? sg(x.mean) + `<span class="vt-sub">t ${x.t ?? "—"}</span>` : "—(절대 수익으로 판정)"}</td>
+      <td>${m.expect != null ? sg(m.expect) : "—"}</td><td style="font-weight:700;color:${vc[m.verdict]}">${m.verdict}</td></tr>`;
+  }).join("");
+  body.innerHTML = `<div class="vi-scroll"><table class="vi-table"><tr><th>메뉴</th><th>매도</th><th>건수</th><th>평균(비용 뒤)</th><th>시장 대비</th><th>백테스트 기대</th><th>판정</th></tr>${rows}</table></div>
+    <div class="vi-note"><b>채점 방법</b> · 앱에 실제로 올라온 아침 목록(07:30 발행본)을 그대로 복원 — 사후 재스캔 아님 · 다음 거래일 <b>시가 매수</b>(임박 스캐너는 발행일 시가) → 메뉴별 매도 시점(오늘 돌파·임박·변동성·스윙 = 4거래일째 종가, 상한가 후보 = 당일 종가) · 상승 VI = 그날 <b>첫 VI 발동가 매수 → 다음 날 시가</b>, 목록에서 −5%로 숨겨진 종목도 포함(빼면 평균 +2.5%로 부풀려짐) · 비용 ${S.cost}% 차감 · 시장 대비 = 같은 기간 거래대금 5억 원 이상 종목 평균과의 차이.
+    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 매일 아침 자동 갱신 · 참고용.</div>`;
+})();
+
 let btTab = "breakout";
 function switchBt(t) {
   btTab = t;
