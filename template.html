@@ -1586,7 +1586,25 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
   }).join("");
   body.innerHTML = `<div class="vi-scroll"><table class="vi-table"><tr><th>메뉴</th><th>매도</th><th>건수</th><th>평균(비용 뒤)</th><th>시장 대비</th><th>백테스트 기대</th><th>판정</th></tr>${rows}</table></div>
     <div class="vi-note"><b>채점 방법</b> · 앱에 실제로 올라온 아침 목록(07:30 발행본)을 그대로 복원 — 사후 재스캔 아님 · 다음 거래일 <b>시가 매수</b>(임박 스캐너는 발행일 시가) → 메뉴별 매도 시점(오늘 돌파·임박·변동성·스윙 = 4거래일째 종가, 상한가 후보 = 당일 종가) · 상승 VI = 그날 <b>첫 VI 발동가 매수 → 다음 날 시가</b>, 목록에서 −5%로 숨겨진 종목도 포함(빼면 평균 +2.5%로 부풀려짐) · 비용 ${S.cost}% 차감 · 시장 대비 = 같은 기간 거래대금 5억 원 이상 종목 평균과의 차이.
-    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 매일 아침 자동 갱신 · 참고용.</div>`;
+    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 장중 메뉴(등락률 순위·돈 몰리는 곳·체결강도)는 11/7부터 기록한 첫 편입 시각 가격으로 채점. 매일 아침 자동 갱신 · 참고용.</div>
+    ${S.rules ? `<div class="sec-head" style="margin-top:18px"><h2>규칙 실전 점검 — 앱이 붙인 경고가 실제로 손실을 피했나</h2></div>
+    <div class="vi-scroll"><table class="vi-table"><tr><th>규칙</th><th>기준</th><th>표시된 종목</th><th>나머지</th><th>효과</th><th>판정</th></tr>${
+      Object.values(S.rules).map(r => `<tr><td class="vt-n"><b>${r.name}</b></td><td>${r.basis}</td>
+        <td>${sg(r.flag.mean)}<span class="vt-sub">${r.flag.n}건</span></td><td>${sg(r.rest.mean)}<span class="vt-sub">${r.rest.n}건</span></td>
+        <td>${r.effect != null ? sg(r.effect) + `<span class="vt-sub">t ${r.t}</span>` : "—"}</td>
+        <td style="font-weight:700;color:${r.verdict === "효과 확인" ? "var(--red)" : r.verdict.startsWith("효과 반대") ? "var(--blue)" : "var(--text-dim)"}">${r.verdict}</td></tr>`).join("")}</table></div>
+    <div class="vi-note">효과 = 나머지 평균 − 표시된 종목 평균(+면 경고가 손실을 피함) · 양쪽 20건 이상부터 판정 · '효과 반대 — 재검토'가 나오면 그 경고 규칙을 다시 검증합니다.</div>` : ""}`;
+  // 2026-11-06 사용자 요청 '매일 신뢰도를 높여 종목선정에 적용': 각 메뉴 머리에 실전 판정 표시(신뢰 낮음은 경고)
+  const where = { breakout: "count-breakout", imminent: "count-imm", volatility: "count-vol", swing: "sw-count", pullback: "sw-pb-count",
+    limitup20: "count-limit", vi: "count-vi", strength: "count-strength", hot: "count-hot", money: "count-money" };
+  Object.entries(where).forEach(([k, id]) => {
+    const m = S.menus[k], el = document.getElementById(id), h = el && el.parentElement.querySelector("h2");
+    if (!m || !h || m.verdict === "표본 부족") return;
+    const st = m.stats, x = m.main === "n1" ? st.n1 : st[m.main === "d1" ? "x1" : "x4"];
+    const txt = `실전 ${m.verdict} · ${m.main === "n1" ? "평균" : "시장 대비"} ${x.mean > 0 ? "+" : ""}${x.mean}% (${x.n}건)`;
+    const col = m.verdict === "신뢰 낮음" ? "var(--blue)" : m.verdict === "실전 확인" ? "var(--red)" : "var(--text-dim)";
+    h.insertAdjacentHTML("beforeend", ` <span class="sc-badge" onclick="event.stopPropagation();switchTab('backtest')" style="cursor:pointer;font-size:13px;font-weight:700;color:${col};border:1px solid ${col};border-radius:6px;padding:1px 6px;white-space:nowrap">${txt}</span>`);
+  });
 })();
 
 let btTab = "breakout";
