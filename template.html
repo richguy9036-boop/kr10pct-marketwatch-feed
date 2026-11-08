@@ -1550,8 +1550,8 @@ document.getElementById("kpi-imm-total2").textContent = immItems.filter(x => x.s
   if (!el) return;
   if (!Array.isArray(ex)) { el.style.display = "none"; return; }
   el.innerHTML = ex.length
-    ? `일목 삼역호전 종목만 표시 · 조건 미달로 제외 ${ex.length}종목: ` + ex.map(x => `${x.name}(${x.reason})`).join(", ")
-    : "일목 삼역호전 종목만 표시 · 상위 20 모두 삼역호전이라 제외 종목 없음";
+    ? `일목 삼역호전 + 파동 조건(급등 60% 뒤·7일 이하 짧은 눌림 제외) 통과 종목만 표시 · 제외 ${ex.length}종목: ` + ex.map(x => `${x.name}(${x.reason})`).join(", ")
+    : "일목 삼역호전 + 파동 조건 통과 종목만 표시 · 상위 20 모두 통과해 제외 종목 없음";
 })();
 
 let immFilterMode = "all";
