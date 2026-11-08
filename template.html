@@ -929,6 +929,12 @@ function imminentRow(item) {
   const ichChip = ich && ich.sanyaku
     ? chipHtml(ich.sanyakuNew ? "일목 삼역호전 · 3일 내 신규" : (ich.cloudBreak ? "일목 삼역호전 · 구름 돌파" : "일목 삼역호전"), "on-red")
     : "";
+  // 2026-11-08 신뢰도 개선(A+B+C): 원래 확률 14% 이상 = +10% 터치는 잦지만 4일 손실도 잦음(5년·실제 발행 둘 다)
+  const volChip = item.volatile ? chipHtml("변동 큼 · 4일 손실 잦음", "on-amber") : "";
+  const ba = item.bandActual;
+  const bandLine = ba && ba.actualPct != null
+    ? `<div class="dist num" style="font-size:13px">최근 같은 확률대 ${ba.n}건 실제 기준 · 모델 ${item.probRaw}%</div>` : "";
+  const probLabel = item.probRaw != null ? "3일 +10% 확률" : "확신도";
   const barCls = item.pullback === "확정" ? "bar-red" : (item.flow ? "bar-amber" : "bar-green");
   return `
   <div class="row tier-imminent ${barCls}" onclick="toggleChart('${item.code}', this)">
@@ -941,6 +947,7 @@ function imminentRow(item) {
       </div>
       <div class="chips">
         ${scoreChip}
+        ${volChip}
         ${ichChip}
         ${sectorChip}
         ${flowChip}
@@ -953,7 +960,8 @@ function imminentRow(item) {
     </div>
     <div class="price-col">
       <div class="price num">${fmtPrice(item.close)}</div>
-      <div class="dist num">확신도 ${item.prob}%</div>
+      <div class="dist num">${probLabel} ${item.prob}%</div>
+      ${bandLine}
     </div>
   </div>
   <div class="chart-panel" id="chart-${item.code}"></div>`;
@@ -1549,9 +1557,17 @@ document.getElementById("kpi-imm-total2").textContent = immItems.filter(x => x.s
   const el = document.getElementById("imm-ich-excluded");
   if (!el) return;
   if (!Array.isArray(ex)) { el.style.display = "none"; return; }
-  el.innerHTML = ex.length
+  const ev = DATA_IMMINENT.liveEval;
+  const r = ev && ev.recent;
+  const sg = v => (v > 0 ? "+" : "") + v + "%";
+  const recentLine = r
+    ? `<div style="margin-bottom:6px"><b>최근 ${r.days}발행일 실제 성적</b>(${r.from.slice(5)}~${r.to.slice(5)} 발행, 지금 기준 통과 ${r.n}종목, 발행일 시가 매수→4일째 종가): `
+      + `3일 내 +10% ${r.hitPct}% · 4일 평균 ${sg(r.ret4)}${r.mktRet4 != null ? ` (같은 날 시장 ${sg(r.mktRet4)})` : ""} · 이긴 비율 ${r.winPct}%`
+      + `<br>확률 = 3일 안에 +10%에 닿을 확률${ev.calib ? `(모델 확률 구간별 최근 ${ev.calib.days}발행일 실제 비율)` : ""} — 수익 날 확률이 아닙니다.</div>`
+    : "";
+  el.innerHTML = recentLine + (ex.length
     ? `일목 삼역호전 + 파동 조건(급등 60% 뒤·7일 이하 짧은 눌림 제외) 통과 종목만 표시 · 제외 ${ex.length}종목: ` + ex.map(x => `${x.name}(${x.reason})`).join(", ")
-    : "일목 삼역호전 + 파동 조건 통과 종목만 표시 · 상위 20 모두 통과해 제외 종목 없음";
+    : "일목 삼역호전 + 파동 조건 통과 종목만 표시 · 상위 20 모두 통과해 제외 종목 없음");
 })();
 
 let immFilterMode = "all";
