@@ -1314,6 +1314,9 @@ entryGuideNote();
         x.limitStage === "상한가 도달" ? `<span class="v2-lim">${limTouchLabel(x)}</span>`
         : x.limitProb != null ? `<span class="v2-lim"${down(x.limitProb, x.limitProbPrev)}>상한가 확률 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage || ""}</span>${speedHist(x)}`
         : `<span class="vt-sub">${x.limitStage || "상한가 확률 계산 대기"}</span>${speedHist(x)}`}${staleTag(x)}</td>`
+    // 2026-11-09 사용자 요청 '1번': 갭 8.3%↑(여유 없음) 종목 — 2차 VI 대신 그날 상한가 확률(모델 G)·상한가 도달 표시
+    : x.vi2Stage === "여유 없음" && x.limitStage === "상한가 도달" ? `<td style="color:var(--red);font-weight:700"><span class="v2-lim">${limTouchLabel(x)}</span><span class="vt-sub">갭 커서 2차 VI 없음${x.limitTime ? " · " + x.limitTime : ""}</span>${staleTag(x)}</td>`
+    : x.vi2Stage === "여유 없음" && x.limit1Prob != null ? `<td><span class="v2-lim"${down(x.limit1Prob, x.limit1ProbPrev)}>상한가 확률 ${x.limit1Prob}%</span><span class="vt-sub">갭 커서 2차 VI 없음 · 평균 ${x.limit1Base}%</span>${staleTag(x)}</td>`
     : `<td><span class="vt-sub" style="margin:0">${x.vi2Stage || "—"}</span>${staleTag(x)}</td>`;
   document.getElementById("count-vi").textContent = `${V.items.length}종목`;
   document.getElementById("vi-meta").innerHTML =
@@ -1334,9 +1337,10 @@ entryGuideNote();
       && (!t || (t === "re" && x.reRise) || (t === "hot" && x.hotTheme) || (t === "multi" && x.count > 1) || (t === "vi2" && x.vi2Prob != null)));
     // 2차 VI 확률 높은 순 → 이미 2차 도달 → 나머지(같은 묶음 안은 시가 대비 종가 순 유지)
     // 2차 도달 안에서는 상한가 확률 높은 순 → 상한가 도달 → 나머지
-    const grp = x => x.vi2Prob != null ? 0 : x.vi2Stage === "2차 도달" ? 1 : 2;
+    const grp = x => x.vi2Prob != null || (x.vi2Stage === "여유 없음" && x.limit1Prob != null) ? 0 : x.vi2Stage === "2차 도달" ? 1 : 2;
+    const pk = x => x.vi2Prob != null ? x.vi2Prob : x.limit1Prob;  // 갭 종목은 상한가 확률로 같은 묶음 정렬
     const lk = x => x.limitProb != null ? 200 + x.limitProb : x.limitStage === "상한가 도달" ? 100 : 0;
-    rows.sort((a, b) => grp(a) - grp(b) || (grp(a) === 0 ? b.vi2Prob - a.vi2Prob : grp(a) === 1 ? lk(b) - lk(a) : 0));
+    rows.sort((a, b) => grp(a) - grp(b) || (grp(a) === 0 ? pk(b) - pk(a) : grp(a) === 1 ? lk(b) - lk(a) : 0));
     const wait = V.items.filter(x => x.ocPct == null).length;
     document.getElementById("vi-sum").innerHTML = `당일 상승 VI ${V.items.length + (V.dropped || []).length + (V.volDropped || []).length}종목 · 표시 <b>${V.items.length}종목</b>${
       k || t ? ` / 검색 <b>${rows.length}종목</b>` : ""} · −${V.droppedPct}% 숨김 ${(V.dropped || []).length}${(V.volDropped || []).length ? ` · 거래량 미달 숨김 ${V.volDropped.length}` : ""}${wait ? ` · 가격 확인 대기 ${wait}` : ""}`;
