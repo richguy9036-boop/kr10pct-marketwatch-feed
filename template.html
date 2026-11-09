@@ -1302,17 +1302,19 @@ entryGuideNote();
   // 2026-11-03 사용자 요청 '2차 VI 신뢰도': 그 확률 구간의 검증 실제 도달률(vi2_bands.py 전진 검증)을 같이 표시
   const BC = DATA.vi2Eval && DATA.vi2Eval.bandCheck;
   const bandHit = p => { const b = BC && BC.bands.find(b => p >= b.lo && p < b.hi); return b && b.n ? ` · 검증 실제 ${Math.round(b.hit)}%` : ""; };
+  // 2026-11-09 사용자 요청 '(나)': 키움 조회 실패 회차엔 직전 정상 결과를 유지 — 그 결과의 기준 시각을 작게 표시
+  const staleTag = x => x.vi2Stale ? `<span class="vt-sub">${x.vi2Stale} 기준(조회 실패로 유지)</span>` : "";
   const vi2Cell = x => x.vi2Prob != null
     // 2026-10-25 사용자 요청: 2차 VI 확률도 상한가 확률처럼 크고 굵게 빨간색으로
     // 2026-11-03 사용자 요청 '1차 VI 순간 상한가 확률'(모델 L, 2차 미도달 경과만큼 감쇠) — 2차 확률 아래 같이
     ? `<td><span class="v2-lim"${down(x.vi2Prob, x.vi2ProbPrev)}>2차 VI 확률 ${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%${bandHit(x.vi2Prob)}</span>${
-        x.limit1Prob != null ? `<span style="font-size:.85em"><span class="v2-lim"${down(x.limit1Prob, x.limit1ProbPrev)}>상한가 확률 ${x.limit1Prob}%</span></span><span class="vt-sub">평균 ${x.limit1Base}%</span>` : ""}</td>`
+        x.limit1Prob != null ? `<span style="font-size:.85em"><span class="v2-lim"${down(x.limit1Prob, x.limit1ProbPrev)}>상한가 확률 ${x.limit1Prob}%</span></span><span class="vt-sub">평균 ${x.limit1Base}%</span>` : ""}${staleTag(x)}</td>`
     // 2026-10-25 사용자 요청: 상한가 확률을 크고 굵게 빨간색으로
     : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}${
         x.limitStage === "상한가 도달" ? `<span class="v2-lim">${limTouchLabel(x)}</span>`
         : x.limitProb != null ? `<span class="v2-lim"${down(x.limitProb, x.limitProbPrev)}>상한가 확률 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage || ""}</span>${speedHist(x)}`
-        : `<span class="vt-sub">${x.limitStage || "상한가 확률 계산 대기"}</span>${speedHist(x)}`}</td>`
-    : `<td><span class="vt-sub" style="margin:0">${x.vi2Stage || "—"}</span></td>`;
+        : `<span class="vt-sub">${x.limitStage || "상한가 확률 계산 대기"}</span>${speedHist(x)}`}${staleTag(x)}</td>`
+    : `<td><span class="vt-sub" style="margin:0">${x.vi2Stage || "—"}</span>${staleTag(x)}</td>`;
   document.getElementById("count-vi").textContent = `${V.items.length}종목`;
   document.getElementById("vi-meta").innerHTML =
     `<div class="vi-filter"><input id="vi-q" type="search" placeholder="종목명 또는 종목코드"><select id="vi-type">
