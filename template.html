@@ -1303,14 +1303,18 @@ entryGuideNote();
   const BC = DATA.vi2Eval && DATA.vi2Eval.bandCheck;
   const bandHit = p => { const b = BC && BC.bands.find(b => p >= b.lo && p < b.hi); return b && b.n ? ` · 검증 실제 ${Math.round(b.hit)}%` : ""; };
   // 2026-11-09 사용자 요청 '(나)': 키움 조회 실패 회차엔 직전 정상 결과를 유지 — 그 결과의 기준 시각을 작게 표시
-  const staleTag = x => x.vi2Stale ? `<span class="vt-sub">${x.vi2Stale} 기준(조회 실패로 유지)</span>` : "";
+  const staleTag = x => (x.vi2Stale ? `<span class="vt-sub">${x.vi2Stale} 기준(조회 실패로 유지)</span>` : "")
+    // 2026-11-09 사용자 요청 '3번': 상장 300거래일 미만도 확률 계산 — 과거 검증 표본 밖이라 표시
+    + (x.youngListing ? `<span class="vt-sub">상장 1년 미만 · 검증 표본 밖(참고)</span>` : "");
   const vi2Cell = x => x.vi2Prob != null
     // 2026-10-25 사용자 요청: 2차 VI 확률도 상한가 확률처럼 크고 굵게 빨간색으로
     // 2026-11-03 사용자 요청 '1차 VI 순간 상한가 확률'(모델 L, 2차 미도달 경과만큼 감쇠) — 2차 확률 아래 같이
     ? `<td><span class="v2-lim"${down(x.vi2Prob, x.vi2ProbPrev)}>2차 VI 확률 ${x.vi2Prob}%</span><span class="vt-sub">${x.vi2Stage} · 평균 ${x.vi2Base}%${bandHit(x.vi2Prob)}</span>${
         x.limit1Prob != null ? `<span style="font-size:.85em"><span class="v2-lim"${down(x.limit1Prob, x.limit1ProbPrev)}>상한가 확률 ${x.limit1Prob}%</span></span><span class="vt-sub">평균 ${x.limit1Base}%</span>` : ""}${staleTag(x)}</td>`
     // 2026-10-25 사용자 요청: 상한가 확률을 크고 굵게 빨간색으로
-    : x.vi2Stage === "2차 도달" ? `<td style="color:var(--red);font-weight:700">2차 도달${x.vi2Time ? " " + x.vi2Time : ""}${
+    // 2026-11-09 사용자 요청 '3번': 시가+20%를 넘었는데 실제 2차 VI 기록이 없는 종목도 상한가 확률(같은 학습 정의) 표시
+    : x.vi2Stage === "2차 도달" || (x.vi2Stage === "+20% 넘음·2차 VI 없음" && (x.limitProb != null || x.limitStage))
+    ? `<td style="color:var(--red);font-weight:700">${x.vi2Stage === "2차 도달" ? "2차 도달" : "+20% 넘음(2차 VI 없음)"}${x.vi2Time ? " " + x.vi2Time : ""}${
         x.limitStage === "상한가 도달" ? `<span class="v2-lim">${limTouchLabel(x)}</span>`
         : x.limitProb != null ? `<span class="v2-lim"${down(x.limitProb, x.limitProbPrev)}>상한가 확률 ${x.limitProb}%</span><span class="vt-sub">${x.limitStage || ""}</span>${speedHist(x)}`
         : `<span class="vt-sub">${x.limitStage || "상한가 확률 계산 대기"}</span>${speedHist(x)}`}${staleTag(x)}</td>`
@@ -1337,7 +1341,8 @@ entryGuideNote();
       && (!t || (t === "re" && x.reRise) || (t === "hot" && x.hotTheme) || (t === "multi" && x.count > 1) || (t === "vi2" && x.vi2Prob != null)));
     // 2차 VI 확률 높은 순 → 이미 2차 도달 → 나머지(같은 묶음 안은 시가 대비 종가 순 유지)
     // 2차 도달 안에서는 상한가 확률 높은 순 → 상한가 도달 → 나머지
-    const grp = x => x.vi2Prob != null || (x.vi2Stage === "여유 없음" && x.limit1Prob != null) ? 0 : x.vi2Stage === "2차 도달" ? 1 : 2;
+    const grp = x => x.vi2Prob != null || (x.vi2Stage === "여유 없음" && x.limit1Prob != null) ? 0
+      : x.vi2Stage === "2차 도달" || (x.vi2Stage === "+20% 넘음·2차 VI 없음" && (x.limitProb != null || x.limitStage)) ? 1 : 2;
     const pk = x => x.vi2Prob != null ? x.vi2Prob : x.limit1Prob;  // 갭 종목은 상한가 확률로 같은 묶음 정렬
     const lk = x => x.limitProb != null ? 200 + x.limitProb : x.limitStage === "상한가 도달" ? 100 : 0;
     rows.sort((a, b) => grp(a) - grp(b) || (grp(a) === 0 ? pk(b) - pk(a) : grp(a) === 1 ? lk(b) - lk(a) : 0));
