@@ -1,0 +1,43 @@
+# 장중 맥북 오프라인 카톡 알림(2026-11-10 사용자 요청 '4번') — 설명은 .github/offline_alert.py
+name: offline-alert
+on:
+  schedule:
+    - cron: "*/10 0-6 * * 1-5"   # UTC 00:00~06:59 = KST 09:00~15:59, 평일
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: offline-alert
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q holidays requests
+      - id: c
+        run: python .github/offline_alert.py
+      - id: seen
+        if: steps.c.outputs.stale == '1'
+        uses: actions/cache/restore@v4
+        with:
+          path: .alerted
+          key: alerted-${{ steps.c.outputs.sha }}
+          lookup-only: true
+      - if: steps.c.outputs.stale == '1' && steps.seen.outputs.cache-hit != 'true'
+        env:
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          MSG: ${{ steps.c.outputs.msg }}
+        run: python .github/offline_alert.py --send && echo "${{ steps.c.outputs.sha }}" > .alerted
+      - if: steps.c.outputs.stale == '1' && steps.seen.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .alerted
+          key: alerted-${{ steps.c.outputs.sha }}
