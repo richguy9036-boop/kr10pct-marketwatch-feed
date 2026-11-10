@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/10 0-6 * * 1-5"   # UTC 00:00~06:59 = KST 09:00~15:59, 평일
   workflow_dispatch:
+    inputs:
+      test:
+        description: "시험 카톡 1통 보내기(비밀값 확인용)"
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -21,7 +26,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q holidays requests
+      - if: inputs.test == true
+        env:
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          MSG: "[시험] 장중 맥북 오프라인 알림 설정 확인 — GitHub Actions에서 보낸 카톡입니다. 실제 오프라인 땐 '[맥북 오프라인?]'으로 옵니다"
+        run: python .github/offline_alert.py --send
       - id: c
+        if: inputs.test != true
         run: python .github/offline_alert.py
       - id: seen
         if: steps.c.outputs.stale == '1'
