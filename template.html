@@ -294,7 +294,10 @@
   .vt-sub { display: block; font-size: 13.5px; color: var(--text-dim); font-weight: 500; font-family: "IBM Plex Sans KR", sans-serif; }
   .eg { font-size: 13.5px; padding: 1px 5px; border-radius: 5px; font-weight: 700; white-space: nowrap; }
   .eg-no { color: #fff; background: var(--blue); } .eg-ok { color: #1a7f37; border: 1px solid #1a7f37; } .eg-mid { color: var(--text-dim); border: 1px solid var(--border); }
-  .vt-tag { font-size: 13.5px; padding: 1px 5px; border-radius: 5px; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
+  .vt-tag { font-size: 13.5px; padding: 1px 5px; border-radius: 5px; }
+  /* 2026-11-10 사용자 요청: 거래량 30만주 이하 상승 VI 종목은 숨기지 않고 회색 */
+  .vi-table tr.vt-low td:not(:last-child), .vi-table tr.vt-low td:not(:last-child) * { color: #8a8f98 !important; }
+  .vt-lowtag { color: #8a8f98; border: 1px solid #8a8f98; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
   .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
   .open-table { width: 100%; border-collapse: collapse; font-size: 19.5px; margin: 6px 0 14px; }
@@ -1333,7 +1336,7 @@ entryGuideNote();
          E.auc != null ? ` · 구분력(AUC) ${E.auc.toFixed(2)}` : ""}${E.alerts && E.alerts.n ? ` · 카톡 알림 ${E.alerts.n}건 중 ${E.alerts.hit}건 도달` : ""} · 매일 아침 전 거래일 결과 반영${
          E.bandCheck ? `<br><b>확률 구간별 검증</b>(${E.bandCheck.from.slice(5).replace("-", "/")}~${E.bandCheck.to.slice(5).replace("-", "/")} ${E.bandCheck.n.toLocaleString("ko-KR")}건, 날짜순 전진 검증 = 모르는 날만 예측) · ${
            E.bandCheck.bands.slice().reverse().map(b => `${b.hi > 100 ? b.lo + "% 이상" : b.lo ? b.lo + "~" + b.hi + "%" : b.hi + "% 미만"} ${b.n.toLocaleString("ko-KR")}건 중 <b>${Math.round(b.hit)}%</b>`).join(" · ")} 도달 · 확률이 30%면 10번 중 7번은 안 닿는다는 뜻 — 최근 며칠 실적은 표본이 적어 흔들림</div>` : "</div>"}`; })()}
-     <div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 보통주 상승 정적 VI(ETF·스팩 제외) · 2차 VI 확률 높은 순(그다음 2차 도달, 나머지는 시가 대비 ${closed ? "종가" : "현재가"} 높은 순) · 시가 대비 ${closed ? "종가" : "현재가"} 상위 10종목 빨간색 굵게 · ${closed ? "확정 일봉 종가" : "장중에는 현재가·현재가 수익률(발행 시각 기준)"} · 고가는 조회 시점까지 · 첫 VI 발동가 대비 −${V.droppedPct}% 이상 밀린 종목 숨김 · 거래량 ${(V.minVolume || 300000) / 10000}만주 이하 숨김(09:30 전 전일, 이후 오늘 누적) · 확률이 직전보다 낮아지면 <span style="color:var(--blue)">파란색</span> · <b>2차 VI 확률</b> = 1차 VI(시가+10%) 종목이 그날 시가+20%(2차 VI)에 닿을 확률, 3분봉 거래량·VI 시각·눌림 등으로 계산(검증: 확률 상위 20%의 실제 도달률이 평균의 약 2~3배) · 1차 VI 뒤 아직 안 닿은 채 시간이 지나면 3분마다 낮아짐(VI 뒤 N분 표시 — 2026-11-03 1년 검증: 그대로 두면 35~50% 구간 실제 22%, 낮추면 37%) · <b>2차 도달 종목의 상한가 확률·본전권</b>은 '상승 VI2' 메뉴 · 참고용</div>`;
+     <div class="vi-note">${V.date.slice(5).replace("-", "/")} ${V.asOf} 기준 · 보통주 상승 정적 VI(ETF·스팩 제외) · 2차 VI 확률 높은 순(그다음 2차 도달, 나머지는 시가 대비 ${closed ? "종가" : "현재가"} 높은 순) · 시가 대비 ${closed ? "종가" : "현재가"} 상위 10종목 빨간색 굵게 · ${closed ? "확정 일봉 종가" : "장중에는 현재가·현재가 수익률(발행 시각 기준)"} · 고가는 조회 시점까지 · 첫 VI 발동가 대비 −${V.droppedPct}% 이상 밀린 종목 숨김 · 거래량 ${(V.minVolume || 300000) / 10000}만주 이하는 <span style="color:#8a8f98">회색 · 거래량 적음</span>(09:30 전 전일·오늘 중 큰 값, 이후 오늘 누적 — 2026-11-10부터 숨기지 않음: 1년 검증에서 거래량 적은 종목도 2차 VI 확률이 똑같이 맞았음) · 확률이 직전보다 낮아지면 <span style="color:var(--blue)">파란색</span> · <b>2차 VI 확률</b> = 1차 VI(시가+10%) 종목이 그날 시가+20%(2차 VI)에 닿을 확률, 3분봉 거래량·VI 시각·눌림 등으로 계산(검증: 확률 상위 20%의 실제 도달률이 평균의 약 2~3배) · 1차 VI 뒤 아직 안 닿은 채 시간이 지나면 3분마다 낮아짐(VI 뒤 N분 표시 — 2026-11-03 1년 검증: 그대로 두면 35~50% 구간 실제 22%, 낮추면 37%) · <b>2차 도달 종목의 상한가 확률·본전권</b>은 '상승 VI2' 메뉴 · 참고용</div>`;
   const q = document.getElementById("vi-q"), ty = document.getElementById("vi-type");
   function draw() {
     const k = q.value.trim().toLowerCase(), t = ty.value;
@@ -1351,7 +1354,7 @@ entryGuideNote();
       k || t ? ` / 검색 <b>${rows.length}종목</b>` : ""} · −${V.droppedPct}% 숨김 ${(V.dropped || []).length}${(V.volDropped || []).length ? ` · 거래량 미달 숨김 ${V.volDropped.length}` : ""}${wait ? ` · 가격 확인 대기 ${wait}` : ""}`;
     list.innerHTML = `<div class="vi-scroll"><table class="vi-table"><tr><th class="d-only">순위</th><th class="d-only">업종</th><th>종목명</th><th class="d-only">시가</th><th class="d-only">고가</th><th>종가 / 현재가</th><th class="p-hide">시가 대비 고가</th><th>시가 대비 종가<br>(장중 현재가)</th><th>2차 VI 확률</th></tr>${
       rows.map((x, i) => { const r = i + 1, top = V.items.indexOf(x) < 10;
-        return `<tr><td class="vt-r d-only">${r}</td><td class="vt-s d-only">${x.sector || "미확인"}</td><td class="vt-n"><span style="${top ? "color:var(--red);font-weight:700" : ""}"><span class="m-only">${r}. </span>${x.name}</span>${
+        return `<tr${x.lowVolume ? ' class="vt-low"' : ""}><td class="vt-r d-only">${r}</td><td class="vt-s d-only">${x.sector || "미확인"}</td><td class="vt-n"><span style="${top ? "color:var(--red);font-weight:700" : ""}"><span class="m-only">${r}. </span>${x.name}</span>${x.lowVolume ? ` <span class="vt-tag vt-lowtag">거래량 적음 ${Math.round((x.volume || 0) / 10000)}만주</span>` : ""}${
           x.reRise ? ` <span class="vt-tag vt-re">재상승 ${x.reRise.reTime}</span>` : ""}<span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}${x.hotTheme ? ` · <span style="color:var(--red)">강세 ${x.hotTheme}</span>` : ""}${obTag(x.code)}</span><span class="vt-sub m-only">${x.sector || "미확인"}</span></td>
           <td class="d-only" style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.open)}</td><td class="d-only" style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.high)}</td>
           <td><span style="${top ? "color:var(--red);font-weight:700" : ""}">${won(x.nowPrice)}</span><span class="vt-sub">${x.closed ? "종가 · 확정" : `현재가 · ${x.priceTime || V.asOf}`}</span><span class="vt-sub m-only">시가 ${won(x.open)} · 고가 ${won(x.high)}</span>${x.closed ? "" : egSub(entryGuide(x.nowPrice, x.open, x.nowPct, x.priceTime || V.asOf, x.high))}${usSub(x.code)}</td>
@@ -1408,7 +1411,7 @@ entryGuideNote();
         : `<span class="vt-sub" style="margin:0">${x.limitStage || "계산 대기"}</span>${speedHist(x)}`;
       const beTxt = x.limitStage === "상한가 도달" ? "—" : won(be);
       // 2026-11-04 사용자 요청 '상승 VI2 화면 밖에 보이는 것을 한 화면에': 폰에서는 d-only 열을 숨기고 그 값을 m-only 줄로 옆 칸에 합침
-      return `<tr><td class="vt-r d-only">${i + 1}</td><td class="vt-s d-only">${x.sector || "미확인"}</td><td class="vt-n"><b><span class="m-only">${i + 1}. </span>${x.name}</b><span class="vt-sub m-only">${x.sector || "미확인"} · <b style="color:var(--red)">2차 ${x.vi2Time || "—"}</b></span><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}${obTag(x.code)}</span></td>
+      return `<tr${x.lowVolume ? ' class="vt-low"' : ""}><td class="vt-r d-only">${i + 1}</td><td class="vt-s d-only">${x.sector || "미확인"}</td><td class="vt-n"><b><span class="m-only">${i + 1}. </span>${x.name}</b>${x.lowVolume ? ` <span class="vt-tag vt-lowtag">거래량 적음 ${Math.round((x.volume || 0) / 10000)}만주</span>` : ""}<span class="vt-sub m-only">${x.sector || "미확인"} · <b style="color:var(--red)">2차 ${x.vi2Time || "—"}</b></span><span class="vt-sub">첫 VI ${x.time}${x.count > 1 ? ` · ${x.count}회` : ""}${obTag(x.code)}</span></td>
         <td class="d-only" style="color:var(--red);font-weight:700">${x.vi2Time || "—"}</td><td class="d-only">${won(x.open)}</td><td class="d-only">${won(p2)}</td>
         <td><b>${won(x.nowPrice)}</b><span class="vt-sub">시가 대비 ${sg(x.ocPct)}</span><span class="vt-sub m-only">시가 ${won(x.open)}<br>2차 ${won(p2)}</span></td>
         <td>${won(lim)}<span class="vt-sub">${room == null ? "" : room <= 0.05 ? "상한가" : `+${room.toFixed(1)}% 남음`}</span><span class="vt-sub m-only">본전권 ${beTxt}</span></td>
