@@ -1478,6 +1478,17 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
   const groups = [];
   const O = L.open, A = L.openAll, today = DATA_HOT_SECTORS.date;
   // 2026-11-11 사용자 요청('분석 내용 최대 반영'): 09:01 장 시작 1차 VI 후보 상위 10 — 매매 규칙은 관찰용(검증 수익 얇음), 매일 모의 결과 누적
+  // 2026-11-11 사용자 요청: 장 초반 복합 후보(관찰용) — 09:06까지 정보(종목 패턴·미국·선물·유가·금리·공시·뉴스) → 09:09 매수 → 10:00 전 매도
+  const EP = DATA.earlyPick;
+  if (EP && EP.items && EP.items.length && EP.date === today) {
+    const W = EP.wf || {}, RC = EP.record, MC = EP.macro || {};
+    const sg = v => v == null ? "—" : `${v > 0 ? "+" : ""}${v}%`;
+    groups.push({ key: "earlyPick", label: "오늘 장 초반 복합 후보(관찰용)",
+      head: `<b>장 초반 복합 후보 상위 ${EP.items.length}</b> · ${EP.asOfTime} 시세 기준 · <b style="color:${EP.strong ? "var(--red)" : "var(--text-dim)"}">${EP.strong ? "오늘은 '매매일'(예측 강함)" : "오늘은 '관망일'(예측 약함)"}</b> — 최고 예측 ${EP.maxPred}%(기준 ${EP.thr}%) · 나스닥 선물 ${sg(MC.nqPre)} · 유가 ${sg(MC.oilL1)} · 미국 10년 금리 ${MC.tnxL1 == null ? "—" : (MC.tnxL1 > 0 ? "+" : "") + MC.tnxL1 + "bp"}
+        <br><span style="color:var(--text-dim)">관찰용 규칙: 09:09 매수 → 10:00 전 매도(비용 0.25% 차감). 전진 검증 ${W.days}일: 상위 5 평균 ${sg(W.all)}(앞 ${sg((W.allHalves || [])[0])} · 뒤 ${sg((W.allHalves || [])[1])}), 매매일만 ${sg(W.strong)}(앞 ${sg((W.strongHalves || [])[0])} · 뒤 ${sg((W.strongHalves || [])[1])}), 시장 평균 ${sg(W.market)} — 기간 짧고 최근 수익 얇아 실전 추천 아님</span>${
+        RC ? `<br>실제 기록(${md(RC.from)}~${md(RC.to)}, ${RC.days}거래일): 하루 평균 <b style="${colr(RC.avg)}">${sg(RC.avg)}</b> · 플러스 날 ${RC.win}% · 매매일 ${RC.strongDays}일 평균 ${sg(RC.strongAvg)}` : "<br>실제 기록: 오늘 밤부터 누적"}`,
+      rows: EP.items, render: r => pickTable(r, "업종", "<th>예측(10시까지)</th><th>시초가 갭</th><th>시가 대비</th><th>현재가</th>", x => `<td style="font-weight:700;${colr(x.pred)}">${sg(x.pred)}</td><td style="${colr(x.gap)}">${sg2(x.gap)}</td><td style="${colr(x.ro)}">${sg2(x.ro)}</td><td>${won(x.price)}<span class="vt-sub">${x.news ? "장 전 뉴스 " + x.news + "건" : ""}${x.dart ? " · 공시 " + x.dart + "건" : ""}</span></td>`) });
+  }
   const OV = DATA.openVi;
   if (OV && OV.items && OV.items.length && OV.date === today) {
     const W = OV.wf || {}, RL = OV.rule || {}, RC = OV.record;
