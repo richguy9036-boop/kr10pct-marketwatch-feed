@@ -842,10 +842,18 @@ function usGap(code) {
   const against = gx >= 3 && ((grp != null && grp <= -2) || (L.nas != null && L.nas <= -1.5));
   return { gx, grp, against, along: gx >= 3 && !against && grp != null && grp >= 2 };
 }
+// 2026-11-11 사용자 요청 'SOX와 상관 높은 종목': 시초가 갭이 '종목별 SOX 베타 × 전일 SOX'보다 +3% 이상 크면(us_link.py gap.sx)
+//   5년 검증 당일 시장 대비 −0.52%(앞 −0.86·뒤 −0.35), SOX −2% 이하 날 −1.12% → 추격 금지 경고(이익 신호 아님)
+function soxHot(code) {
+  const L = DATA.usLink, g = L && L.gap;
+  if (!g || !g.sx || g.date !== new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) return null;
+  return g.sx[code] == null ? null : g.sx[code];
+}
 function usChip(code) {
-  const u = usGap(code);
-  if (!u || !(u.against || u.along)) return "";
-  return u.against ? `<span class="eg eg-no">미국 역행 갭 · 추격 금지</span>` : `<span class="eg eg-ok">미국 동행</span>`;
+  const u = usGap(code), sx = soxHot(code);
+  if (u && u.against) return `<span class="eg eg-no">미국 역행 갭 · 추격 금지</span>`;
+  if (sx != null) return `<span class="eg eg-no">SOX 대비 과열 갭 +${sx.toFixed(1)}% · 추격 금지</span>`;
+  return u && u.along ? `<span class="eg eg-ok">미국 동행</span>` : "";
 }
 function usSub(code) {
   const c = usChip(code);
@@ -855,13 +863,20 @@ function gapHold(code) {
   const u = usGap(code);
   return u ? `<span class="eg eg-no">시장보다 갭 +${u.gx.toFixed(1)}% · 매수 보류</span>` : "";
 }
+function soxLine() {
+  const X = (DATA.usLink || {}).sox;
+  if (!X || !X.top) return "";
+  const sg = v => `${v > 0 ? "+" : ""}${v}%`;
+  return `<br><b>전날 SOX ${sg(X.chg)}</b>(${DATA.usLink.usDate}) · SOX와 가장 같이 움직이는 종목(최근 250일 시초가 갭 상관, ${X.n}종목 중): ${X.top.slice(0, 10).map(t => `${t.name} ${t.corr.toFixed(2)}(예상 갭 ${sg(t.exp)})`).join(" · ")}`;
+}
 function entryGuideNote() {
   const html = `<div class="vi-note"><b>매수 가이드</b>(2026-11-03, 1년 3분봉 검증 · 비용 0.3% 뺀 값): 이 메뉴들은 '지금 강한 종목'을 보여 줄 뿐 매수 신호가 아닙니다 — 시가 대비 크게 오른 순간 바로 사면 평균 손실이었습니다(당일 종가 기준 +5% 때 −1.5%, +10% 때 −2.6%, +15% 때 −3.7%).
     <span class="eg eg-no">추격 금지</span> = 09:12 전 · 전일 대비 +16% 이상 · 시가가 전일보다 +5% 넘게 출발 — 바로 사면 평균 −2.8%, 절반 가까이 −3% 넘게 손실, 눌림을 기다려도 마이너스.
     <span class="eg eg-ok">눌림 매수</span> = 전일 대비 +12% 미만 · 시가 갭 0~5% · 12시 전 — <b>시가+3% 지정가로 기다렸다 사고</b>(체결 약 절반), <b>시가 아래로 내려가면 손절</b>, <b>다음 날 시가 매도</b> 시 평균 +0.2%(같은 종목을 바로 사면 −0.7%).
     <span class="eg eg-mid">눌림 때만</span> = 그 밖 — 같은 방법 평균 −0.1%. 모든 경우 당일 종가보다 다음 날 시가 매도가 나았습니다.
     기다려도 큰 이익은 아니고 <b>큰 손실을 피하는 방법</b>입니다(최근 6개월은 눌림 매수도 0% 근처) · 시가 대비 +5% 이상 오른 종목에만 표시 · 시각은 발행 기준 · 참고용
-    <br><span class="eg eg-no">미국 역행 갭 · 추격 금지</span> = 시초가가 시장 평균보다 +3% 이상 높게 출발했는데 이 종목 테마와 연결된 미국 종목 묶음이 전날 −2% 이하(또는 나스닥 −1.5% 이하) — 5년 일봉 검증 당일 시장 대비 −1.8~−2.6%. <span class="eg eg-ok">미국 동행</span> = 같은 갭업에 미국 묶음 +2% 이상 — −0.4%로 덜 밀렸을 뿐 이익 신호는 아님.</div>`;
+    <br><span class="eg eg-no">미국 역행 갭 · 추격 금지</span> = 시초가가 시장 평균보다 +3% 이상 높게 출발했는데 이 종목 테마와 연결된 미국 종목 묶음이 전날 −2% 이하(또는 나스닥 −1.5% 이하) — 5년 일봉 검증 당일 시장 대비 −1.8~−2.6%. <span class="eg eg-ok">미국 동행</span> = 같은 갭업에 미국 묶음 +2% 이상 — −0.4%로 덜 밀렸을 뿐 이익 신호는 아님.
+    <br><span class="eg eg-no">SOX 대비 과열 갭 · 추격 금지</span> = 필라델피아 반도체 지수(SOX)와 시초가 갭이 함께 움직이는 종목(최근 250일 상관 0.45 이상)인데, 시초가가 '이 종목 SOX 민감도 × 전날 SOX 등락'보다 +3% 이상 높게 출발 — 5년 일봉 검증 당일 시장 대비 −0.5%, SOX −2% 이하 날 −1.1%. SOX 영향은 시초가에 이미 다 반영되고 장중(시가→종가)엔 상관 0이라 매수 신호로는 쓰지 않습니다.${soxLine()}</div>`;
   document.querySelectorAll(".entry-guide-note").forEach(e => { e.innerHTML = html; });
 }
 
@@ -1462,6 +1477,17 @@ setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이�
   // 검색·유형 필터(상승 VI 표와 같은 모양)
   const groups = [];
   const O = L.open, A = L.openAll, today = DATA_HOT_SECTORS.date;
+  // 2026-11-11 사용자 요청('분석 내용 최대 반영'): 09:01 장 시작 1차 VI 후보 상위 10 — 매매 규칙은 관찰용(검증 수익 얇음), 매일 모의 결과 누적
+  const OV = DATA.openVi;
+  if (OV && OV.items && OV.items.length && OV.date === today) {
+    const W = OV.wf || {}, RL = OV.rule || {}, RC = OV.record;
+    const sg = v => `${v > 0 ? "+" : ""}${v}%`;
+    groups.push({ key: "openVi", label: "오늘 장 시작 1차 VI 후보(관찰용)",
+      head: `<b>장 시작 1차 VI 후보 상위 ${OV.items.length}</b> · ${OV.asOfTime} 기준 · 오늘 안에 시가 +10%(1차 VI)에 닿을 확률(전일 특성 + 시초가 갭, 갭 8% 미만 ${OV.n}종목 중) — 1년 검증: 상위 10의 <b>${W.top10}%</b>가 1차 VI(전반 ${(W.top10Halves || [])[0]}% · 후반 ${(W.top10Halves || [])[1]}%, 평균 종목 ${W.base}%)
+        <br><span style="color:var(--text-dim)">관찰용 규칙: 시가 +${RL.entryPct}% 도달 시 매수 → 익절 ${RL.takeProfit} · 손절 매수가 −${RL.stopPct}% · 아니면 종가(비용 ${RL.cost}% 차감). 1년 검증 상위 20 평균 ${sg(W.rule20)}(전반 ${sg((W.rule20Halves || [])[0])} · 후반 ${sg((W.rule20Halves || [])[1])}) — 수익이 얇아 실전 추천 아님</span>${
+        RC ? `<br>실제 기록(${md(RC.from)}~${md(RC.to)}, ${RC.days}거래일): 후보 ${RC.picks} 중 1차 VI ${RC.vi}% · 규칙 매수 ${RC.entries}회 평균 <b style="${colr(RC.avgRet)}">${RC.avgRet == null ? "—" : sg(RC.avgRet)}</b> · 승률 ${RC.win ?? "—"}%` : "<br>실제 기록: 오늘 밤부터 누적"}`,
+      rows: OV.items, render: r => pickTable(r, "업종", "<th>시초가 갭</th><th>1차 VI 확률</th><th>매수(+3%)</th><th>익절 · 손절</th>", x => `<td style="font-weight:700;${colr(x.gapPct)}">${sg2(x.gapPct)}</td><td style="font-weight:700;color:var(--red)">${x.prob}%</td><td>${won(x.buy)}</td><td>${won(x.takeProfit)}<span class="vt-sub">손절 ${won(x.stop)}</span></td>`) });
+  }
   if (O && O.items && O.items.length && O.date === today) groups.push({ key: "open", label: "오늘 09:10 강한 테마",
     head: `<b>장 시작 강한 테마 ${O.items.length}개 × 2종목</b> · ${O.asOfTime} 기준(0659 등락률순) · 종목 = 오늘 등락률 + 진입확률(${md(O.probDate)} 마감 모델)`,
     rows: O.items.flatMap(t => t.stocks.map(x => Object.assign({ theme: `${t.theme} ${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%` }, x))),
