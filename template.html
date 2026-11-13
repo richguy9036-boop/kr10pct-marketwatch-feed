@@ -679,6 +679,8 @@
     <!-- 2026-10-25 사용자 요청: 상승 VI 맨 앞, 상승 VI2 둘째 -->
     <!-- 2026-11-02 사용자 요청: 6개 메뉴에 공통으로 선정된 종목 3개 -->
     <button id="seg-common" onclick="switchHotView('common')">공통종목</button>
+    <!-- 2026-11-13 사용자 요청 '마켓워치 종목이 지금 시장 주도 상승 종목과 다름': 거래대금 기준 주도주(관찰용) -->
+    <button id="seg-leaders" onclick="switchHotView('leaders')">주도주</button>
     <!-- 2026-11-02 사용자 요청: 매일 15:20 종가베팅 5종목(전일 미국시장 반영) -->
     <button id="seg-closebet" onclick="switchHotView('closebet')">종가베팅</button>
     <button id="seg-vi" onclick="switchHotView('vi')">상승 VI</button>
@@ -694,6 +696,13 @@
     <div class="money-stats" id="common-meta"></div>
     <div class="money-stats entry-guide-note"></div>
     <div id="list-common"></div>
+  </section>
+
+  <section id="hot-view-leaders" style="display:none">
+    <div class="sec-head"><h2>주도주 — 지금 돈이 가장 많이 몰리며 오르는 종목 10(관찰용)</h2><span class="count num" id="count-leaders"></span></div>
+    <div class="money-stats" id="leaders-meta"></div>
+    <div class="money-stats entry-guide-note"></div>
+    <div id="list-leaders"></div>
   </section>
 
   <section id="hot-view-closebet" style="display:none">
@@ -1174,7 +1183,7 @@ function toggleWeeklyChart(code) {
 })();
 
 function switchHotView(v) {
-  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength", "common", "closebet"]) {
+  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength", "common", "closebet", "leaders"]) {
     document.getElementById("hot-view-" + k).style.display = v === k ? "" : "none";
     document.getElementById("seg-" + k).classList.toggle("active", v === k);
   }
@@ -1260,6 +1269,38 @@ entryGuideNote();
       H.map(h => `<tr><td class="vt-n">${h.date.slice(5).replace("-", "/")}</td><td>${h.mood}(${h.ncand})</td><td style="color:${col(h.result.avg)}">${sg(h.result.avg)}</td>
         <td style="font-weight:700;color:${col(h.result.net)}">${sg(h.result.net)}</td>
         <td class="vt-s">${h.picks.map(x => `${x.name} 애프터 <span style="color:${col(x.afterRet)}">${sg(x.afterRet)}</span> · 시가 <b style="color:${col(x.ret)}">${sg(x.ret)}</b>`).join(" / ")}</td></tr>`).join("")}</table></div>`);
+})();
+
+// 2026-11-13 사용자 요청 '마켓워치 종목이 지금 시장 주도 상승 종목과 전혀 다름' → 주도주(leaders_today.py → DATA.leaders, 관찰용).
+// 정의 = 전일 대비 +5%↑ 보통주 중 오늘 누적 거래대금 상위 10. 다른 메뉴(시가 대비 상승률 순)가 놓치는 큰 종목을 보여줌 — 매수 신호 아님.
+(function renderLeaders() {
+  const L = DATA.leaders, list = document.getElementById("list-leaders");
+  if (!L || L.date !== DATA_HOT_SECTORS.date || !L.items) {
+    list.innerHTML = `<div class="empty-row">장중(09:00~15:30)에 5분마다 집계합니다. 아직 오늘 자료가 없습니다.</div>`;
+    return;
+  }
+  const inMenu = {};
+  const add = (code, m) => { (inMenu[code] = inMenu[code] || []).includes(m) || inMenu[code].push(m); };
+  (DATA_HOT_SECTORS.items || []).forEach(t => (t.stocks || []).forEach(x => add(x.code, "등락률 순위")));
+  ((DATA_HOT_SECTORS.money || {}).items || []).forEach(t => (t.stocks || []).forEach(x => add(x.code, "돈 몰리는 곳")));
+  ((DATA.viToday || {}).items || []).forEach(x => add(x.code, "상승 VI"));
+  ((DATA.strengthToday || {}).items || []).forEach(x => add(x.code, "체결강도"));
+  const missing = L.items.filter(x => !inMenu[x.code]).length;
+  const nxt = L.basis === "nxt";
+  document.getElementById("count-leaders").textContent = `${L.items.length}종목`;
+  document.getElementById("leaders-meta").innerHTML = nxt
+    // 2026-11-13 사용자 요청 '오픈마켓부터 관찰해 9시에 주도주': 08:00~08:59는 NXT 프리마켓 기준, 9시 정규장 첫 스냅숏부터 1분 안에 교체
+    ? `<div class="vi-note"><b>${L.date.slice(5).replace("-", "/")} ${L.asOf} NXT 프리마켓 기준(08:00~08:50)</b> · NXT에서 전일 대비 +${L.minChg}% 이상 오른 종목 중 프리마켓 거래대금 큰 순(NXT 거래 ${L.nxtTraded}종목 대상, 1억 원 미만 제외) · <b>09:00 정규장이 열리면 1~2분 안에 정규장 기준으로 바뀝니다.</b>
+    <br>주의(1년 검증): 프리마켓 주도주 10 중 그날 10시 정규장 주도주에 남는 건 평균 1개뿐이고, 시가에 사면 10시까지 평균 −1.8%(시장 −0.2%) — 밤사이 기대가 이미 갭에 반영돼 장 초반 밀리는 경우가 많습니다. 관찰용 · 매수 신호 아님.</div>`
+    : `<div class="vi-note">${L.date.slice(5).replace("-", "/")} ${L.asOf} 기준 · 전일 대비 +${L.minChg}% 이상 오른 보통주 중 <b>오늘 거래대금 큰 순</b>(관리·정리매매·이미 상한가 제외, 5분마다 갱신) · 다른 메뉴는 시가 대비 상승률 순이라 작은 급등주 위주 — 이 표는 시장 돈이 실제로 몰리는 큰 종목. 이 중 <b>${missing}종목</b>은 다른 장중 메뉴에 없음.
+    <br>1년 검증(research_leaders.py): 같은 시각 거래대금 순 10종목이 시가 대비 상승률 순보다 그날 종가까지 +0.6~1.1%p 덜 빠짐(앞·뒤 절반 모두) — <b>그래도 평균은 마이너스(10시 선정 → 종가 −1.4%)</b>, 최근 실전 15일 비교에선 앱 메뉴보다 나았다고 할 수 없음 → 순위에 반영하지 않은 관찰용 · 매수 신호 아님.</div>`;
+  const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+  list.innerHTML = `<div class="vi-scroll"><table class="vi-table"><tr><th class="d-only">순위</th><th class="d-only">업종</th><th>종목명</th><th>현재가</th><th>시가 대비</th><th>거래대금</th></tr>${
+    L.items.map((x, i) => `<tr><td class="vt-r d-only">${i + 1}</td><td class="vt-s d-only">${x.sector || "미확인"}</td>
+      <td class="vt-n"><span class="m-only">${i + 1}. </span><b>${x.name}</b>${(inMenu[x.code] || []).map(m => ` <span class="vt-tag vt-re">${m}</span>`).join("")}${inMenu[x.code] ? "" : ` <span class="vt-tag" style="color:var(--text-dim);border:1px solid var(--text-dim)">다른 메뉴에 없음</span>`}<span class="vt-sub">${x.code}${obTag(x.code)}<span class="m-only"> · ${x.sector || "미확인"}</span></span></td>
+      <td>${Number(x.price).toLocaleString("ko-KR")}원<span class="vt-sub" style="font-weight:700;color:${x.chgPct > 0 ? "var(--red)" : "var(--blue)"}">${sg(x.chgPct)}</span>${nxt ? "" : egSub(entryGuide(x.price, x.open, x.chgPct, L.asOf, x.high))}${usSub(x.code)}</td>
+      <td style="color:${x.ocPct > 0 ? "var(--red)" : x.ocPct < 0 ? "var(--blue)" : "inherit"}">${x.ocPct == null ? "장 시작 전" : sg(x.ocPct)}</td>
+      <td class="num">${x.valueEok.toLocaleString("ko-KR")}억${nxt ? `<span class="vt-sub">NXT</span>` : ""}</td></tr>`).join("")}</table></div>`;
 })();
 
 // 2026-10-27 사용자 요청: 키움 현재가 창 체결강도 190 이상(strength_fetch.py → vi_quick.py → DATA.strengthToday). 체결강도 높은 순.
