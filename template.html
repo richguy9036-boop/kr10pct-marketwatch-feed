@@ -858,10 +858,35 @@ function soxHot(code) {
   if (!g || !g.sx || g.date !== new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) return null;
   return g.sx[code] == null ? null : g.sx[code];
 }
+// 2026-11-13 사용자 요청 '미국 금리 인상 우려 반영'(us_link.us_macro, research_rate_oil.py 5년):
+//   전날 미국 10년물 +7bp↑ 또는 WTI +2%↑ & 나스닥 +1% 미만인 날, 갭 +2%↑ 종목 당일 시장 대비 −0.65%p 더 밀림(앞 −0.54/뒤 −0.75)
+function rateShock() {
+  const L = DATA.usLink, M = L && L.macro, g = L && L.gap;
+  return M && M.shock ? M : null;
+}
+function rateGap(code) {  // 오늘 시초가 갭(전일 종가 대비, = 시장 대비 갭 + 시장 평균) +2% 이상이면 그 값
+  const L = DATA.usLink, g = L && L.gap;
+  if (!rateShock() || !g || g.date !== new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) return null;
+  const gx = (g.gx || {})[code];
+  return gx != null && gx + g.mkt >= 2 ? gx + g.mkt : null;
+}
+function rateLine() {
+  const M = rateShock();
+  if (!M) return "";
+  const sg = v => `${v > 0 ? "+" : ""}${v}`;
+  // 2026-11-13 사용자 요청 '태그가 아니라 선정 방법에 반영': 급등일엔 등락률 순위·돈 몰리는 곳·체결강도에서 갭 +2%↑ 종목 제외(hot_sectors_today.rate_skip, vi_quick.strength)
+  const ex = {}, today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  [DATA_HOT_SECTORS.date === today ? DATA_HOT_SECTORS.rateShock : null, ((DATA.strengthToday || {}).date === today ? DATA.strengthToday.rateShock : null)]
+    .forEach(r => ((r || {}).excluded || []).forEach(x => { ex[x.code] = ex[x.code] || x; }));
+  const xs = Object.values(ex).sort((a, b) => b.gap - a.gap);
+  const exTxt = xs.length ? ` · 오늘 뺀 종목 ${xs.length}개: ${xs.slice(0, 10).map(x => `${x.name} 갭 +${x.gap}%`).join(", ")}${xs.length > 10 ? " 등" : ""}` : "";
+  return `<div class="vi-note" style="border-left:3px solid var(--blue);font-weight:700">미국 금리·유가 급등 다음 날(${M.date.slice(5).replace("-", "/")} 미국: 10년물 ${M.tnx}% ${sg(M.rate)}bp · WTI ${sg(M.oil)}% · 나스닥 ${M.nas == null ? "—" : sg(M.nas) + "%"}) — <b>등락률 순위·돈 몰리는 곳·체결강도는 시초가가 전일 종가보다 +2% 이상 높게 출발한 종목을 빼고 다음 순위로 채웠습니다</b>(1년 장중 검증: 이런 날 빼면 10종목 평균 종가까지 +0.3~+1.2%p 나음, 실제 앱 기록 6일 중 5일 갭 +2%↑ 종목이 −1.8~−4.2%p 나쁨 · 평소엔 빼면 오히려 나빠 이런 날만)${exTxt}. 다른 메뉴의 갭 상승 종목엔 <span class="eg eg-no">금리 급등일 갭 · 추격 주의</span> 표시.</div>`;
+}
 function usChip(code) {
-  const u = usGap(code), sx = soxHot(code);
+  const u = usGap(code), sx = soxHot(code), rg = rateGap(code);
   if (u && u.against) return `<span class="eg eg-no">미국 역행 갭 · 추격 금지</span>`;
   if (sx != null) return `<span class="eg eg-no">SOX 대비 과열 갭 +${sx.toFixed(1)}% · 추격 금지</span>`;
+  if (rg != null) return `<span class="eg eg-no">금리 급등일 갭 +${rg.toFixed(1)}% · 추격 주의</span>`;
   return u && u.along ? `<span class="eg eg-ok">미국 동행</span>` : "";
 }
 function usSub(code) {
@@ -885,8 +910,9 @@ function entryGuideNote() {
     <span class="eg eg-mid">눌림 때만</span> = 그 밖 — 같은 방법 평균 −0.1%. 모든 경우 당일 종가보다 다음 날 시가 매도가 나았습니다.
     기다려도 큰 이익은 아니고 <b>큰 손실을 피하는 방법</b>입니다(최근 6개월은 눌림 매수도 0% 근처) · 시가 대비 +5% 이상 오른 종목에만 표시 · 시각은 발행 기준 · 참고용
     <br><span class="eg eg-no">미국 역행 갭 · 추격 금지</span> = 시초가가 시장 평균보다 +3% 이상 높게 출발했는데 이 종목 테마와 연결된 미국 종목 묶음이 전날 −2% 이하(또는 나스닥 −1.5% 이하) — 5년 일봉 검증 당일 시장 대비 −1.8~−2.6%. <span class="eg eg-ok">미국 동행</span> = 같은 갭업에 미국 묶음 +2% 이상 — −0.4%로 덜 밀렸을 뿐 이익 신호는 아님.
-    <br><span class="eg eg-no">SOX 대비 과열 갭 · 추격 금지</span> = 필라델피아 반도체 지수(SOX)와 시초가 갭이 함께 움직이는 종목(최근 250일 상관 0.45 이상)인데, 시초가가 '이 종목 SOX 민감도 × 전날 SOX 등락'보다 +3% 이상 높게 출발 — 5년 일봉 검증 당일 시장 대비 −0.5%, SOX −2% 이하 날 −1.1%. SOX 영향은 시초가에 이미 다 반영되고 장중(시가→종가)엔 상관 0이라 매수 신호로는 쓰지 않습니다.${soxLine()}</div>`;
-  document.querySelectorAll(".entry-guide-note").forEach(e => { e.innerHTML = html; });
+    <br><span class="eg eg-no">SOX 대비 과열 갭 · 추격 금지</span> = 필라델피아 반도체 지수(SOX)와 시초가 갭이 함께 움직이는 종목(최근 250일 상관 0.45 이상)인데, 시초가가 '이 종목 SOX 민감도 × 전날 SOX 등락'보다 +3% 이상 높게 출발 — 5년 일봉 검증 당일 시장 대비 −0.5%, SOX −2% 이하 날 −1.1%. SOX 영향은 시초가에 이미 다 반영되고 장중(시가→종가)엔 상관 0이라 매수 신호로는 쓰지 않습니다.${soxLine()}
+    <br><span class="eg eg-no">금리 급등일 갭 · 추격 주의</span> = 전날 미국 10년물 금리 +7bp 이상 또는 유가(WTI) +2% 이상이고 나스닥은 +1% 미만인 날, 시초가가 전일보다 +2% 이상 높게 출발한 종목 — 5년 검증 당일 시장 대비 −1.6%(평소 같은 갭 −1.0%). 이런 날 등락률 순위·돈 몰리는 곳·체결강도는 이 종목들을 아예 빼고 선정합니다. 금리·유가 영향 자체는 시초가에 대부분 반영돼 갭 없는 종목엔 차이가 없습니다.</div>`;
+  document.querySelectorAll(".entry-guide-note").forEach(e => { e.innerHTML = rateLine() + html; });
 }
 
 function chipHtml(label, cls) {
