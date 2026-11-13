@@ -1694,6 +1694,22 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
 
 // 2026-10-25 사용자 요청: 탭1~3 주간 백테스트(backtest_weekly.py → out.json "backtest")
 // 기초가 = 그 주 첫 거래일 시가, 수익률 = 주중 최고가 기준(2026-11-02 사용자 요청), 금 종가는 참고. 대상 = 월요일 아침에 보이던 목록.
+// 2026-11-13 사용자 요청 '메뉴별 실전 성적표': 장중 메뉴를 편입 순간 가격으로 — 상한가 진입·당일 하락 비율(scorecard.py intraday)
+function scIntraday(S, sg) {
+  const ms = Object.values(S.menus).filter(m => m.intraday && m.intraday.d0 && m.intraday.d0.n);
+  if (!ms.length) return "";
+  const nm = s => s.replace(/\(편입가→다음 날 시가\)/, "");
+  return `<div class="sec-head" style="margin-top:18px"><h2>장중 메뉴 상세 — 앱에 처음 보인 순간 가격에 샀다면</h2></div>
+    <div class="vi-scroll"><table class="vi-table"><tr><th>메뉴</th><th>건수</th><th>그 뒤 상한가</th><th>당일 종가 하락</th><th>당일 종가</th><th>다음 날 시가</th></tr>${
+    ms.map(m => { const i = m.intraday, n = m.stats.n1 || {};
+      return `<tr><td class="vt-n"><b>${nm(m.name)}</b><span class="vt-sub">${m.from ? m.from.slice(5).replace("-", "/") + "부터 · " + m.days + "일" : ""}</span></td>
+        <td class="num">${i.d0.n}</td>
+        <td>${i.lim != null ? `<b>${i.lim}%</b><span class="vt-sub">${i.limN}건 중</span>` : "—"}</td>
+        <td>${i.down}%<span class="vt-sub">−3% 이상 ${i.down3}%</span></td>
+        <td>${sg(i.d0.mean)}<span class="vt-sub">승률 ${i.d0.win}%</span></td>
+        <td>${sg(n.mean)}<span class="vt-sub">승률 ${n.win ?? "—"}%</span></td></tr>`; }).join("")}</table></div>
+    <div class="vi-note">매수 = 그 메뉴에 처음 오른 시각의 현재가(공통종목은 두 번째 메뉴에 오른 순간) · 수익은 비용 ${S.cost}% 뺀 값 · 하락 비율은 비용 전 · '그 뒤 상한가' = 편입 뒤 장중 상한가 진입 비율(편입 때 이미 상한가 닿은 종목 제외, 1분 스냅숏 고가 기준).</div>`;
+}
 (function renderScorecard() {
   const S = DATA.scorecard, body = document.getElementById("sc-body");
   if (!S) { body.innerHTML = `<div class="empty-row">다음 아침(07:30) 집계부터 표시됩니다.</div>`; return; }
@@ -1710,7 +1726,8 @@ document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "
   }).join("");
   body.innerHTML = `<div class="vi-scroll"><table class="vi-table"><tr><th>메뉴</th><th>매도</th><th>건수</th><th>평균(비용 뒤)</th><th>시장 대비</th><th>백테스트 기대</th><th>판정</th></tr>${rows}</table></div>
     <div class="vi-note"><b>채점 방법</b> · 앱에 실제로 올라온 아침 목록(07:30 발행본)을 그대로 복원 — 사후 재스캔 아님 · 다음 거래일 <b>시가 매수</b>(임박 스캐너는 발행일 시가) → 메뉴별 매도 시점(오늘 돌파·임박·변동성·스윙 = 4거래일째 종가, 상한가 후보 = 당일 종가) · 상승 VI = 그날 <b>첫 VI 발동가 매수 → 다음 날 시가</b>, 목록에서 −5%로 숨겨진 종목도 포함(빼면 평균 +2.5%로 부풀려짐) · 비용 ${S.cost}% 차감 · 시장 대비 = 같은 기간 거래대금 5억 원 이상 종목 평균과의 차이.
-    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 장중 메뉴(등락률 순위·돈 몰리는 곳·체결강도)는 11/7부터 기록한 첫 편입 시각 가격으로 채점. 매일 아침 자동 갱신 · 참고용.</div>
+    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 장중 메뉴(등락률 순위·돈 몰리는 곳·체결강도·09:10 상한가 후보·공통종목)는 앱에 처음 보인 시각의 가격으로 채점(10/19~11/5는 발행 이력에서 복원). 매일 아침 자동 갱신 · 참고용.</div>
+    ${scIntraday(S, sg)}
     ${S.rules ? `<div class="sec-head" style="margin-top:18px"><h2>규칙 실전 점검 — 앱이 붙인 경고가 실제로 손실을 피했나</h2></div>
     <div class="vi-scroll"><table class="vi-table"><tr><th>규칙</th><th>기준</th><th>표시된 종목</th><th>나머지</th><th>효과</th><th>판정</th></tr>${
       Object.values(S.rules).map(r => `<tr><td class="vt-n"><b>${r.name}</b></td><td>${r.basis}</td>
