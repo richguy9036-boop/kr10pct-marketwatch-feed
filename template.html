@@ -524,6 +524,7 @@
     <div class="sec-head"><h2>이번주 종목 — 주봉 240주선 돌파</h2><span class="count num" id="count-weekly"></span></div>
     <div class="money-stats" id="weekly-meta"></div>
     <div id="list-weekly"></div>
+    <div class="vi-note rel-note" id="rel-weekly"></div>
   </section>
   <div id="bo-view-daily">
   <div class="kpi-strip">
@@ -536,6 +537,7 @@
   <section>
     <div class="sec-head"><h2>오늘의 돌파 종목</h2><span class="count num" id="count-breakout"></span></div>
     <div id="list-breakout"></div>
+    <div class="vi-note rel-note" id="rel-breakout"></div>
   </section>
   </div><!-- /bo-view-daily -->
 
@@ -571,6 +573,7 @@
     <div id="imm-ich-excluded" style="font-size:15.5px;color:var(--text-dim);line-height:1.5;margin:0 2px 10px"></div>
     <div class="money-stats">'수급 확인' = 최근 5거래일 외국인·기관이 모두 순매수이고 두 주체 순매수 금액 합계가 100억원 이상(2026-10-14 금액 기준으로 변경)</div>
     <div id="list-imm"></div>
+    <div class="vi-note rel-note" id="rel-imminent"></div>
   </section>
 
   <div class="disclaimer">
@@ -634,6 +637,7 @@
   <section>
     <div class="sec-head"><h2>변동성 확대 — 데이터 재발굴 패턴</h2><span class="count num" id="count-vol"></span></div>
     <div id="list-vol"></div>
+    <div class="vi-note rel-note" id="rel-volatility"></div>
   </section>
 
   <div class="disclaimer">
@@ -667,8 +671,10 @@
   <div class="tab-panel" id="tab-swing">
     <div class="sec-head"><h2>스윙돌파후보 — 오늘 매수 타이밍 상위 10</h2><span class="count num" id="sw-count"></span></div>
     <div id="sw-body"></div>
+    <div class="vi-note rel-note" id="rel-swing"></div>
     <div class="sec-head" style="margin-top:22px"><h2>눌림형 — 업종 동반 급등 뒤 1~2일 눌림</h2><span class="count num" id="sw-pb-count"></span></div>
     <div id="sw-pb-body"></div>
+    <div class="vi-note rel-note" id="rel-pullback"></div>
   </div><!-- /tab-swing -->
 
   <div class="install-hint">
@@ -915,6 +921,38 @@ function entryGuideNote() {
   document.querySelectorAll(".entry-guide-note").forEach(e => { e.innerHTML = rateLine() + html; });
 }
 
+// 2026-11-16 사용자 요청 '전체메뉴 추천종목 신뢰도(오늘의 종목 제외)': menu_reliability.py → DATA.menuRel
+// 같은 메뉴·같은 등급의 최근 실제 발행 종목 성적(다음 날 시가 매수 → 3일 안 +10% 도달 · 4일째 종가 시장 대비)
+const REL_GROUP_NAME = { strong: "2/3·3/3 충족", weak: "조건 약함", risk: "음봉 돌파", "0-7": "모델 확률 7% 미만", "7-14": "모델 확률 7~14%", "14-101": "모델 확률 14% 이상" };
+function relOf(menu, group) {
+  const M = ((DATA.menuRel || {}).menus || {})[menu];
+  if (!M || !M.all) return null;
+  const g = group && M.groups && M.groups[group];
+  return g ? { ...g, scope: REL_GROUP_NAME[group] || group } : { ...M.all, scope: "메뉴 전체" };
+}
+const TIER_REL = { tier3: "strong", tier2: "strong", tier1: "weak", risk: "risk" };
+function immBand(p) { return p == null ? null : p < 7 ? "0-7" : p < 14 ? "7-14" : "14-101"; }
+function relSg(v) { return v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(1)}%`; }
+function relText(r) {
+  if (!r) return "";
+  return r.verdict === "표본 부족" ? `신뢰도 표본 부족(${r.n}건 · +10% ${r.hitPct}%)`
+    : `신뢰도 ${r.verdict} · +10% ${r.hitPct}% · 4일 시장 대비 ${relSg(r.x)}`;
+}
+function relCls(r) { return !r ? "" : r.verdict === "실전 확인" ? "on-green" : r.verdict === "신뢰 낮음" ? "on-blue" : ""; }
+function relChip(menu, group) { const r = relOf(menu, group); return r ? chipHtml(relText(r), relCls(r)) : ""; }
+function relNote(menu, holdDays) {
+  const R = DATA.menuRel, M = R && R.menus && R.menus[menu], el = document.getElementById("rel-" + menu);
+  if (!el) return;
+  if (!M || !M.all) { el.innerHTML = "<b>신뢰도</b> · 아직 채점할 실제 발행분이 없습니다(4거래일 지나야 채점)."; return; }
+  const md = d => d.slice(5).replace("-", "/");
+  const a = M.all, gs = Object.entries(M.groups || {});
+  const line = (nm, r) => `${nm} ${r.n}건: +10% ${r.hitPct}% · ${holdDays}일 평균 ${relSg(r.ret)}(중앙 ${relSg(r.retMed)}) · 시장 대비 ${relSg(r.x)} → <b>${r.verdict}</b>`;
+  el.innerHTML = `<b>신뢰도</b>(종목마다 표시) = 이 메뉴에 실제로 올라왔던 종목(기준일 ${md(M.from)}~${md(M.to)}${menu === "weekly" ? ", 전체 주" : `, 최근 ${R.window}기준일`})을 다음 날 시가에 샀을 때의 실제 성적 — `
+    + `${holdDays === 5 ? "5" : "3"}거래일 안 +10% 도달 비율 · ${holdDays}거래일째 종가 수익(비용 ${R.cost}% 뺌)의 같은 날 시장 대비. 판정: ${R.minN}건 미만 표본 부족 · 시장 대비 마이너스이고 t ≤ −1 신뢰 낮음 · 플러스이고 t ≥ 1 실전 확인 · 그 밖 판단 보류.`
+    + `<br>${line("메뉴 전체", a)}${gs.length ? "<br>" + gs.map(([g, r]) => line(REL_GROUP_NAME[g] || g, r)).join("<br>") : ""}`
+    + `${gs.length ? "" : "<br>등급별 차이가 앞·뒤 기간에 일정하지 않거나 표본이 작아 모든 종목에 메뉴 전체 값을 씁니다."} · +10% 도달은 수익 확률이 아닙니다 · 계산 ${R.generatedAt}`;
+}
+
 function chipHtml(label, cls) {
   return `<span class="chip ${cls||''}">${label}</span>`;
 }
@@ -944,6 +982,7 @@ function row(item, tierClass, badge) {
         ${chipHtml(item.candle)}
         ${item.kiwoomVolumeSpike ? chipHtml("키움 거래량급증 확인", "on-green") : ""}
         ${gapHold(item.code)}
+        ${relChip("breakout", TIER_REL[item.tier])}
       </div>
     </div>
     <div class="price num">${fmtPrice(item.close)}</div>
@@ -962,6 +1001,7 @@ function riskRow(item) {
         <span class="market">${item.market}</span>
       </div>
       <div class="risk-note">종가 음봉 마감 — 돌파 신뢰도 낮음</div>
+      <div class="chips">${relChip("breakout", "risk")}</div>
     </div>
     <div class="price num">${fmtPrice(item.close)}</div>
   </div>
@@ -999,6 +1039,7 @@ function imminentRow(item) {
         <span class="market">${item.market}</span>
       </div>
       <div class="chips">
+        ${relChip("imminent", immBand(item.probRaw != null ? item.probRaw : item.prob))}
         ${scoreChip}
         ${volChip}
         ${ichChip}
@@ -1039,6 +1080,7 @@ function volatilityRow(item) {
         ${rangeChip}
         ${retChip}
         ${probChip}
+        ${relChip("volatility")}
       </div>
     </div>
     <div class="price-col">
@@ -1159,6 +1201,7 @@ function weeklyRow(x) {
         <span class="market">${x.market}</span>
       </div>
       <div class="chips">
+        ${relChip("weekly")}
         ${x.surgeProb != null ? chipHtml(`다음주 +20% 급등확률 ${x.surgeProb}%`, x.surgeProb >= 15 ? "on-red" : "") : ""}
         ${x.nCond != null ? chipHtml(`급등특성 ${x.nCond}/10`, x.nCond >= 6 ? "on-amber" : "") : ""}
         ${x.shape26 ? chipHtml(`${x.shape26}·${x.volTrend}${x.res26 ? ` → 26주 승률 ${x.res26.win}%·평균 +${x.res26.avg}%` : ""}`) : ""}
@@ -1664,6 +1707,7 @@ document.querySelectorAll("#tab-breakout .kpi[data-filter]").forEach(el => {
   });
 });
 renderBreakout();
+relNote("breakout", 4);
 
 const immItems = DATA_IMMINENT.items;
 document.getElementById("kpi-imm-total").textContent = immItems.length;
@@ -1716,10 +1760,15 @@ document.querySelectorAll("#tab-imminent .kpi[data-filter]").forEach(el => {
   });
 });
 renderImminent();
+relNote("imminent", 4);
 
 const volItems = DATA_VOLATILITY.items;
 document.getElementById("kpi-vol-total").textContent = volItems.length;
 fillSection("list-vol", "count-vol", volItems, "오늘은 선정된 종목이 없습니다.", volatilityRow);
+relNote("volatility", 4);
+relNote("weekly", 5);
+relNote("swing", 4);
+relNote("pullback", 4);
 
 document.getElementById("count-hot").textContent = DATA_HOT_SECTORS.items.length ? `테마 ${DATA_HOT_SECTORS.items.length}개` : "";
 document.getElementById("list-hot").innerHTML = DATA_HOT_SECTORS.items.length
@@ -1895,7 +1944,7 @@ function toggleSwingChart(code, key = code) {
       <td class="vt-s w-hide">${x.sector || ""}</td><td class="vt-n"><b${t1}><span class="w-only">${i + 1}. </span>${x.name}</b> <span style="color:var(--text-dim);font-size:14px">${x.code}</span><span class="vt-sub w-only"${t1}>${x.type === "S5" ? "시가 매수" : "돌파 매수"} <span class="sw-tag${x.tier === 1 ? " t1" : ""}">${x.tier === 1 ? "1군" : "2군"}</span> · ${x.sector || ""}</span></td>
       <td class="w-hide">${won(x.close)}</td><td>${curCell}<span class="vt-sub w-only">전일 ${won(x.close)}</span><span class="vt-sub p-only">갭 ${gap}</span></td><td class="p-hide">${gap}</td><td>${buy}${x.dist != null && !x.entry ? `<span class="vt-sub">남은 ${sg(x.dist)}</span>` : ""}<span class="vt-sub p-only">손절 ${stop}</span></td><td class="p-hide">${stop}</td>
       <td class="vt-n">${us}<span class="vt-sub p-only">테마 ${theme}</span></td><td class="vt-n p-hide">${theme}</td>
-      <td class="p-hide"><b>${pts}</b></td><td>${sg(x.expRet, 2)} · ${x.expWin}%<span class="vt-sub p-only">점수 <b>${pts}</b></span></td></tr>
+      <td class="p-hide"><b>${pts}</b></td><td>${sg(x.expRet, 2)} · ${x.expWin}%<span class="vt-sub p-only">점수 <b>${pts}</b></span><span class="vt-sub">${relText(relOf("swing"))}</span></td></tr>
       <tr class="sw-chart-row" id="swrow-${x.code}" style="display:none"><td colspan="13" style="padding:6px 0 12px;text-align:left"><div class="sw-chart" id="swchart-${x.code}"></div></td></tr>`;
   }).join("");
   const drop = (S.dropped || []).length ? `<div class="vi-note">${live ? "시초가" : "장전"} 갭 때문에 뺀 종목: ${S.dropped.map(x => `${x.name}(${sg(x.gap, 1)})`).join(", ")}</div>` : "";
@@ -1934,7 +1983,7 @@ function toggleSwingChart(code, key = code) {
       <td class="p-hide"><span style="color:var(--red)">${sh(x.fi0)}</span><span class="vt-sub">눌림 중 <span style="color:var(--blue)">${sh(x.fipb)}</span></span></td>
       <td class="w-hide">${won(x.close)}</td><td>${live && x.cur ? `<span style="${col(x.cur - x.close)}">${won(x.cur)}</span>` : x.nxt ? won(x.nxt) : "—"}<span class="vt-sub w-only">전일 ${won(x.close)}</span><span class="vt-sub p-only">갭 ${gapC}</span><span class="vt-sub p-only">${buyC}</span></td>
       <td class="p-hide">${gapC}</td>
-      <td class="p-hide">${buyC}</td><td>${sg(x.expRet, 2)} · ${x.expWin}%</td></tr>
+      <td class="p-hide">${buyC}</td><td>${sg(x.expRet, 2)} · ${x.expWin}%<span class="vt-sub">${relText(relOf("pullback"))}</span></td></tr>
       <tr class="sw-chart-row" id="swrow-pb${x.code}" style="display:none"><td colspan="12" style="padding:6px 0 12px;text-align:left"><div class="sw-chart" id="swchart-pb${x.code}"></div></td></tr>`; }).join("");
   body.innerHTML = `<div class="vi-scroll"><table class="vi-table"><thead><tr><th class="w-hide">순위</th><th class="w-hide">업종</th><th>종목</th><th>급등일</th><th>눌림</th><th class="p-hide">급등일 업종</th><th class="p-hide">외국인+기관(급등일)</th><th class="w-hide">전일 종가</th><th>${live ? "현재가" : "NXT 프리"}</th><th class="p-hide">${live ? "시초가 갭" : "장전 갭"}</th><th class="p-hide">매수</th><th>과거 평균·승률</th></tr></thead><tbody>${rows || `<tr><td colspan="12" class="vt-n">오늘 조건 맞는 종목 없음</td></tr>`}</tbody></table></div>
     <div class="vi-note"><b>고르는 법</b> · 어제나 그제 <b>+5~10% 급등</b>(거래량 20일 평균 1.5배 이상) → 그 뒤 1~2일 <b>눌림</b>(하루 −5~+1%, 급등일 종가 아래, 저가가 급등일 양봉 몸통 절반 위에서 지지) · 급등한 날 <b>같은 업종도 함께 상승</b>(업종 평균 +2% 이상, 60% 이상 종목 상승) · 급등한 날 <b>외국인+기관 순매수</b>, 눌림 동안엔 <b>외국인+기관 순매도</b>(차익 실현을 받아내며 버팀) · 어제 거래대금 5억 원 이상 · 업종 평균이 높은 순.
