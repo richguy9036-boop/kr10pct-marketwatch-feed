@@ -694,7 +694,6 @@
     <button id="seg-strength" onclick="switchHotView('strength')">체결강도</button>
     <button id="seg-chg" class="active" onclick="switchHotView('chg')">등락률 순위</button>
     <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 곳</button>
-    <button id="seg-limit" onclick="switchHotView('limit')">상한가 후보</button>
   </div>
 
   <section id="hot-view-common" style="display:none">
@@ -742,16 +741,6 @@
     <div id="list-strength-vi"></div>
   </section>
 
-  <section id="hot-view-limit" style="display:none">
-    <div class="sec-head"><h2>상한가 후보 — 오늘 장중 상한가 진입 확률 상위</h2><span class="count num" id="count-limit"></span></div>
-    <div class="money-stats" id="open-meta"></div>
-    <div id="list-open"></div>
-    <div class="money-stats" id="openall-meta"></div>
-    <div id="list-openall"></div>
-    <div class="money-stats" id="limit-meta"></div>
-    <div id="limit-review"></div>
-    <div id="list-limit"></div>
-  </section>
 
   <section id="hot-view-money" style="display:none">
     <div class="sec-head"><h2>돈 몰리는 곳 — 거래량이 급증한 테마</h2><span class="count num" id="count-money"></span></div>
@@ -1252,17 +1241,17 @@ function toggleWeeklyChart(code) {
 })();
 
 function switchHotView(v) {
-  for (const k of ["chg", "money", "limit", "vi", "vi2", "strength", "common", "closebet", "leaders"]) {
+  for (const k of ["chg", "money", "vi", "vi2", "strength", "common", "closebet", "leaders"]) {
     document.getElementById("hot-view-" + k).style.display = v === k ? "" : "none";
     document.getElementById("seg-" + k).classList.toggle("active", v === k);
   }
 }
 
-// 2026-11-02 사용자 요청: 오늘의 종목 6개 메뉴(상승 VI·VI2·체결강도·등락률 순위·돈 몰리는 곳·상한가 후보)에
+// 2026-11-02 사용자 요청: 오늘의 종목 5개 메뉴(상승 VI·VI2·체결강도·등락률 순위·돈 몰리는 곳 — 2026-11-17 상한가 후보 메뉴 삭제)에
 // 공통으로 선정된 종목 3개 — 각 메뉴가 지금 보여주는 오늘 목록 그대로 집계(2개 메뉴 이상), 많이 겹친 순 → 같으면 등락률 높은 순.
 entryGuideNote();
 (function renderCommon() {
-  const H = DATA_HOT_SECTORS, today = H.date, V = DATA.viToday, S = DATA.strengthToday, L = DATA.limitup || {};
+  const H = DATA_HOT_SECTORS, today = H.date, V = DATA.viToday, S = DATA.strengthToday;
   const menus = {}, info = {};
   const add = (menu, x, price, pct) => {
     if (!x || !x.code) return;
@@ -1278,14 +1267,11 @@ entryGuideNote();
   (S && S.date === today ? S.items || [] : []).forEach(x => add("체결강도", x, x.price, x.chgPct));
   (H.items || []).forEach(t => (t.stocks || []).forEach(x => add("등락률 순위", { ...x, theme: t.theme }, x.close, x.changePct)));
   ((H.money || {}).items || []).forEach(t => (t.stocks || []).forEach(x => add("돈 몰리는 곳", x, x.close, x.changePct)));
-  if (L.open && L.open.date === today) (L.open.items || []).forEach(t => (t.stocks || []).forEach(x => add("상한가 후보", x, null, null)));
-  if (L.openAll && L.openAll.date === today) (L.openAll.items || []).forEach(x => add("상한가 후보", x, x.price, x.nowPct));
-  (L.items || []).forEach(x => add("상한가 후보", x, null, null));  // 전일 마감 기준 오늘 후보
   const all = Object.keys(menus).map(c => ({ ...info[c], menus: [...menus[c]] })).filter(x => x.menus.length >= 2)
     .sort((a, b) => b.menus.length - a.menus.length || (b.pct ?? -99) - (a.pct ?? -99));
   const top = all.slice(0, 3);
   document.getElementById("count-common").textContent = top.length ? `${top.length}종목` : "";
-  document.getElementById("common-meta").innerHTML = `<div class="vi-note">${today.slice(5).replace("-", "/")} 기준 · 6개 메뉴(상승 VI·상승 VI2·체결강도·등락률 순위·돈 몰리는 곳·상한가 후보)가 지금 보여주는 오늘 목록에서 <b>2개 이상 메뉴에 함께 오른 종목</b>을 많이 겹친 순(같으면 등락률 높은 순)으로 3개 · 2개 이상 겹친 종목은 모두 ${all.length}개 · 상승 VI2는 상승 VI 안의 '2차 도달' 종목이라 두 메뉴로 따로 셉니다 · 각 메뉴가 갱신될 때 같이 바뀜(앱 반영은 약 5~10분 간격) · 여러 메뉴에 겹쳤다고 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
+  document.getElementById("common-meta").innerHTML = `<div class="vi-note">${today.slice(5).replace("-", "/")} 기준 · 5개 메뉴(상승 VI·상승 VI2·체결강도·등락률 순위·돈 몰리는 곳)가 지금 보여주는 오늘 목록에서 <b>2개 이상 메뉴에 함께 오른 종목</b>을 많이 겹친 순(같으면 등락률 높은 순)으로 3개 · 2개 이상 겹친 종목은 모두 ${all.length}개 · 상승 VI2는 상승 VI 안의 '2차 도달' 종목이라 두 메뉴로 따로 셉니다 · 각 메뉴가 갱신될 때 같이 바뀜(앱 반영은 약 5~10분 간격) · 여러 메뉴에 겹쳤다고 앞으로 오른다는 뜻은 아닙니다 · 참고용</div>`;
   const sg = v => v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
   document.getElementById("list-common").innerHTML = !top.length ? `<div class="empty-row">지금은 2개 이상 메뉴에 함께 오른 종목이 없습니다.</div>`
     : `<div class="vi-scroll"><table class="vi-table"><tr><th>순위</th><th>업종</th><th>종목명</th><th>현재가</th><th>등락률</th><th>선정 메뉴</th></tr>${
@@ -1543,107 +1529,6 @@ entryGuideNote();
         <td>${pc}</td><td class="d-only">${beTxt}</td></tr>`; }).join("")}</table></div>${how}${dip}`;
 })();
 
-function limitTable(items) {
-  return `<table class="limit-table"><tr><th>순위</th><th>종목</th><th>진입확률</th><th>종가</th></tr>${
-    items.map((x, i) => `<tr><td>${i + 1}</td><td>${x.name}<span class="lt-code">${x.code}</span>${obTag(x.code)}</td><td class="lt-p">${x.prob}%</td><td>${fmtPrice(x.close)}</td></tr>`).join("")}</table>`;
-}
-
-setTimeout(function renderLimit() {  // CHART_DATA(뒤쪽 const) 초기화 이후 실행
-  const L = DATA.limitup;
-  const list = document.getElementById("list-limit");
-  if (!L || !L.items) {
-    list.innerHTML = `<div class="empty-row">오늘은 상한가 후보 집계가 없습니다.</div>`;
-    return;
-  }
-  const md = d => (d || "").slice(5).replace("-", "/");
-  document.getElementById("count-limit").textContent = `${L.items.length}종목`;
-  document.getElementById("limit-meta").textContent =
-    `${md(L.date)} 마감 기준 · 검증(${md(L.holdoutFrom)}~): 날짜별 상위 20종목 중 ${L.holdoutTop20Hit}%가 실제 진입(평균 종목 ${L.holdoutBase}%)${L.holdoutTop5Hit != null ? ` — 그중 상위 5종목 ${L.holdoutTop5Hit}% · 6~20위 ${L.holdoutRestHit}% (적중은 상위에 몰림: 상위 5를 먼저 보세요)` : ""} · 전일 거래량 ${(L.minVolume || 500000) / 10000}만주 초과 종목 중에서 선정(2026-10-27 50만→10만주: 50만주 기준 밖에 1년 상한가의 57%가 있었음)`;
-  const R = L.review;
-  document.getElementById("limit-review").innerHTML = R
-    ? `<div class="money-stats">어제 후보(${md(R.pickDate)} 마감 기준) 채점 — ${md(R.checkDate)} 장중 상한가 진입 <b>${R.hits.length}/${R.n}종목</b>${
-        R.hits.length ? ": " + R.hits.map(h => `${h.name}${h.closedAtLimit ? "(상한가 마감)" : "(진입 후 이탈)"}`).join(", ") : ""}</div>`
-    : "";
-  const RS = L.result;
-  const pct = v => v == null ? "" : `<td class="${v > 0 ? "up" : v < 0 ? "dn" : ""}">${v > 0 ? "+" : ""}${v}%</td>`;
-  const BT = L.backtest;
-  const btLine = BT ? (BT.ohMean != null
-    ? `<div class="money-stats">백테스트(최근 ${BT.days}거래일, 날짜별 상위 20 · <b>시가 매수→당일 고가 매도</b>): 평균 <b>+${BT.ohMean}%</b> · 중앙값 +${BT.ohMedian}% · +5% 이상 ${BT.ohGe5}% · +10% 이상 ${BT.ohGe10}% <span style="color:var(--text-dim)">(고가 매도는 최선 시점 가정)</span></div>`
-    : `<div class="money-stats">백테스트(최근 ${BT.days}거래일, 날짜별 상위 20 · 시가 매수→종가): 평균 <b>${BT.ocMean > 0 ? "+" : ""}${BT.ocMean}%</b> · 플러스 종목 ${BT.winPct}% · 플러스 날 ${BT.dayWinPct}%</div>`) : "";
-  // 2026-10-22 사용자 요청: 상한가 후보 표도 상승 VI 표 형태(순위·업종·종목명·시가·고가·종가·시가 대비 고가/종가) + 검색·유형 필터
-  const won = n => n == null ? "확인 대기" : `${Number(n).toLocaleString("ko-KR")}원`;
-  const sg2 = v => v == null ? "확인 대기" : `${v > 0 ? "+" : ""}${Number(v).toFixed(2)}%`;
-  const colr = v => v == null ? "" : v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
-  const sum = S => S ? `평균 시가 대비 고가 <b style="${colr(S.ohMean)}">${sg2(S.ohMean)}</b> · 시가 대비 종가 <b style="${colr(S.ocMean)}">${sg2(S.ocMean)}</b> · 종가 플러스 ${S.win}/${S.n} · 상한가 터치 ${S.touched}` : "";
-  const nameCell = (x, sub, ob, rk, grp) => `<td class="vt-n"><span style="${x.touched ? "color:var(--red);font-weight:700" : ""}"><span class="p-only">${rk}. </span>${x.name}</span>${
-    x.touched ? ` <span class="vt-tag" style="color:var(--red);border:1px solid var(--red);font-weight:700">상한가 터치</span>` : ""}<span class="vt-sub">${x.code}${sub ? " · " + sub : ""}${ob ? obTag(x.code) : ""}</span><span class="vt-sub p-only">${grp}</span></td>`;
-  const resTable = (rows, firstLabel) => `<div class="vi-scroll"><table class="vi-table"><tr><th class="p-hide">순위</th><th class="p-hide">${firstLabel}</th><th>종목명</th><th>시가</th><th class="p-hide">고가</th><th class="p-hide">종가</th><th>시가 대비 고가</th><th>시가 대비 종가</th></tr>${
-    rows.map((x, i) => `<tr><td class="vt-r p-hide">${i + 1}</td><td class="vt-s p-hide">${firstLabel === "테마" ? x.theme : (x.sector || "미확인")}</td>${nameCell(x, firstLabel === "테마" ? x.sector : "", false, i + 1, firstLabel === "테마" ? x.theme : (x.sector || "미확인"))}
-      <td>${won(x.open)}<span class="vt-sub p-only">고가 ${won(x.high)}<br>종가 ${won(x.close)}</span></td><td class="p-hide">${won(x.high)}</td><td class="p-hide">${won(x.close)}</td>
-      <td style="font-weight:700;${colr(x.ohPct)}">${sg2(x.ohPct)}</td><td style="font-weight:700;${colr(x.ocPct)}">${sg2(x.ocPct)}</td></tr>`).join("")}</table></div>`;
-  const pickTable = (rows, firstLabel, extraTh, extraTd) => `<div class="vi-scroll"><table class="vi-table" style="min-width:520px"><tr><th class="p-hide">순위</th><th class="p-hide">${firstLabel}</th><th>종목명</th>${extraTh}</tr>${
-    rows.map((x, i) => `<tr><td class="vt-r p-hide">${i + 1}</td><td class="vt-s p-hide">${firstLabel === "테마" ? x.theme : (x.sector || "미확인")}</td>${nameCell(x, firstLabel === "테마" ? x.sector : "", true, i + 1, firstLabel === "테마" ? x.theme : (x.sector || "미확인"))}${extraTd(x)}</tr>`).join("")}</table></div>`;
-
-  // 검색·유형 필터(상승 VI 표와 같은 모양)
-  const groups = [];
-  const O = L.open, A = L.openAll, today = DATA_HOT_SECTORS.date;
-  // 2026-11-11 사용자 요청('분석 내용 최대 반영'): 09:01 장 시작 1차 VI 후보 상위 10 — 매매 규칙은 관찰용(검증 수익 얇음), 매일 모의 결과 누적
-  // 2026-11-11 사용자 요청: 장 초반 복합 후보(관찰용) — 09:06까지 정보(종목 패턴·미국·선물·유가·금리·공시·뉴스) → 09:09 매수 → 10:00 전 매도
-  const EP = DATA.earlyPick;
-  if (EP && EP.items && EP.items.length && EP.date === today) {
-    const W = EP.wf || {}, RC = EP.record, MC = EP.macro || {};
-    const sg = v => v == null ? "—" : `${v > 0 ? "+" : ""}${v}%`;
-    groups.push({ key: "earlyPick", label: "오늘 장 초반 복합 후보(관찰용)",
-      head: `<b>장 초반 복합 후보 상위 ${EP.items.length}</b> · ${EP.asOfTime} 시세 기준 · <b style="color:${EP.strong ? "var(--red)" : "var(--text-dim)"}">${EP.strong ? "오늘은 '매매일'(예측 강함)" : "오늘은 '관망일'(예측 약함)"}</b> — 최고 예측 ${EP.maxPred}%(기준 ${EP.thr}%) · 나스닥 선물 ${sg(MC.nqPre)} · 유가 ${sg(MC.oilL1)} · 미국 10년 금리 ${MC.tnxL1 == null ? "—" : (MC.tnxL1 > 0 ? "+" : "") + MC.tnxL1 + "bp"}
-        <br><span style="color:var(--text-dim)">관찰용 규칙: 09:09 매수 → 10:00 전 매도(비용 0.25% 차감). 전진 검증 ${W.days}일: 상위 5 평균 ${sg(W.all)}(앞 ${sg((W.allHalves || [])[0])} · 뒤 ${sg((W.allHalves || [])[1])}), 매매일만 ${sg(W.strong)}(앞 ${sg((W.strongHalves || [])[0])} · 뒤 ${sg((W.strongHalves || [])[1])}), 시장 평균 ${sg(W.market)} — 기간 짧고 최근 수익 얇아 실전 추천 아님</span>${
-        RC ? `<br>실제 기록(${md(RC.from)}~${md(RC.to)}, ${RC.days}거래일): 하루 평균 <b style="${colr(RC.avg)}">${sg(RC.avg)}</b> · 플러스 날 ${RC.win}% · 매매일 ${RC.strongDays}일 평균 ${sg(RC.strongAvg)}` : "<br>실제 기록: 오늘 밤부터 누적"}`,
-      rows: EP.items, render: r => pickTable(r, "업종", "<th>예측(10시까지)</th><th>시초가 갭</th><th>시가 대비</th><th>현재가</th>", x => `<td style="font-weight:700;${colr(x.pred)}">${sg(x.pred)}</td><td style="${colr(x.gap)}">${sg2(x.gap)}</td><td style="${colr(x.ro)}">${sg2(x.ro)}</td><td>${won(x.price)}<span class="vt-sub">${x.news ? "장 전 뉴스 " + x.news + "건" : ""}${x.dart ? " · 공시 " + x.dart + "건" : ""}</span></td>`) });
-  }
-  const OV = DATA.openVi;
-  if (OV && OV.items && OV.items.length && OV.date === today) {
-    const W = OV.wf || {}, RL = OV.rule || {}, RC = OV.record;
-    const sg = v => `${v > 0 ? "+" : ""}${v}%`;
-    groups.push({ key: "openVi", label: "오늘 장 시작 1차 VI 후보(관찰용)",
-      head: `<b>장 시작 1차 VI 후보 상위 ${OV.items.length}</b> · ${OV.asOfTime} 기준 · 오늘 안에 시가 +10%(1차 VI)에 닿을 확률(전일 특성 + 시초가 갭, 갭 8% 미만 ${OV.n}종목 중) — 1년 검증: 상위 10의 <b>${W.top10}%</b>가 1차 VI(전반 ${(W.top10Halves || [])[0]}% · 후반 ${(W.top10Halves || [])[1]}%, 평균 종목 ${W.base}%)
-        <br><span style="color:var(--text-dim)">관찰용 규칙: 시가 +${RL.entryPct}% 도달 시 매수 → 익절 ${RL.takeProfit} · 손절 매수가 −${RL.stopPct}% · 아니면 종가(비용 ${RL.cost}% 차감). 1년 검증 상위 20 평균 ${sg(W.rule20)}(전반 ${sg((W.rule20Halves || [])[0])} · 후반 ${sg((W.rule20Halves || [])[1])}) — 수익이 얇아 실전 추천 아님</span>${
-        RC ? `<br>실제 기록(${md(RC.from)}~${md(RC.to)}, ${RC.days}거래일): 후보 ${RC.picks} 중 1차 VI ${RC.vi}% · 규칙 매수 ${RC.entries}회 평균 <b style="${colr(RC.avgRet)}">${RC.avgRet == null ? "—" : sg(RC.avgRet)}</b> · 승률 ${RC.win ?? "—"}%` : "<br>실제 기록: 오늘 밤부터 누적"}`,
-      rows: OV.items, render: r => pickTable(r, "업종", "<th>시초가 갭</th><th>1차 VI 확률</th><th>매수(+3%)</th><th>익절 · 손절</th>", x => `<td style="font-weight:700;${colr(x.gapPct)}">${sg2(x.gapPct)}</td><td style="font-weight:700;color:var(--red)">${x.prob}%</td><td>${won(x.buy)}</td><td>${won(x.takeProfit)}<span class="vt-sub">손절 ${won(x.stop)}</span></td>`) });
-  }
-  if (O && O.items && O.items.length && O.date === today) groups.push({ key: "open", label: "오늘 09:10 강한 테마",
-    head: `<b>장 시작 강한 테마 ${O.items.length}개 × 2종목</b> · ${O.asOfTime} 기준(0659 등락률순) · 종목 = 오늘 등락률 + 진입확률(${md(O.probDate)} 마감 모델)`,
-    rows: O.items.flatMap(t => t.stocks.map(x => Object.assign({ theme: `${t.theme} ${t.themeChangePct > 0 ? "+" : ""}${t.themeChangePct}%` }, x))),
-    render: r => pickTable(r, "테마", "<th>09:10 등락률</th><th>진입확률</th>", x => `<td style="font-weight:700;${colr(x.changePct)}">${sg2(x.changePct)}</td><td>${x.prob}%</td>`) });
-  if (A && A.items && A.items.length && A.date === today) groups.push({ key: "openAll", label: "오늘 장 시작 전체 상위",
-    head: `<b>장 시작 전체 상위 ${A.items.length}</b> · ${A.asOfTime} 기준 · 아침 특성 + 테마 열기 + 시초가${A.early ? ` + <b>09:10까지 흐름</b>(전체 ${A.n}종목, 상한가 출발·이미 상한가 닿은 ${A.touched}종목 제외 · 검증 100거래일: 상위 20 적중 9.2→16.3%, 상위 5 15→30%)` : `(전체 ${A.n}종목, 상한가 출발 제외)`}`,
-    rows: A.items, render: r => pickTable(r, "업종", `<th>시초가 갭</th>${A.early ? "<th>09:10 등락</th>" : ""}<th>확률</th>`, x => `<td style="font-weight:700;${colr(x.gapPct)}">${sg2(x.gapPct)}</td>${A.early ? `<td style="font-weight:700;${colr(x.nowPct)}">${sg2(x.nowPct)}</td>` : ""}<td style="font-weight:700;color:var(--red)${A.items.indexOf(x) < 5 ? ";font-size:21px" : ""}">${x.prob}%${A.items.indexOf(x) < 5 ? `<span class="v2-tag">상위 5</span>` : ""}</td>`) });
-  if (RS && RS.items && RS.items.length) {
-    groups.push({ key: "res", label: `${md(RS.date)} 결과 · 전일 마감 후보`, head: `<b>${md(RS.date)} 결과 · ${md(RS.pickDate)} 마감 기준 후보 ${RS.items.length}</b> — ${sum(RS.summary)}`, rows: RS.items, render: r => resTable(r, "업종") });
-    if (RS.openAll && RS.openAll.length) groups.push({ key: "resAll", label: `${md(RS.date)} 결과 · 장 시작 전체`, head: `<b>${md(RS.date)} 결과 · 장 시작 전체 상위</b> — ${sum(RS.openAllSummary)}`, rows: RS.openAll, render: r => resTable(r, "업종") });
-    if (RS.open && RS.open.length) groups.push({ key: "resOpen", label: `${md(RS.date)} 결과 · 09:10 강한 테마`, head: `<b>${md(RS.date)} 결과 · 09:10 강한 테마</b> — ${sum(RS.openSummary)}`, rows: RS.open, render: r => resTable(r, "테마") });
-  }
-  groups.push({ key: "next", label: `${md(L.date)} 마감 기준 다음 거래일 후보`, head: `<b>${md(L.date)} 마감 기준 다음 거래일 후보 ${L.items.length}</b>`,
-    rows: L.items, render: r => pickTable(r, "업종", "<th>진입확률</th><th>종가</th>", x => `<td style="font-weight:700;color:var(--red)${L.items.indexOf(x) < 5 ? ";font-size:21px" : ""}">${x.prob}%${L.items.indexOf(x) < 5 ? `<span class="v2-tag">상위 5</span>` : ""}</td><td>${won(x.close)}</td>`) });
-
-  document.getElementById("open-meta").innerHTML = `<div class="vi-filter"><input id="lu-q" type="search" placeholder="종목명 또는 종목코드"><select id="lu-type"><option value="">유형 전체</option>${
-    groups.map(g => `<option value="${g.key}">${g.label}</option>`).join("")}</select></div><div class="vi-sum" id="lu-sum"></div>
-    <div class="vi-note">시가 = 09:00 시초가 · 종가 = 다음 날 아침 확정 일봉 · '상한가 터치' = 장중 상한가 도달 · 시가 대비 고가는 최고점 매도 가정</div>`;
-  ["list-openall", "openall-meta"].forEach(id => document.getElementById(id).innerHTML = "");
-  const q = document.getElementById("lu-q"), ty = document.getElementById("lu-type");
-  function drawLimit() {
-    const k = q.value.trim().toLowerCase(), t = ty.value;
-    let shown = 0;
-    document.getElementById("list-open").innerHTML = groups.filter(g => !t || g.key === t).map(g => {
-      const rows = g.rows.filter(x => !k || x.name.toLowerCase().includes(k) || x.code.includes(k));
-      shown += rows.length;
-      return rows.length ? `<div class="money-stats" style="margin-top:14px">${g.head}</div>${g.render(rows)}` : "";
-    }).join("") || `<div class="empty-row">검색 결과가 없습니다.</div>`;
-    document.getElementById("lu-sum").innerHTML = `표 ${groups.length}개 · 표시 <b>${shown}종목</b>${k || t ? " (검색·유형 적용)" : ""}`;
-  }
-  q.addEventListener("input", drawLimit); ty.addEventListener("change", drawLimit);
-  drawLimit();
-  list.innerHTML = btLine;
-}, 0);
-
 function fillSection(listId, countId, items, emptyMsg, renderFn, tierClass) {
   document.getElementById(countId).textContent = items.length ? `${items.length}개` : "";
   const target = document.getElementById(listId);
@@ -1657,12 +1542,15 @@ const _bl = DATA.breakoutLive;
 const _blNote = _bl && _bl.removed && _bl.removed.length
   ? ` · ${_bl.final ? "종가" : _bl.asOf} 기준 240일선 이탈 음봉 ${_bl.removed.length}개 제외(${_bl.removed.map(x => x.name).join(", ")})`
   : "";
+// 2026-11-17 사용자 요청: 현재가 1,000원 이하 제외(breakout_live_filter lowPrice)
+const _blLow = _bl && _bl.lowPrice && _bl.lowPrice.length
+  ? ` · 현재가 1,000원 이하 ${_bl.lowPrice.length}개 제외(${_bl.lowPrice.map(x => x.name).join(", ")})` : "";
 const _ugNote = (() => {
   const g = (DATA.usLink || {}).gap;
   return g && g.date === new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)
     ? ` · 오늘 시장 평균 시초가 ${g.mkt > 0 ? "+" : ""}${g.mkt}% — 시장보다 +1% 이상 높게 출발한 종목은 '매수 보류'(5년 검증 당일 −0.7%·4일 −0.8% 이상 약함)` : "";
 })();
-document.getElementById("meta-line").textContent = `기준일 ${DATA.date} · 코스피·코스닥 전종목 스캔 · 오늘 돌파 ${DATA.total}개${_blNote}${_ugNote}`;
+document.getElementById("meta-line").textContent = `기준일 ${DATA.date} · 코스피·코스닥 전종목 스캔 · 오늘 돌파 ${DATA.total}개${_blNote}${_blLow}${_ugNote}`;
 document.getElementById("kpi-total").textContent = DATA.total;
 document.getElementById("kpi-3").textContent = DATA.tier3.length;
 document.getElementById("kpi-2").textContent = DATA.tier2.length;
@@ -1841,8 +1729,8 @@ function scIntraday(S, sg) {
       <td>${m.expect != null ? sg(m.expect) : "—"}</td><td style="font-weight:700;color:${vc[m.verdict]}">${m.verdict}</td></tr>`;
   }).join("");
   body.innerHTML = `<div class="vi-scroll"><table class="vi-table"><tr><th>메뉴</th><th>매도</th><th>건수</th><th>평균(비용 뒤)</th><th>시장 대비</th><th>백테스트 기대</th><th>판정</th></tr>${rows}</table></div>
-    <div class="vi-note"><b>채점 방법</b> · 앱에 실제로 올라온 아침 목록(07:30 발행본)을 그대로 복원 — 사후 재스캔 아님 · 다음 거래일 <b>시가 매수</b>(임박 스캐너는 발행일 시가) → 메뉴별 매도 시점(오늘 돌파·임박·변동성·스윙 = 4거래일째 종가, 상한가 후보 = 당일 종가) · 상승 VI = 그날 <b>첫 VI 발동가 매수 → 다음 날 시가</b>, 목록에서 −5%로 숨겨진 종목도 포함(빼면 평균 +2.5%로 부풀려짐) · 비용 ${S.cost}% 차감 · 시장 대비 = 같은 기간 거래대금 5억 원 이상 종목 평균과의 차이.
-    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 장중 메뉴(등락률 순위·돈 몰리는 곳·체결강도·09:10 상한가 후보·공통종목)는 앱에 처음 보인 시각의 가격으로 채점(10/19~11/5는 발행 이력에서 복원). 매일 아침 자동 갱신 · 참고용.</div>
+    <div class="vi-note"><b>채점 방법</b> · 앱에 실제로 올라온 아침 목록(07:30 발행본)을 그대로 복원 — 사후 재스캔 아님 · 다음 거래일 <b>시가 매수</b>(임박 스캐너는 발행일 시가) → 메뉴별 매도 시점(오늘 돌파·임박·변동성·스윙 = 4거래일째 종가) · 상승 VI = 그날 <b>첫 VI 발동가 매수 → 다음 날 시가</b>, 목록에서 −5%로 숨겨진 종목도 포함(빼면 평균 +2.5%로 부풀려짐) · 비용 ${S.cost}% 차감 · 시장 대비 = 같은 기간 거래대금 5억 원 이상 종목 평균과의 차이.
+    <br><b>판정</b> · ${S.minN}건 미만 '표본 부족' · 시장 대비 평균이 마이너스이고 t ≤ −1이면 <span style="color:var(--blue);font-weight:700">신뢰 낮음</span> · 플러스이고 t ≥ 1이면 <span style="color:var(--red);font-weight:700">실전 확인</span> · 그 밖 '판단 보류'. 장중 메뉴(등락률 순위·돈 몰리는 곳·체결강도·공통종목)는 앱에 처음 보인 시각의 가격으로 채점(10/19~11/5는 발행 이력에서 복원). 매일 아침 자동 갱신 · 참고용.</div>
     ${scIntraday(S, sg)}
     ${S.rules ? `<div class="sec-head" style="margin-top:18px"><h2>규칙 실전 점검 — 앱이 붙인 경고가 실제로 손실을 피했나</h2></div>
     <div class="vi-scroll"><table class="vi-table"><tr><th>규칙</th><th>기준</th><th>표시된 종목</th><th>나머지</th><th>효과</th><th>판정</th></tr>${
@@ -1853,7 +1741,7 @@ function scIntraday(S, sg) {
     <div class="vi-note">효과 = 나머지 평균 − 표시된 종목 평균(+면 경고가 손실을 피함) · 양쪽 20건 이상부터 판정 · '효과 반대 — 재검토'가 나오면 그 경고 규칙을 다시 검증합니다.</div>` : ""}`;
   // 2026-11-06 사용자 요청 '매일 신뢰도를 높여 종목선정에 적용': 각 메뉴 머리에 실전 판정 표시(신뢰 낮음은 경고)
   const where = { breakout: "count-breakout", imminent: "count-imm", volatility: "count-vol", swing: "sw-count", pullback: "sw-pb-count",
-    limitup20: "count-limit", vi: "count-vi", strength: "count-strength", hot: "count-hot", money: "count-money" };
+    vi: "count-vi", strength: "count-strength", hot: "count-hot", money: "count-money" };
   Object.entries(where).forEach(([k, id]) => {
     const m = S.menus[k], el = document.getElementById(id), h = el && el.parentElement.querySelector("h2");
     if (!m || !h || m.verdict === "표본 부족") return;
@@ -2177,8 +2065,8 @@ function drawCandles(canvas, candles, padSlots = 0, monthLines = false) {  // pa
     if (st.bt) orig.bt(st.bt);
     (st.charts || []).forEach(t => { if (document.getElementById("chart-" + t)) oc(t); });
   } catch (e) { /* 예전 저장값이 맞지 않으면 기본 화면 */ }
-  // 검색어·유형 선택(상승 VI 표, 상한가 후보 표): 값 되살린 뒤 원래 그리기 이벤트를 불러 표에 반영
-  for (const id of ["vi-q", "vi-type", "lu-q", "lu-type"]) {
+  // 검색어·유형 선택(상승 VI 표): 값 되살린 뒤 원래 그리기 이벤트를 불러 표에 반영
+  for (const id of ["vi-q", "vi-type"]) {
     const el = document.getElementById(id);
     if (!el) continue;
     const v = (st.inputs || {})[id];
