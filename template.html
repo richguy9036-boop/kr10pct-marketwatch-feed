@@ -298,17 +298,20 @@
   /* 2026-11-10 사용자 요청: 거래량 30만주 이하 상승 VI 종목은 숨기지 않고 회색 */
   .vi-table tr.vt-low td:not(:last-child), .vi-table tr.vt-low td:not(:last-child) * { color: #8a8f98 !important; }
   .vt-lowtag { color: #8a8f98; border: 1px solid #8a8f98; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
-  .tmap { position: relative; width: 100%; height: 520px; border-radius: 10px; overflow: hidden; background: var(--surface-2); margin: 4px 0 10px; }
+  .tmap { position: relative; width: 100%; height: 560px; border-radius: 10px; overflow: hidden; background: var(--surface-2); margin: 4px 0 10px; }
   .tmap .tm { position: absolute; box-sizing: border-box; border: 1.5px solid var(--bg); padding: 4px 6px; overflow: hidden; cursor: pointer; color: #fff; line-height: 1.2; }
   .tmap .tm, .tmap .tm b, .tmap .tm span { color: #fff !important; -webkit-text-stroke: 0 !important; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
   .tmap .tm.sel { outline: 3px solid var(--text); outline-offset: -3px; z-index: 2; }
   .tmap .tm b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tmap .tm span.tm-pct { font-size: 17px; font-weight: 800; }
   .tmap .tm span { display: block; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
-  .tm-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
-  .tm-list button { font: inherit; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
-  .tm-list button.sel { border-color: var(--text); font-weight: 700; }
-  @media (max-width: 600px) { .tmap { height: 460px; } .tmap .tm b { font-size: 12.5px; } .tmap .tm span { font-size: 11.5px; } }
+  .money-wrap { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 14px; align-items: start; }
+  .money-wrap #list-flows .sec-head { margin-top: 4px !important; }
+  .money-wrap #list-flows .vi-table th, .money-wrap #list-flows .vi-table td { padding: 5px 6px; font-size: 14.5px; white-space: nowrap; }
+  .money-wrap #list-flows .vi-table td.vt-n { white-space: normal; }
+  .money-wrap #list-flows .money-stats { font-size: 14px; }
+  @media (max-width: 900px) { .money-wrap { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+  @media (max-width: 600px) { .tmap { height: 400px; } .tmap .tm b { font-size: 12.5px; } .tmap .tm span { font-size: 11.5px; } }
   .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
   .open-table { width: 100%; border-collapse: collapse; font-size: 19.5px; margin: 6px 0 14px; }
@@ -757,8 +760,8 @@
     <!-- 2026-11-18 사용자 요청: 종목 선정 대신 돈이 몰리는 업종 사각형 지도, 업종을 누르면 종목 -->
     <div class="sec-head"><h2>돈 몰리는 업종 — 거래대금 지도</h2><span class="count num" id="count-money"></span></div>
     <div class="money-stats" id="money-asof"></div>
-    <div id="list-money"></div>
-    <div id="list-flows"></div>
+    <!-- 2026-11-18 사용자 요청: 업종 버튼 목록 삭제, 지도와 종목을 한 화면에(넓은 화면은 옆으로, 휴대폰은 위아래) -->
+    <div class="money-wrap"><div id="list-money"></div><div id="list-flows"></div></div>
   </section>
 
   <section id="hot-view-chg">
@@ -1707,12 +1710,12 @@ function moneyDetail(key) {
   const m = DATA_HOT_SECTORS.money, x = (m.sectors || []).find(s => s.key === key), el = document.getElementById("list-flows");
   moneySel = key;
   try { localStorage.setItem("mw-money-sel", key); } catch (e) { /* 저장 불가 */ }
-  document.querySelectorAll("#list-money .tm, #list-money .tm-list button").forEach(e => e.classList.toggle("sel", e.dataset.key === key));
+  document.querySelectorAll("#list-money .tm").forEach(e => e.classList.toggle("sel", e.dataset.key === key));
   if (!x) { el.innerHTML = ""; return; }
   const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`, col = v => v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
   const fl = v => v == null ? "—" : `<span style="${col(v)}">${v > 0 ? "+" : ""}${v.toLocaleString("ko-KR")}</span>`;
   // 2026-11-18 사용자 요청: 상승률 높은 종목을 맨 위로(거래대금 상위 15 안에서 등락률 순)
-  const rows = [...(x.stocks || [])].sort((a, b) => b.changePct - a.changePct).map((s, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-n"><b>${s.name}</b> <span style="color:var(--text-dim);font-size:13px">${s.code}</span></td>
+  const rows = [...(x.stocks || [])].sort((a, b) => b.changePct - a.changePct).map((s, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-n"><b>${s.name}</b></td>
     <td>${Math.round(s.close).toLocaleString("ko-KR")}</td><td style="${col(s.changePct)}">${sg(s.changePct)}</td><td>${s.valueEok.toLocaleString("ko-KR")}억</td></tr>`).join("");
   el.innerHTML = `<div class="sec-head" style="margin-top:6px"><h2>${x.name} <span style="font-size:14px;color:var(--text-dim)">${x.market}</span></h2><span class="count num">${x.stocks.length}종목</span></div>
     <div class="money-stats">거래대금 <b>${x.valueEok.toLocaleString("ko-KR")}억</b>(전체 업종 중 ${x.sharePct}%) · 업종 지수 <b style="${col(x.changePct)}">${sg(x.changePct)}</b> · 상승 ${x.rising} / 하락 ${x.falling}(전체 ${x.count}종목)${x.foreign != null ? ` · 순매수 외국인 ${fl(x.foreign)} · 기관 ${fl(x.inst)}` : ""}</div>
@@ -1743,8 +1746,7 @@ function moneyDetail(key) {
     return `<div class="tm" data-key="${s.key}" onclick="moneyDetail('${s.key}')" style="left:${r.x / 10}%;top:${r.y / 10}%;width:${r.w / 10}%;height:${r.h / 10}%;background:${tmColor(s.changePct)}">`
       + (mid ? `<b>${s.name}</b>` : "") + (big ? `<span>${s.market} · ${s.valueEok.toLocaleString("ko-KR")}억 · ${s.sharePct}%</span><span class="tm-pct">${tmPct(s.changePct)}</span>` : mid ? `<span>${s.market.slice(0, 2)} ${tmPct(s.changePct)}</span>` : "")
       + `</div>`; }).join("");
-  const chips = S.map((s, i) => `<button data-key="${s.key}" onclick="moneyDetail('${s.key}')">${i + 1}. ${s.name}(${s.market}) ${s.valueEok.toLocaleString("ko-KR")}억 <span style="color:${s.changePct > 0 ? "var(--red)" : s.changePct < 0 ? "var(--blue)" : "inherit"}">${s.changePct > 0 ? "+" : ""}${s.changePct.toFixed(2)}%</span></button>`).join("");
-  list.innerHTML = `<div class="tmap">${cells}</div><div class="tm-list">${chips}</div>`;
+  list.innerHTML = `<div class="tmap">${cells}</div>`;
   moneyDetail(moneySel && S.some(s => s.key === moneySel) ? moneySel : S[0].key);
 })();
 document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "마감"
