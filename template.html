@@ -298,7 +298,7 @@
   /* 2026-11-10 사용자 요청: 거래량 30만주 이하 상승 VI 종목은 숨기지 않고 회색 */
   .vi-table tr.vt-low td:not(:last-child), .vi-table tr.vt-low td:not(:last-child) * { color: #8a8f98 !important; }
   .vt-lowtag { color: #8a8f98; border: 1px solid #8a8f98; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
-  .tmap { position: relative; width: 100%; height: 440px; border-radius: 10px; overflow: hidden; background: var(--surface-2); margin: 4px 0 10px; }
+  .tmap { position: relative; width: 100%; height: 520px; border-radius: 10px; overflow: hidden; background: var(--surface-2); margin: 4px 0 10px; }
   .tmap .tm { position: absolute; box-sizing: border-box; border: 1.5px solid var(--bg); padding: 4px 6px; overflow: hidden; cursor: pointer; color: #fff; line-height: 1.2; }
   .tmap .tm, .tmap .tm b, .tmap .tm span { color: #fff !important; -webkit-text-stroke: 0 !important; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
   .tmap .tm.sel { outline: 3px solid var(--text); outline-offset: -3px; z-index: 2; }
@@ -308,7 +308,7 @@
   .tm-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
   .tm-list button { font: inherit; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
   .tm-list button.sel { border-color: var(--text); font-weight: 700; }
-  @media (max-width: 600px) { .tmap { height: 380px; } .tmap .tm b { font-size: 12.5px; } .tmap .tm span { font-size: 11.5px; } }
+  @media (max-width: 600px) { .tmap { height: 460px; } .tmap .tm b { font-size: 12.5px; } .tmap .tm span { font-size: 11.5px; } }
   .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
   .open-table { width: 100%; border-collapse: collapse; font-size: 19.5px; margin: 6px 0 14px; }
@@ -1711,12 +1711,13 @@ function moneyDetail(key) {
   if (!x) { el.innerHTML = ""; return; }
   const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`, col = v => v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
   const fl = v => v == null ? "—" : `<span style="${col(v)}">${v > 0 ? "+" : ""}${v.toLocaleString("ko-KR")}</span>`;
-  const rows = (x.stocks || []).map((s, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-n"><b>${s.name}</b> <span style="color:var(--text-dim);font-size:13px">${s.code}</span></td>
+  // 2026-11-18 사용자 요청: 상승률 높은 종목을 맨 위로(거래대금 상위 15 안에서 등락률 순)
+  const rows = [...(x.stocks || [])].sort((a, b) => b.changePct - a.changePct).map((s, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-n"><b>${s.name}</b> <span style="color:var(--text-dim);font-size:13px">${s.code}</span></td>
     <td>${Math.round(s.close).toLocaleString("ko-KR")}</td><td style="${col(s.changePct)}">${sg(s.changePct)}</td><td>${s.valueEok.toLocaleString("ko-KR")}억</td></tr>`).join("");
   el.innerHTML = `<div class="sec-head" style="margin-top:6px"><h2>${x.name} <span style="font-size:14px;color:var(--text-dim)">${x.market}</span></h2><span class="count num">${x.stocks.length}종목</span></div>
     <div class="money-stats">거래대금 <b>${x.valueEok.toLocaleString("ko-KR")}억</b>(전체 업종 중 ${x.sharePct}%) · 업종 지수 <b style="${col(x.changePct)}">${sg(x.changePct)}</b> · 상승 ${x.rising} / 하락 ${x.falling}(전체 ${x.count}종목)${x.foreign != null ? ` · 순매수 외국인 ${fl(x.foreign)} · 기관 ${fl(x.inst)}` : ""}</div>
     <div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>종목</th><th>현재가</th><th>등락률</th><th>거래대금</th></tr></thead><tbody>${rows || `<tr><td colspan="5" class="vt-n">거래대금 상위 300(시장별) 안에 든 종목이 없습니다.</td></tr>`}</tbody></table></div>
-    <div class="vi-note">이 업종 종목 중 오늘 거래대금이 큰 순서(코스피·코스닥 각각 거래대금 상위 300종목 안, 관리종목·현재가 1,000원 이하 제외) · 선정·추천이 아니라 돈이 어디로 들어오는지 보여 주는 목록입니다.</div>`;
+    <div class="vi-note">이 업종에서 오늘 거래대금이 큰 15종목(코스피·코스닥 각각 거래대금 상위 300종목 안, 관리종목·현재가 1,000원 이하 제외)을 상승률 높은 순으로 · 선정·추천이 아니라 돈이 어디로 들어오는지 보여 주는 목록입니다.</div>`;
 }
 (function renderMoney() {
   const m = DATA_HOT_SECTORS.money;
@@ -1733,10 +1734,11 @@ function moneyDetail(key) {
   const S = m.sectors;
   const asof = m.asOfTime || DATA_HOT_SECTORS.asOfTime;
   document.getElementById("money-asof").innerHTML = `${asof} 기준 · 키움 업종별 거래대금(정규장 KRX, 09:00~15:30 1분마다 계산 · 앱은 새 발행 때 자동 갱신, 마감 뒤 고정) · 오늘 업종 합계 ${m.totalEok.toLocaleString("ko-KR")}억`
-    + `<br>사각형 크기 = 오늘 거래대금 · 색 = 업종 지수 등락률(<b style="color:var(--red)">▲ 빨강 상승</b> / <b style="color:var(--blue)">▼ 파랑 하락</b> / 회색 보합, 진할수록 ±4%까지 큼) · 업종을 누르면 아래에 종목`;
+    + `<br>사각형 크기 = 오늘 거래대금(작은 업종도 보이게 제곱근 배율 — 실제 금액·비중은 사각형 안 숫자) · 색 = 업종 지수 등락률(<b style="color:var(--red)">▲ 빨강 상승</b> / <b style="color:var(--blue)">▼ 파랑 하락</b> / 회색 보합, 진할수록 ±4%까지 큼) · 업종을 누르면 아래에 종목`;
   document.getElementById("count-money").textContent = `업종 ${S.length}개`;
   const W = 1000, H = 1000;
-  const rects = squarify(S.map(s => ({ ...s, v: s.valueEok })), 0, 0, W, H);
+  // 2026-11-18 사용자 요청 '전체적으로 배율 조정해 시인성': 크기 = 거래대금의 제곱근(한 업종이 절반을 차지해 나머지가 안 보이던 문제), 순서는 거래대금 순 그대로
+  const rects = squarify(S.map(s => ({ ...s, v: Math.sqrt(Math.max(s.valueEok, 0)) })), 0, 0, W, H);
   const cells = rects.map(r => { const s = r.item, big = r.w * r.h > 9000 && r.w > 70, mid = r.w * r.h > 3500 && r.w > 50;
     return `<div class="tm" data-key="${s.key}" onclick="moneyDetail('${s.key}')" style="left:${r.x / 10}%;top:${r.y / 10}%;width:${r.w / 10}%;height:${r.h / 10}%;background:${tmColor(s.changePct)}">`
       + (mid ? `<b>${s.name}</b>` : "") + (big ? `<span>${s.market} · ${s.valueEok.toLocaleString("ko-KR")}억 · ${s.sharePct}%</span><span class="tm-pct">${tmPct(s.changePct)}</span>` : mid ? `<span>${s.market.slice(0, 2)} ${tmPct(s.changePct)}</span>` : "")
