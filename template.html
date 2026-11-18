@@ -298,6 +298,17 @@
   /* 2026-11-10 사용자 요청: 거래량 30만주 이하 상승 VI 종목은 숨기지 않고 회색 */
   .vi-table tr.vt-low td:not(:last-child), .vi-table tr.vt-low td:not(:last-child) * { color: #8a8f98 !important; }
   .vt-lowtag { color: #8a8f98; border: 1px solid #8a8f98; } .vt-re { color: var(--amber); border: 1px solid var(--amber); font-weight: 700; }
+  .tmap { position: relative; width: 100%; height: 440px; border-radius: 10px; overflow: hidden; background: var(--surface-2); margin: 4px 0 10px; }
+  .tmap .tm { position: absolute; box-sizing: border-box; border: 1.5px solid var(--bg); padding: 4px 6px; overflow: hidden; cursor: pointer; color: #fff; line-height: 1.2; }
+  .tmap .tm, .tmap .tm b, .tmap .tm span { color: #fff !important; -webkit-text-stroke: 0 !important; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
+  .tmap .tm.sel { outline: 3px solid var(--text); outline-offset: -3px; z-index: 2; }
+  .tmap .tm b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tmap .tm span.tm-pct { font-size: 17px; font-weight: 800; }
+  .tmap .tm span { display: block; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .tm-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .tm-list button { font: inherit; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+  .tm-list button.sel { border-color: var(--text); font-weight: 700; }
+  @media (max-width: 600px) { .tmap { height: 380px; } .tmap .tm b { font-size: 12.5px; } .tmap .tm span { font-size: 11.5px; } }
   .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
   .open-table { width: 100%; border-collapse: collapse; font-size: 19.5px; margin: 6px 0 14px; }
@@ -693,7 +704,7 @@
     <button id="seg-vi2" onclick="switchHotView('vi2')">상승 VI2</button>
     <button id="seg-strength" onclick="switchHotView('strength')">체결강도</button>
     <button id="seg-chg" class="active" onclick="switchHotView('chg')">등락률 순위</button>
-    <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 곳</button>
+    <button id="seg-money" onclick="switchHotView('money')">돈 몰리는 업종</button>
   </div>
 
   <section id="hot-view-common" style="display:none">
@@ -743,11 +754,10 @@
 
 
   <section id="hot-view-money" style="display:none">
-    <div class="sec-head"><h2>돈 몰리는 곳 — 거래량이 급증한 테마</h2><span class="count num" id="count-money"></span></div>
+    <!-- 2026-11-18 사용자 요청: 종목 선정 대신 돈이 몰리는 업종 사각형 지도, 업종을 누르면 종목 -->
+    <div class="sec-head"><h2>돈 몰리는 업종 — 거래대금 지도</h2><span class="count num" id="count-money"></span></div>
     <div class="money-stats" id="money-asof"></div>
-    <div class="money-stats entry-guide-note"></div>
     <div id="list-money"></div>
-    <div class="sec-head" style="margin-top:22px"><h2>외국인·기관 순매수 업종</h2></div>
     <div id="list-flows"></div>
   </section>
 
@@ -1662,31 +1672,78 @@ document.getElementById("count-hot").textContent = DATA_HOT_SECTORS.items.length
 document.getElementById("list-hot").innerHTML = DATA_HOT_SECTORS.items.length
   ? DATA_HOT_SECTORS.items.map(hotThemeGroup).join("")
   : `<div class="empty-row">오늘은 데이터가 없습니다.</div>`;
+// 2026-11-18 사용자 요청: '돈 몰리는 곳' = 종목 선정 없이 돈이 몰리는 업종 사각형 지도(크기 = 오늘 거래대금, 색 = 업종 등락률), 업종을 누르면 종목
+function squarify(items, x, y, w, h) {
+  // items: [{v}] 큰 순 · 반환 [{item, x, y, w, h}] (Bruls 외 squarified treemap)
+  const out = [], total = items.reduce((a, b) => a + b.v, 0);
+  if (!total) return out;
+  let rest = items.slice(), rx = x, ry = y, rw = w, rh = h, rv = total;
+  const worst = (row, side, scale) => { const s = row.reduce((a, b) => a + b.v, 0) * scale; let m = 0;
+    for (const r of row) { const a = r.v * scale, q = Math.max(side * side * a / (s * s), (s * s) / (side * side * a)); if (q > m) m = q; } return m; };
+  while (rest.length) {
+    const scale = (rw * rh) / rv, side = Math.min(rw, rh);
+    let row = [rest[0]], k = 1;
+    while (k < rest.length && worst(row.concat([rest[k]]), side, scale) <= worst(row, side, scale)) { row.push(rest[k]); k++; }
+    const rs = row.reduce((a, b) => a + b.v, 0), thick = rs * scale / side;
+    let off = 0;
+    for (const r of row) { const len = r.v * scale / thick;
+      if (rw >= rh) out.push({ item: r, x: rx, y: ry + off, w: thick, h: len }); else out.push({ item: r, x: rx + off, y: ry, w: len, h: thick });
+      off += len; }
+    if (rw >= rh) { rx += thick; rw -= thick; } else { ry += thick; rh -= thick; }
+    rv -= rs; rest = rest.slice(k);
+  }
+  return out;
+}
+function tmColor(c) {
+  // 상승 빨강 · 하락 파랑(보합 ±0.1% 안 회색), 등락 클수록 진하게(±4%에서 가장 진함)
+  if (Math.abs(c) < 0.1) return "#8a8d94";
+  const t = Math.min(1, Math.abs(c) / 4);
+  const lo = c > 0 ? [240, 128, 128] : [128, 170, 240], hi = c > 0 ? [190, 18, 30] : [20, 70, 190];
+  return `rgb(${lo.map((v, i) => Math.round(v + (hi[i] - v) * t)).join(",")})`;
+}
+const tmPct = c => `${c > 0 ? "▲" : c < 0 ? "▼" : ""}${Math.abs(c).toFixed(2)}%`;
+let moneySel = (() => { try { return localStorage.getItem("mw-money-sel"); } catch (e) { return null; } })();
+function moneyDetail(key) {
+  const m = DATA_HOT_SECTORS.money, x = (m.sectors || []).find(s => s.key === key), el = document.getElementById("list-flows");
+  moneySel = key;
+  try { localStorage.setItem("mw-money-sel", key); } catch (e) { /* 저장 불가 */ }
+  document.querySelectorAll("#list-money .tm, #list-money .tm-list button").forEach(e => e.classList.toggle("sel", e.dataset.key === key));
+  if (!x) { el.innerHTML = ""; return; }
+  const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`, col = v => v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
+  const fl = v => v == null ? "—" : `<span style="${col(v)}">${v > 0 ? "+" : ""}${v.toLocaleString("ko-KR")}</span>`;
+  const rows = (x.stocks || []).map((s, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-n"><b>${s.name}</b> <span style="color:var(--text-dim);font-size:13px">${s.code}</span></td>
+    <td>${Math.round(s.close).toLocaleString("ko-KR")}</td><td style="${col(s.changePct)}">${sg(s.changePct)}</td><td>${s.valueEok.toLocaleString("ko-KR")}억</td></tr>`).join("");
+  el.innerHTML = `<div class="sec-head" style="margin-top:6px"><h2>${x.name} <span style="font-size:14px;color:var(--text-dim)">${x.market}</span></h2><span class="count num">${x.stocks.length}종목</span></div>
+    <div class="money-stats">거래대금 <b>${x.valueEok.toLocaleString("ko-KR")}억</b>(전체 업종 중 ${x.sharePct}%) · 업종 지수 <b style="${col(x.changePct)}">${sg(x.changePct)}</b> · 상승 ${x.rising} / 하락 ${x.falling}(전체 ${x.count}종목)${x.foreign != null ? ` · 순매수 외국인 ${fl(x.foreign)} · 기관 ${fl(x.inst)}` : ""}</div>
+    <div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>종목</th><th>현재가</th><th>등락률</th><th>거래대금</th></tr></thead><tbody>${rows || `<tr><td colspan="5" class="vt-n">거래대금 상위 300(시장별) 안에 든 종목이 없습니다.</td></tr>`}</tbody></table></div>
+    <div class="vi-note">이 업종 종목 중 오늘 거래대금이 큰 순서(코스피·코스닥 각각 거래대금 상위 300종목 안, 관리종목·현재가 1,000원 이하 제외) · 선정·추천이 아니라 돈이 어디로 들어오는지 보여 주는 목록입니다.</div>`;
+}
 (function renderMoney() {
   const m = DATA_HOT_SECTORS.money;
   const list = document.getElementById("list-money");
   const flows = document.getElementById("list-flows");
-  if (!m) {
+  if (!m || m.method !== "sector" || !(m.sectors || []).length) {
     const msg = DATA_HOT_SECTORS.session === "장전"
       ? "정규장 시작(09:00) 전이라 거래대금 집계가 없습니다. 09:00 이후 갱신분부터 표시됩니다."
-      : "이번 갱신에서는 거래대금 집계를 가져오지 못했습니다. 다음 갱신 때 다시 시도합니다.";
+      : "이번 갱신에서는 업종 거래대금을 가져오지 못했습니다. 다음 갱신 때 다시 시도합니다.";
     list.innerHTML = `<div class="empty-row">${msg}</div>`;
     flows.innerHTML = "";
     return;
   }
+  const S = m.sectors;
   const asof = m.asOfTime || DATA_HOT_SECTORS.asOfTime;
-  const [hh, mm] = asof.split(":").map(Number);
-  const sched = "09:00 전일 기준 → 09:05~15:30 5분마다, 15:30 이후 고정";
-  document.getElementById("money-asof").textContent = m.basis === "prev"
-    ? `전일(${(m.baseDate || "").slice(5).replace("-", "/")}) 확정 거래량·주가 기준 · ${sched}`
-    : (hh * 60 + mm >= 930)
-    ? `${asof} 기준 · 오늘 최종(${sched})`
-    : `${asof} 기준 · ${sched}`;
-  document.getElementById("count-money").textContent = m.items.length ? `테마 ${m.items.length}개` : "";
-  list.innerHTML = m.items.length ? m.items.map(moneyThemeGroup).join("") : `<div class="empty-row">조건에 맞는 테마가 없습니다.</div>`;
-  flows.innerHTML =
-    (m.sectorBuy.length ? `<div class="money-stats"><b>순매수 상위</b></div>${flowTable(m.sectorBuy)}` : "") +
-    (m.sectorSell.length ? `<div class="money-stats" style="margin-top:10px"><b>순매도 상위</b></div>${flowTable(m.sectorSell)}` : "");
+  document.getElementById("money-asof").innerHTML = `${asof} 기준 · 키움 업종별 거래대금(정규장 KRX, 09:00~15:30 1분마다 계산 · 앱은 새 발행 때 자동 갱신, 마감 뒤 고정) · 오늘 업종 합계 ${m.totalEok.toLocaleString("ko-KR")}억`
+    + `<br>사각형 크기 = 오늘 거래대금 · 색 = 업종 지수 등락률(<b style="color:var(--red)">▲ 빨강 상승</b> / <b style="color:var(--blue)">▼ 파랑 하락</b> / 회색 보합, 진할수록 ±4%까지 큼) · 업종을 누르면 아래에 종목`;
+  document.getElementById("count-money").textContent = `업종 ${S.length}개`;
+  const W = 1000, H = 1000;
+  const rects = squarify(S.map(s => ({ ...s, v: s.valueEok })), 0, 0, W, H);
+  const cells = rects.map(r => { const s = r.item, big = r.w * r.h > 9000 && r.w > 70, mid = r.w * r.h > 3500 && r.w > 50;
+    return `<div class="tm" data-key="${s.key}" onclick="moneyDetail('${s.key}')" style="left:${r.x / 10}%;top:${r.y / 10}%;width:${r.w / 10}%;height:${r.h / 10}%;background:${tmColor(s.changePct)}">`
+      + (mid ? `<b>${s.name}</b>` : "") + (big ? `<span>${s.market} · ${s.valueEok.toLocaleString("ko-KR")}억 · ${s.sharePct}%</span><span class="tm-pct">${tmPct(s.changePct)}</span>` : mid ? `<span>${s.market.slice(0, 2)} ${tmPct(s.changePct)}</span>` : "")
+      + `</div>`; }).join("");
+  const chips = S.map((s, i) => `<button data-key="${s.key}" onclick="moneyDetail('${s.key}')">${i + 1}. ${s.name}(${s.market}) ${s.valueEok.toLocaleString("ko-KR")}억 <span style="color:${s.changePct > 0 ? "var(--red)" : s.changePct < 0 ? "var(--blue)" : "inherit"}">${s.changePct > 0 ? "+" : ""}${s.changePct.toFixed(2)}%</span></button>`).join("");
+  list.innerHTML = `<div class="tmap">${cells}</div><div class="tm-list">${chips}</div>`;
+  moneyDetail(moneySel && S.some(s => s.key === moneySel) ? moneySel : S[0].key);
 })();
 document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "마감"
   ? `${DATA_HOT_SECTORS.date} 마감종목 · ${DATA_HOT_SECTORS.asOfTime} 기준`
@@ -1741,7 +1798,7 @@ function scIntraday(S, sg) {
     <div class="vi-note">효과 = 나머지 평균 − 표시된 종목 평균(+면 경고가 손실을 피함) · 양쪽 20건 이상부터 판정 · '효과 반대 — 재검토'가 나오면 그 경고 규칙을 다시 검증합니다.</div>` : ""}`;
   // 2026-11-06 사용자 요청 '매일 신뢰도를 높여 종목선정에 적용': 각 메뉴 머리에 실전 판정 표시(신뢰 낮음은 경고)
   const where = { breakout: "count-breakout", imminent: "count-imm", volatility: "count-vol", swing: "sw-count", pullback: "sw-pb-count",
-    vi: "count-vi", strength: "count-strength", hot: "count-hot", money: "count-money" };
+    vi: "count-vi", strength: "count-strength", hot: "count-hot" };  // 2026-11-18: 돈 몰리는 곳은 업종 지도로 바뀌어 종목 성적 표시 안 함
   Object.entries(where).forEach(([k, id]) => {
     const m = S.menus[k], el = document.getElementById(id), h = el && el.parentElement.querySelector("h2");
     if (!m || !h || m.verdict === "표본 부족") return;
