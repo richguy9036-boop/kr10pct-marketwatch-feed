@@ -305,12 +305,12 @@
   .tmap .tm b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tmap .tm span.tm-pct { font-size: 17px; font-weight: 800; }
   .tmap .tm span { display: block; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
-  .money-wrap { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 14px; align-items: start; }
+  .money-wrap { display: block; }  /* 2026-11-19 사용자 요청: 지도는 넓게, 종목 표는 지도 아래 */
   .money-wrap #list-flows .sec-head { margin-top: 4px !important; }
   .money-wrap #list-flows .vi-table th, .money-wrap #list-flows .vi-table td { padding: 5px 6px; font-size: 14.5px; white-space: nowrap; }
   .money-wrap #list-flows .vi-table td.vt-n { white-space: normal; }
   .money-wrap #list-flows .money-stats { font-size: 14px; }
-  @media (max-width: 900px) { .money-wrap { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
   @media (max-width: 600px) { .tmap { height: 400px; } .tmap .tm b { font-size: 12.5px; } .tmap .tm span { font-size: 11.5px; } }
   .money-stats { font-size: 15.5px; color: var(--text-dim); padding: 0 2px 6px; font-family: "IBM Plex Mono", monospace; }
   .money-stats b { color: var(--text); font-weight: 600; }
@@ -1714,13 +1714,13 @@ function moneyDetail(key) {
   if (!x) { el.innerHTML = ""; return; }
   const sg = v => `${v > 0 ? "+" : ""}${v.toFixed(2)}%`, col = v => v > 0 ? "color:var(--red)" : v < 0 ? "color:var(--blue)" : "";
   const fl = v => v == null ? "—" : `<span style="${col(v)}">${v > 0 ? "+" : ""}${v.toLocaleString("ko-KR")}</span>`;
-  // 2026-11-18 사용자 요청: 상승률 높은 종목을 맨 위로(거래대금 상위 15 안에서 등락률 순)
+  // 2026-11-18 사용자 요청: 상승률 높은 종목을 맨 위로 · 2026-11-19: 업종 구성종목 전부(거래대금 300위 밖은 스냅숏 값, 거래대금 앞 ≈ = 근사)
   const rows = [...(x.stocks || [])].sort((a, b) => b.changePct - a.changePct).map((s, i) => `<tr><td class="vt-r">${i + 1}</td><td class="vt-n"><b>${s.name}</b></td>
-    <td>${Math.round(s.close).toLocaleString("ko-KR")}</td><td style="${col(s.changePct)}">${sg(s.changePct)}</td><td>${s.valueEok.toLocaleString("ko-KR")}억</td></tr>`).join("");
+    <td>${Math.round(s.close).toLocaleString("ko-KR")}</td><td style="${col(s.changePct)}">${sg(s.changePct)}</td><td>${s.approx ? "≈" : ""}${s.valueEok.toLocaleString("ko-KR")}억</td></tr>`).join("");
   el.innerHTML = `<div class="sec-head" style="margin-top:6px"><h2>${x.name} <span style="font-size:14px;color:var(--text-dim)">${x.market}</span></h2><span class="count num">${x.stocks.length}종목</span></div>
     <div class="money-stats">거래대금 <b>${x.valueEok.toLocaleString("ko-KR")}억</b>(전체 업종 중 ${x.sharePct}%) · 업종 지수 <b style="${col(x.changePct)}">${sg(x.changePct)}</b> · 상승 ${x.rising} / 하락 ${x.falling}(전체 ${x.count}종목)${x.foreign != null ? ` · 순매수 외국인 ${fl(x.foreign)} · 기관 ${fl(x.inst)}` : ""}</div>
-    <div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>종목</th><th>현재가</th><th>등락률</th><th>거래대금</th></tr></thead><tbody>${rows || `<tr><td colspan="5" class="vt-n">거래대금 상위 300(시장별) 안에 든 종목이 없습니다.</td></tr>`}</tbody></table></div>
-    <div class="vi-note">이 업종에서 오늘 거래대금이 큰 15종목(코스피·코스닥 각각 거래대금 상위 300종목 안, 관리종목·현재가 1,000원 이하 제외)을 상승률 높은 순으로 · 선정·추천이 아니라 돈이 어디로 들어오는지 보여 주는 목록입니다.</div>`;
+    <div class="vi-scroll"><table class="vi-table"><thead><tr><th>순위</th><th>종목</th><th>현재가</th><th>등락률</th><th>거래대금</th></tr></thead><tbody>${rows || `<tr><td colspan="5" class="vt-n">오늘 거래된 구성종목이 없습니다.</td></tr>`}</tbody></table></div>
+`;  // 2026-11-19 사용자 요청: 표 아래 설명문 삭제
 }
 (function renderMoney() {
   const m = DATA_HOT_SECTORS.money;
