@@ -1,1 +1,1 @@
-{"date": "2026-11-20", "asOfTime": "08:10", "session": "장전", "source": "naver", "items": [{"theme": "보안주(정보)", "themeCode": "N55", "themeChangePct": 0.17, "stockCount": 52, "nxtCount": 4, "risePct": 25, "stocks": [{"name": "안랩", "code": "053800", "close": 121700.0, "changePct": 3.22, "volume": 629660, "volBasis": "prev", "nxtVolume": 361874}]}], "basis": "nxt"}
+{"date": "2026-11-20", "asOfTime": "08:20", "session": "장전", "source": "naver", "items": [], "basis": "nxt"}
