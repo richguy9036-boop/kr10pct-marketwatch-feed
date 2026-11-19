@@ -1737,17 +1737,20 @@ function moneyDetail(key) {
   const S = m.sectors;
   const asof = m.asOfTime || DATA_HOT_SECTORS.asOfTime;
   document.getElementById("money-asof").innerHTML = `${asof} 기준 · 키움 업종별 거래대금(정규장 KRX, 09:00~15:30 1분마다 계산 · 앱은 새 발행 때 자동 갱신, 마감 뒤 고정) · 오늘 업종 합계 ${m.totalEok.toLocaleString("ko-KR")}억`
-    + `<br>사각형 크기 = 오늘 거래대금(작은 업종도 보이게 제곱근 배율 — 실제 금액·비중은 사각형 안 숫자) · 색 = 업종 지수 등락률(<b style="color:var(--red)">▲ 빨강 상승</b> / <b style="color:var(--blue)">▼ 파랑 하락</b> / 회색 보합, 진할수록 ±4%까지 큼) · 업종을 누르면 아래에 종목`;
+    + `<br>사각형 크기 = 오늘 강한 정도(업종 지수 등락률이 높을수록 크게, 가장 약한 업종이 가장 작게 — 거래대금·비중은 사각형 안 숫자) · 색 = 업종 지수 등락률(<b style="color:var(--red)">▲ 빨강 상승</b> / <b style="color:var(--blue)">▼ 파랑 하락</b> / 회색 보합, 진할수록 ±4%까지 큼) · 업종을 누르면 아래에 종목`;
   document.getElementById("count-money").textContent = `업종 ${S.length}개`;
   const W = 1000, H = 1000;
-  // 2026-11-18 사용자 요청 '전체적으로 배율 조정해 시인성': 크기 = 거래대금의 제곱근(한 업종이 절반을 차지해 나머지가 안 보이던 문제), 순서는 거래대금 순 그대로
-  const rects = squarify(S.map(s => ({ ...s, v: Math.sqrt(Math.max(s.valueEok, 0)) })), 0, 0, W, H);
+  // 2026-11-19 사용자 요청 '시총 큰 업종으로 고정되지 말고 오늘 강한 업종이 제일 크게': 크기 = 등락률을 가장 약한 업종 기준으로 올린 값
+  // (가장 약한 업종도 보이게 최소 폭 = 등락률 범위의 12%, 최소 0.3%p — 모두 보합이면 같은 크기)의 1.5제곱(강한 업종이 확실히 크게), 순서 = 등락률 높은 순
+  const cs = S.map(s => s.changePct || 0), cmin = Math.min(...cs), pad = Math.max(0.3, (Math.max(...cs) - cmin) * 0.12);
+  const SS = S.slice().sort((a, b) => (b.changePct || 0) - (a.changePct || 0) || b.valueEok - a.valueEok);
+  const rects = squarify(SS.map(s => ({ ...s, v: Math.pow((s.changePct || 0) - cmin + pad, 1.5) })), 0, 0, W, H);
   const cells = rects.map(r => { const s = r.item, big = r.w * r.h > 9000 && r.w > 70, mid = r.w * r.h > 3500 && r.w > 50;
     return `<div class="tm" data-key="${s.key}" onclick="moneyDetail('${s.key}')" style="left:${r.x / 10}%;top:${r.y / 10}%;width:${r.w / 10}%;height:${r.h / 10}%;background:${tmColor(s.changePct)}">`
       + (mid ? `<b>${s.name}</b>` : "") + (big ? `<span>${s.market} · ${s.valueEok.toLocaleString("ko-KR")}억 · ${s.sharePct}%</span><span class="tm-pct">${tmPct(s.changePct)}</span>` : mid ? `<span>${s.market.slice(0, 2)} ${tmPct(s.changePct)}</span>` : "")
       + `</div>`; }).join("");
   list.innerHTML = `<div class="tmap">${cells}</div>`;
-  moneyDetail(moneySel && S.some(s => s.key === moneySel) ? moneySel : S[0].key);
+  moneyDetail(moneySel && S.some(s => s.key === moneySel) ? moneySel : SS[0].key);
 })();
 document.getElementById("hot-meta").textContent = DATA_HOT_SECTORS.session === "마감"
   ? `${DATA_HOT_SECTORS.date} 마감종목 · ${DATA_HOT_SECTORS.asOfTime} 기준`
